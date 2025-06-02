@@ -6,7 +6,7 @@ const showHeader = ref(false)
 onMounted(() => {
   setTimeout(() => {
     showHeader.value = true
-  }, 100) // pequeno delay para a animação
+  }, 150)
 })
 </script>
 <template>
@@ -21,7 +21,7 @@ onMounted(() => {
           <RouterLink to="/brands">Brands</RouterLink>
         </div>
         <div class="perfilShop slide-item" style="transition-delay: 0.2s;">
-          <RouterLink to="/perfil"><img src="@/assets/images/Login.png" alt=""></RouterLink>
+          <RouterLink to="/login"><img src="@/assets/images/Login.png" alt=""></RouterLink>
           <RouterLink to="/shop"><img src="@/assets/images/Cart.png" alt=""></RouterLink>
         </div>
       </header>
