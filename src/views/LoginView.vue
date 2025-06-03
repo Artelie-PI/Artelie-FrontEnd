@@ -10,11 +10,17 @@
             <form>
                 <div class="input-group">
                     <label for="email">Email</label>
-                    <input type="email" id="email" placeholder="Enter your email" required>
+                    <div class="emailInput">
+                    <span><img class="userIcon" src="@/assets/images/userIcon.png" alt=""></span>
+                    <input type="email" id="email" placeholder="Enter your Email" required>
+                    </div>
                 </div>
                 <div class="input-group">
                     <label for="password">Password</label>
-                    <input type="password" id="password" placeholder="Enter your password" required>
+                    <div class="passwordInput">
+                    <span><img class="userIcon" src="@/assets/images/passwordIcon.png" alt=""></span>
+                    <input type="password" id="password" placeholder="Enter your Password" required>
+                    </div>
                 </div>
                 <button type="submit">Login</button>
             </form>
@@ -53,6 +59,13 @@ main{
         background-position: 0% 50%;
     }
 }
+form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    gap: 1rem;
+}
 .login-container {
     background-color: #fff;
     padding: 2rem;
@@ -72,10 +85,32 @@ main{
 }
 .instruction {
     font-size: 1.5rem;
-    color: #666;
+    color: #ffffff;
 }
 .input-group {
     margin-bottom: 1rem;
+}
+.input-group .emailInput {
+    display: flex;
+    align-items: end;
+}
+.input-group .passwordInput {
+    display: flex;
+    align-items: end;
+}
+span {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.userIcon {
+    height: 2.8rem;
+    left: 1rem;
+    top: 1.5rem;
+    padding-bottom: 1vh;
+    padding-left: 0.5vw;
+    border-bottom: #ccc 1px solid;
 }
 .input-group label {
     display: block;
@@ -83,12 +118,15 @@ main{
     font-weight: 400;
     font-size: 1.5rem
 }
+
 .input-group input {
     width: 50vw;
     height: 5vh;
     padding: 0.5rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+    padding-bottom: 1vh;
+    padding-left: 1rem;
+    border: 0px solid #ccc;
+    border-bottom: 1px solid #ccc;
     font-size: 16px;
 }
 .input-group input:focus {
@@ -105,12 +143,13 @@ main{
     color: #192EB1;
 }
 button {
-    width: 100%;
+    margin-top: 1vh;
+    width: 50%;
     padding: 0.75rem;
     background-color: #192EB1;
     color: #fff;
     border: none;
-    border-radius: 4px;
+    border-radius: 2rem;
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
