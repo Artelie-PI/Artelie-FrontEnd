@@ -1,18 +1,14 @@
 <script setup></script>
 <template>
     <main>
-    <div class="container">
-        <p class="Title">Bem-vindo!</p>
-        <p class="instruction">Por favor, faça login para continuar</p>
-    </div>
         <div class="login-container">
-            <p class="titleLogin">LOGIN</p>
+            <p class="titleLogin">SIGN-IN</p>
             <form>
                 <div class="input-group">
                     <label for="email">Email</label>
                     <div class="emailInput">
                     <span><img class="userIcon" src="@/assets/images/userIcon.png" alt=""></span>
-                    <input type="email" id="email" placeholder="Digite seu Email" required>
+                    <input type="email" id="email" placeholder="Enter your Email" required>
                     </div>
                 </div>
                 <div class="input-group">
@@ -22,10 +18,28 @@
                     <input type="password" id="password" placeholder="Digite sua Senha" required>
                     </div>
                 </div>
-                <button type="submit">Login</button>
+                <div class="input-group">
+                    <label for="confirmPassword">Confirmar Senha</label>
+                    <div class="passwordInput">
+                    <span><img class="userIcon" src="@/assets/images/confirmPassword.png" alt=""></span>
+                    <input type="password" id="confirmPassword" placeholder="Confirme sua Senha" required>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="cellphone">Número de Telefone</label>
+                    <div class="passwordInput">
+                    <span><img class="userIcon" src="@/assets/images/cellphoneIcon.png" alt=""></span>
+                    <input type="tel" id="cellphone" placeholder="Digite seu Número de Telefone" required>
+                    </div>
+                </div>
+                <button type="submit">Registrar</button>
             </form>
-            <p class="register">Não tem uma conta? <a href="/register">Registre-se aqui</a></p>
+            <p class="register">Já tem uma conta? <a href="/login">Faça login aqui</a></p>
         </div>
+         <div class="container">
+        <p class="Title">Bem-vindo!</p>
+        <p class="instruction">Por favor, registre-se para continuar</p>
+    </div>
         
     </main>
 </template>
@@ -43,7 +57,7 @@ main{
     justify-content: center;
     align-items: center;
     width: 30vw;
-    background: linear-gradient(270deg, #192EB1,  #214b9b, #192EB1);
+    background: linear-gradient(270deg, #b11919ef,  #9b2121e8, #b11919ee);
     background-size: 400% 400%;
     color: #fff;
 }
