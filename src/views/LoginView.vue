@@ -2,8 +2,8 @@
 <template>
     <main>
     <div class="container">
-        <p class="Title">Bem-vindo!</p>
-        <p class="instruction">Por favor, faça login para continuar</p>
+        <p class="Title">Welcome!</p>
+        <p class="instruction">Please Login to continue</p>
     </div>
         <div class="login-container">
             <p class="titleLogin">LOGIN</p>
@@ -12,21 +12,21 @@
                     <label for="email">Email</label>
                     <div class="emailInput">
                     <span><img class="userIcon" src="@/assets/images/userIcon.png" alt=""></span>
-                    <input type="email" id="email" placeholder="Digite seu Email" required>
+                    <input type="email" id="email" placeholder="Enter your email" required>
                     </div>
                 </div>
                 <div class="input-group">
-                    <label for="password">Senha</label>
+                    <label for="password">Password</label>
                     <div class="passwordInput">
                     <span><img class="userIcon" src="@/assets/images/passwordIcon.png" alt=""></span>
-                    <input type="password" id="password" placeholder="Digite sua Senha" required>
+                    <input type="password" id="password" placeholder="Enter your password" required>
                     </div>
                 </div>
                 <button type="submit">Login</button>
             </form>
-            <p class="register">Não tem uma conta? <a href="/register">Registre-se aqui</a></p>
+            <p class="register">Don't have an account? <a href="/register">Register Here!</a></p>
         </div>
-        
+
     </main>
 </template>
 <style scoped>
