@@ -170,7 +170,7 @@ main {
     justify-content: center;
     align-items: center;
     width: 30vw;
-    background: linear-gradient(270deg, #b11919ef, #9b2121e8, #b11919ee);
+    background: linear-gradient(270deg, #192EB1,  #214b9b, #192EB1);
     background-size: 400% 400%;
     color: #fff;
     animation: gradientBG 10s ease infinite;
