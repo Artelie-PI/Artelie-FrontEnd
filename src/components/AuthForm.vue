@@ -1,25 +1,25 @@
 <script setup>
-import { defineProps, defineEmits } from 'vue'
-
 const props = defineProps({
   form: { type: Object, required: true },
   mode: { type: String, required: true }
 })
-const emit = defineEmits(['request-register', 'request-login'])
+const emit = defineEmits(['request-register', 'request-login', 'do-login', 'do-register'])
 
 function onRequestRegister() { emit('request-register') }
 function onRequestLogin() { emit('request-login') }
+function onLogin() { emit('do-login') }
+function onRegister() { emit('do-register') }
 </script>
 
 <template>
-  <form class="form-inner" @submit.prevent>
+  <form class="form-inner" @submit.prevent="props.mode === 'login' ? onLogin() : onRegister()">
     <!-- Login -->
     <div v-show="props.mode === 'login'" class="form-block">
       <div class="input-group">
-        <label for="loginEmail">Email</label>
+        <label for="loginUsername">Username</label>
         <div class="inputWrapper">
           <span><img class="userIcon" src="@/assets/images/userIcon.png" alt="user" /></span>
-          <input id="loginEmail" v-model="props.form.loginEmail" placeholder="Enter your Email" />
+          <input id="loginUsername" v-model="props.form.loginUsername" placeholder="Enter your Username" />
         </div>
       </div>
 
@@ -31,23 +31,16 @@ function onRequestLogin() { emit('request-login') }
         </div>
       </div>
 
-      <button type="submit">Submit</button>
+      <button type="submit">Login</button>
       <p class="register">Don't have an account? <a href="#" @click.prevent="onRequestRegister">Register here</a></p>
     </div>
 
     <!-- Register -->
     <div v-show="props.mode === 'register'" class="form-block">
       <div class="input-group">
-        <label for="name">Name</label>
+        <label for="username">Username</label>
         <div class="inputWrapper">
-          <input id="name" v-model="props.form.name" placeholder="Your Name" />
-        </div>
-      </div>
-
-      <div class="input-group">
-        <label for="surname">Surname</label>
-        <div class="inputWrapper">
-          <input id="surname" v-model="props.form.surname" placeholder="Your Surname" />
+          <input id="username" v-model="props.form.username" placeholder="Your Username" />
         </div>
       </div>
 
@@ -55,6 +48,13 @@ function onRequestLogin() { emit('request-login') }
         <label for="email">Email</label>
         <div class="inputWrapper">
           <input id="email" v-model="props.form.email" placeholder="Your Email" />
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label for="full_name">Full Name</label>
+        <div class="inputWrapper">
+          <input id="full_name" v-model="props.form.full_name" placeholder="Your Full Name" />
         </div>
       </div>
 
@@ -81,7 +81,7 @@ function onRequestLogin() { emit('request-login') }
 <style scoped>
 .form-block { width:100%; display:flex; flex-direction:column; align-items:center; transition: opacity .4s ease; }
 .input-group { margin-bottom:1rem; width:75%; }
-.inputWrapper { display:flex; align-items:center; border-bottom:1px solid #ccc; padding-bottom:.5rem; transition: border-color .3s; }
+.inputWrapper { display:flex; align-items:center; border-bottom:1px solid #ccc; padding-bottom:.5rem; }
 .inputWrapper input { flex:1; height:5vh; padding:.5rem 1rem; border:none; background:transparent; }
 .userIcon { height:2.2rem; margin-right:.5rem; }
 .register { margin-top:1rem; font-size:1.2rem; }

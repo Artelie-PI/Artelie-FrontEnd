@@ -3,9 +3,6 @@ import { computed } from 'vue'
 const props = defineProps({
   mode: { type: String, default: 'login' }
 })
-
-// Simplifica: o painel vai para a direita apenas quando mode === 'register'.
-// Isso evita que um flag de "moving" mantenha o painel no lugar indevidamente.
 const cls = computed(() => ({
   container: true,
   'to-right': props.mode === 'register'
@@ -34,8 +31,6 @@ const cls = computed(() => ({
   justify-content: center;
   align-items: center;
   text-align: center;
-
-  /* usa custom property para transição suave */
   --tx: 0;
   transform: translateX(var(--tx));
   transition: transform 0.32s cubic-bezier(.2,.9,.3,1), opacity 0.32s;
@@ -50,12 +45,10 @@ const cls = computed(() => ({
   pointer-events: auto;
 }
 
-/* move até a borda direita da viewport (sem deixar gap) */
 .container.to-right {
   --tx: calc(100vw - 32vw);
 }
 
-/* título com mesma proporção do subtexto do login */
 .Title {
   margin: 0 0 0.4rem 0;
   font-size: 18px;
