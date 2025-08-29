@@ -46,7 +46,7 @@ async function handleLogin() {
     await login(form.loginUsername, form.loginPassword)
     successMsg.value = 'Login realizado com sucesso!'
     router.push('/')
-  } catch (err) {
+  } catch {
     errorMsg.value = 'Username ou senha inválidos!'
   }
 }
@@ -69,7 +69,7 @@ async function handleRegister() {
     })
     successMsg.value = 'Registro realizado com sucesso! Agora faça login.'
     animateToLogin()
-  } catch (err) {
+  } catch {
     errorMsg.value = 'Erro no registro! Verifique os dados.'
   }
 }
