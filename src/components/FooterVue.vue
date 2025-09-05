@@ -9,12 +9,12 @@ const scrollToTop = () => {
   <footer class="footer">
     <div class="footer-container">
       <div class="footer-column">
-        <div class="logo"><img src="/src/assets/images/ArtelieLogo.png" alt=""></div>
+        <div class="logo"><img src="" alt=""></div>
         <div class="social-icons">
-          <i class="fab fa-instagram"><img src="/src/assets/images/Instagram.png" alt="" height="42px" width="42px"></i>
-          <i class="fab fa-tiktok"><img src="/src/assets/images/Tiktok.png" alt="" height="42px" width="42px"></i>
-          <i class="fab fa-whatsapp"><img src="/src/assets/images/Whatsapp.png" alt="" height="42px" width="42px"></i>
-          <i class="fab fa-facebook"><img src="/src/assets/images/Facebook.png" alt="Facebook"></i>
+          <i class="fab fa-instagram"><img src="" alt="" height="42px" width="42px"></i>
+          <i class="fab fa-tiktok"><img src="" alt="" height="42px" width="42px"></i>
+          <i class="fab fa-whatsapp"><img src="" alt="" height="42px" width="42px"></i>
+          <i class="fab fa-facebook"><img src="" alt="Facebook"></i>
         </div>
       </div>
       <div class="footer-column">
@@ -31,10 +31,10 @@ const scrollToTop = () => {
       <div class="footer-column">
         <h4>PRODUÇÃO DO SITE</h4>
         <ul>
-          <li>Gabriel Martins</li>
-          <li>Guilherme Schreiber</li>
-          <li>Murilo Souza</li>
-          <li>Nicolas Steffens</li>
+          <a href="https://github.com/gabrielmartinsgomes"><li>Gabriel Martins</li></a>
+          <a href="https://github.com/GuilhermeSchreiber7"><li>Guilherme Schreiber</li></a>
+          <a href="https://github.com/MuriloDaCruz"><li>Murilo Souza</li></a>
+          <a href="https://github.com/SPNicolas"><li>Nicolas Steffens</li></a>
         </ul>
       </div>
       <div class="footer-column">
@@ -42,7 +42,6 @@ const scrollToTop = () => {
         <div class="payment-methods">
           <img src="https://img.icons8.com/color/48/mastercard-logo.png" alt="Mastercard" />
           <img src="https://images.seeklogo.com/logo-png/6/1/hipercard-logo-png_seeklogo-66999.png" alt="Hipercard" height="28" />
-          <img src="https://cdn3.iconfinder.com/data/icons/circle-payment-methods-4/512/Diners_club-512.png" alt="Diners Club" height="28" />
           <img src="https://artpoin.com/wp-content/uploads/2023/09/artpoin-logo-pix.png" alt="PIX" height="28" />
           <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRCeFOcf9LrQo11_tf9lMiV-_yRxlEcH0vgRQ&s" alt="Boleto" height="28" />
         </div>
@@ -132,6 +131,16 @@ const scrollToTop = () => {
 
 .back-to-top i {
   margin-right: 5px;
+}
+
+a{
+  text-decoration: none;
+  color: white;
+}
+
+.fabfa-whatsapp {
+  color: #25D366; /* cor desejada do ícone */
+  fill: currentColor;
 }
 </style>
 
