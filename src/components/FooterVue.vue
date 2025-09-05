@@ -9,12 +9,12 @@ const scrollToTop = () => {
   <footer class="footer">
     <div class="footer-container">
       <div class="footer-column">
-        <div class="logo">LOGO</div>
+        <div class="logo"><img src="/src/assets/images/ArtelieLogo.png" alt=""></div>
         <div class="social-icons">
-          <i class="fab fa-instagram"><img src="https://icones.pro/wp-content/uploads/2021/02/instagram-icone-noir.png" alt="" height="42px" width="42px"></i>
-          <i class="fab fa-tiktok"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRz42cPruGbRMODd1kf8YprPaf7J-DFj41ALg&s" alt="" height="42px" width="42px"></i>
-          <i class="fab fa-whatsapp"><img src="https://images.freeimages.com/fic/images/icons/2779/simple_icons/4096/whatsapp_4096_black.png" alt="" height="42px" width="42px"></i>
-          <i class="fab fa-facebook"></i>
+          <i class="fab fa-instagram"><img src="/src/assets/images/Instagram.png" alt="" height="42px" width="42px"></i>
+          <i class="fab fa-tiktok"><img src="/src/assets/images/Tiktok.png" alt="" height="42px" width="42px"></i>
+          <i class="fab fa-whatsapp"><img src="/src/assets/images/Whatsapp.png" alt="" height="42px" width="42px"></i>
+          <i class="fab fa-facebook"><img src="/src/assets/images/Facebook.png" alt="Facebook"></i>
         </div>
       </div>
       <div class="footer-column">
