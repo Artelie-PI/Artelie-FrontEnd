@@ -11,10 +11,10 @@ const scrollToTop = () => {
       <div class="footer-column">
         <div class="logo"><img src="" alt=""></div>
         <div class="social-icons">
-          <i class="fab fa-instagram"><img src="" alt="" height="42px" width="42px"></i>
-          <i class="fab fa-tiktok"><img src="" alt="" height="42px" width="42px"></i>
-          <i class="fab fa-whatsapp"><img src="" alt="" height="42px" width="42px"></i>
-          <i class="fab fa-facebook"><img src="" alt="Facebook"></i>
+          <i class="fab fa-instagram"><img src="/src/assets/images/Instagram.png" alt="" height="42px" width="60px"></i>
+          <i class="fab fa-tiktok"><img src="/src/assets/images/TikTok.png" alt="" height="42px" width="42px"></i>
+          <i class="fab fa-whatsapp"><img src="https://www.pikpng.com/pngl/b/49-494277_logo-whatsapp-png-branco-logo-whatsapp-branco-png.png" alt="" height="42px" width="42px"></i>
+          <i class="fab fa-facebook"><img src="/src/assets/images/Facebook1.png" alt="" height="45px" width="50px"></i>
         </div>
       </div>
       <div class="footer-column">
@@ -93,11 +93,9 @@ const scrollToTop = () => {
 }
 
 .social-icons i {
-  font-size: 24px;
   cursor: pointer;
   color: black;
   padding: 3px;
-  border-radius: 5px;
   height: 20px;
   width: 20px;
 }
@@ -138,9 +136,6 @@ a{
   color: white;
 }
 
-.fabfa-whatsapp {
-  color: #25D366; /* cor desejada do ícone */
-  fill: currentColor;
-}
+
 </style>
 
