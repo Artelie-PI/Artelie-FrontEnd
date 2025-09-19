@@ -13,8 +13,6 @@ function login() {
 </script>
 <template>
   <div class="sacola-page">
-    <!-- Top bar -->
-    <!-- Main content -->
     <main>
       <section class="empty-wrap">
         <h1 class="title">
@@ -24,7 +22,7 @@ function login() {
 
         <p class="subtitle">A Sacola está vazia!</p>
 
-        <div class="empty-illustration">🚫</div>
+        <div class="empty-illustration"></div>
 
         <p class="lead">
           Que tal retornar a nossa página principal e procurar pelos melhores produtos
