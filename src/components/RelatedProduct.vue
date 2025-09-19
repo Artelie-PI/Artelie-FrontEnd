@@ -1,20 +1,22 @@
 <template>
-  <div class="related">
-    <h2>Explorar outros itens semelhantes</h2>
-    <div class="related-grid">
-      <div
-        v-for="(related, i) in productStore.relatedProducts"
-        :key="i"
-        class="related-card"
-      >
-        <img :src="related.image" class="related-img" />
+  <div class="related-wrapper">
+    <div class="related">
+      <h2>Explorar outros itens semelhantes</h2>
+      <div class="related-grid">
+        <div
+          v-for="(related, i) in productStore.relatedProducts"
+          :key="i"
+          class="related-card"
+        >
+          <img :src="related.image" class="related-img" />
 
-        <h3 class="related-name">{{ related.name }}</h3>
+          <h3 class="related-name">{{ related.name }}</h3>
 
-        <p class="related-price">{{ related.price }}</p>
-        <p class="related-installments">Até 4x de R$ 152,84 sem juros</p>
+          <p class="related-price">{{ related.price }}</p>
+          <p class="related-installments">Até 4x de R$ 152,84 sem juros</p>
 
-        <button class="add-btn">Adicionar à Sacola</button>
+          <button class="add-btn">Adicionar à Sacola</button>
+        </div>
       </div>
     </div>
   </div>
@@ -26,84 +28,79 @@ const productStore = useProductStore();
 </script>
 
 <style scoped>
-/* Container */
-.related {
-  margin-top: 2rem;
+.related-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  font-family: "Inter", sans-serif;
 }
 
 .related h2 {
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   font-weight: 600;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.2rem;
   border-bottom: 1px solid #ddd;
-  padding-bottom: 0.5rem;
+  padding-bottom: 0.4rem;
 }
 
-/* Grid responsivo */
 .related-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 10rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 2rem;
 }
 
-/* Card */
 .related-card {
   background: #fff;
-  border-radius: 0.5rem;
   padding: 1rem;
   text-align: center;
+  border: 1px solid transparent;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  border: 1px solid #eee;
-  transition: transform 0.2s ease;
+  transition: border 0.2s ease, transform 0.2s ease;
 }
 .related-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-3px);
+  border: 1px solid #999;
 }
 
-/* Imagem */
 .related-img {
   width: 100%;
   height: auto;
   object-fit: contain;
-  border: 1px solid #ddd;
-  border-radius: 0.5rem;
   margin-bottom: 0.8rem;
 }
 
-/* Nome */
 .related-name {
   font-size: 0.95rem;
   font-weight: 500;
   margin: 0.5rem 0;
-  color: #222;
-  min-height: 40px; /* mantém altura fixa caso o nome quebre linha */
+  color: #111;
+  line-height: 1.3;
+  min-height: 45px;
 }
 
-/* Preço */
 .related-price {
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: bold;
   margin: 0.3rem 0 0.2rem;
 }
 
-/* Parcelamento */
 .related-installments {
-  font-size: 0.85rem;
-  color: #666;
+  font-size: 0.8rem;
+  color: #777;
   margin-bottom: 1rem;
 }
 
-/* Botão */
 .add-btn {
   background: black;
   color: white;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   font-weight: 500;
-  padding: 0.6rem;
-  border-radius: 0.3rem;
+  padding: 0.7rem;
+  border-radius: 0;
   border: none;
+  width: 100%;
   cursor: pointer;
   transition: background 0.2s ease;
 }

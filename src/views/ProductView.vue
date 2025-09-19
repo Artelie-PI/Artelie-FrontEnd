@@ -1,7 +1,14 @@
 <script setup>
+import { ref } from "vue";
 import { useProductStore } from "@/stores/relatedProduct";
 
 const productStore = useProductStore();
+
+const rating = ref(0);
+
+function setRating(value) {
+  rating.value = value;
+}
 </script>
 
 <template>
@@ -22,33 +29,54 @@ const productStore = useProductStore();
       </div>
 
       <div class="details">
-        <h1>Estojo Lápis de Cor Studio Collection Winsor & Newton 50 Peças</h1>
-        <p class="brand">LÁPIS/CANETAS · Winsor & Newton</p>
+        <h1 class="title">Estojo Lápis de Cor Studio Collection Winsor & Newton 50 Peças</h1>
+        <p class="brand">
+          <span class="category">LÁPIS/CANETAS</span> ·
+          <span class="brand-name">Winsor & Newton</span>
+        </p>
+
         <div class="rating">
-          <span v-for="n in 4" :key="n" class="star full">★</span>
-          <span class="star">★</span>
-          <span class="count">(35)</span>
-        </div>
-        <p class="price">R$ 598,00</p>
-        <p class="installments">Até 4x de R$ 152,84 sem juros</p>
-        <div class="quantity">
-          <label>Quantidade:</label>
-          <button @click="productStore.decreaseQuantity">-</button>
-          <span>{{ productStore.quantity }}</span>
-          <button @click="productStore.increaseQuantity">+</button>
+          <span
+            v-for="n in 5"
+            :key="n"
+            class="star"
+            :class="{ full: n <= rating }"
+            @click="setRating(n)"
+          >
+            ★
+          </span>
+          <span class="count">({{ rating }} de 5)</span>
         </div>
 
-        <button class="add-btn">Adicionar ao Sacolão</button>
+        <div class="colors">
+          <div class="color-circle"></div>
+          <div class="color-circle"></div>
+          <div class="color-circle"></div>
+        </div>
+
+        <p class="price">R$ 598,00</p>
+        <p class="installments">Até 4x de R$ 152,84 sem juros</p>
+
+        <div class="quantity">
+          <label class="quantity-label">Quantidade</label>
+          <div class="quantity-box">
+            <button class="quantity-btn" @click="productStore.decreaseQuantity">-</button>
+            <span class="quantity-value">{{ productStore.quantity }}</span>
+            <button class="quantity-btn" @click="productStore.increaseQuantity">+</button>
+          </div>
+        </div>
+
+        <button class="add-btn">Adicionar a Sacola</button>
       </div>
     </div>
 
     <div class="info">
       <h2>Informações do Produto</h2>
       <p>
-        Os lápis de cor da Studio Collection têm uma textura macia que se mistura facilmente...
+        Os lápis de cor da Studio Collection têm uma textura macia que se mistura facilmente. Os
+        núcleos de alta qualidade significam que eles são extremamente lisos e responsivos ao uso...
       </p>
     </div>
-
   </div>
 </template>
 
@@ -63,73 +91,89 @@ const productStore = useProductStore();
 .product-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 2rem;
-  background: #fff;
-  border-radius: 1rem;
-  padding: 2rem;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  gap: 2.5rem;
 }
 
+/* Galeria */
 .gallery {
   display: flex;
   flex-direction: column;
+  align-items: center;
 }
-
 .main-image {
   width: 100%;
   border-radius: 0.5rem;
   border: 1px solid #ddd;
 }
-
 .thumbnails {
   display: flex;
   gap: 0.5rem;
   margin-top: 1rem;
 }
-
 .thumb {
   width: 70px;
   height: 70px;
   border: 1px solid #ddd;
-  border-radius: 0.5rem;
+  border-radius: 0.4rem;
   cursor: pointer;
   object-fit: cover;
 }
-
 .thumb.active {
   border: 2px solid black;
 }
 
-/* Detalhes */
-.details h1 {
-  font-size: 1.5rem;
-  font-weight: bold;
+.title {
+  font-size: 1.6rem;
+  font-weight: 600;
+  line-height: 1.3;
 }
-
 .brand {
+  margin: 0.3rem 0 0.8rem;
+}
+.category {
   color: #666;
-  margin-top: 0.25rem;
+  font-size: 0.9rem;
+}
+.brand-name {
+  color: #2563eb;
+  font-weight: 500;
 }
 
 .rating {
   display: flex;
   align-items: center;
-  margin-top: 0.5rem;
+  margin: 0.5rem 0;
 }
-
 .star {
   color: #ccc;
-  font-size: 1.2rem;
+  font-size: 1.4rem;
+  cursor: pointer;
+  transition: color 0.2s;
 }
-
 .star.full {
-  color: #2563eb; /* azul */
+  color: #f5c518; /* amarelo */
 }
-
+.star:hover {
+  color: #f5c518;
+}
 .count {
   font-size: 0.85rem;
   color: #666;
-  margin-left: 0.5rem;
+  margin-left: 0.4rem;
+}
+
+/* Cores */
+.colors {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0.8rem 0;
+}
+.color-circle {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #2563eb;
+  cursor: pointer;
 }
 
 .price {
@@ -137,34 +181,63 @@ const productStore = useProductStore();
   font-weight: bold;
   margin-top: 1rem;
 }
-
 .installments {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: #666;
 }
 
 .quantity {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 1rem;
+  margin-top: 1.5rem;
 }
 
-.quantity button {
-  padding: 0.25rem 0.75rem;
+.quantity-label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+}
+
+.quantity-box {
+  display: flex;
+  align-items: center;
   border: 1px solid #ccc;
-  border-radius: 0.3rem;
-  background: #f8f8f8;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  width: fit-content;
+  background: #fff;
+}
+
+.quantity-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  font-size: 1.2rem;
   cursor: pointer;
+  transition: background 0.2s;
+}
+
+.quantity-btn:hover {
+  background: #f3f3f3;
+}
+
+.quantity-value {
+  width: 40px;
+  text-align: center;
+  font-weight: 500;
+  font-size: 1rem;
+  user-select: none;
 }
 
 .add-btn {
   margin-top: 1.5rem;
+  width: 100%;
   background: black;
   color: white;
-  padding: 0.8rem 1.5rem;
-  border-radius: 0.7rem;
+  padding: 0.9rem;
+  border-radius: 0.8rem;
   font-weight: 600;
+  font-size: 1rem;
   cursor: pointer;
   transition: background 0.2s;
 }
@@ -179,14 +252,10 @@ const productStore = useProductStore();
   padding: 2rem;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
-
 .info h2 {
   font-size: 1.3rem;
   margin-bottom: 0.75rem;
 }
-
-
-
 @media (max-width: 768px) {
   .product-container {
     grid-template-columns: 1fr;
