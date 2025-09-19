@@ -6,9 +6,7 @@ import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import ProductLayout from '@/layouts/ProductLayout.vue'
 import ProductView from '@/views/ProductView.vue'
 import RelatedProduct from '@/components/RelatedProduct.vue'
-
-
-
+import CartView from '@/views/CartView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -29,6 +27,11 @@ const router = createRouter({
       children: [
         { path: '/produto', name: 'product', component: ProductView },
         { path: 'relacionados', name: 'related-products', component: RelatedProduct },
+        {
+          path: '/shop',
+          name: 'cart',
+          component: CartView,
+        }
       ],
     },
     {
