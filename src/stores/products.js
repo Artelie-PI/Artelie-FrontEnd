@@ -7,42 +7,19 @@ export const useProductsStore = defineStore('products', {
     items: [],
     loading: false,
     error: null,
-    lastCategory: null,
   }),
-  getters: {
-    hasItems: (s) => s.items && s.items.length > 0,
-  },
+
   actions: {
-    async loadByCategory(slug, { force = false } = {}) {
-      if (!slug) {
-        this.items = []
-        this.error = 'Categoria inválida'
-        return []
-      }
-
-      if (!force && this.lastCategory === slug && this.items?.length) {
-        return this.items
-      }
-
+    async loadByCategory(slug) {
       this.loading = true
       this.error = null
       try {
-        const products = await fetchProductsByCategory(slug)
-        this.items = Array.isArray(products) ? products : (products ? [products] : [])
-        this.lastCategory = slug
-        return this.items
+        this.items = await fetchProductsByCategory(slug)
       } catch (err) {
-        this.items = []
-        this.error = err.message || 'Erro ao carregar produtos'
-        throw err
+        this.error = 'Erro ao carregar produtos'
       } finally {
         this.loading = false
       }
     },
-    clear() {
-      this.items = []
-      this.error = null
-      this.lastCategory = null
-    }
-  }
+  },
 })
