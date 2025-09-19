@@ -6,12 +6,7 @@ import RelatedProduct from '@/components/RelatedProduct.vue'
 
 <template>
   <HeaderVue />
-
-  <!-- Aqui aparece o conteúdo dinâmico do produto -->
-  <router-view />
-
-  <!-- Sempre mostra relacionados abaixo -->
+  <RouterView />
   <RelatedProduct />
-
   <FooterVue />
 </template>

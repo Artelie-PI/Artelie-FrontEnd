@@ -7,7 +7,6 @@ const productStore = useProductStore();
 <template>
   <div class="product-page">
     <div class="product-container">
-      <!-- Galeria -->
       <div class="gallery">
         <img :src="productStore.selectedImage" alt="Produto" class="main-image" />
         <div class="thumbnails">
@@ -22,7 +21,6 @@ const productStore = useProductStore();
         </div>
       </div>
 
-      <!-- Detalhes -->
       <div class="details">
         <h1>Estojo Lápis de Cor Studio Collection Winsor & Newton 50 Peças</h1>
         <p class="brand">LÁPIS/CANETAS · Winsor & Newton</p>
@@ -33,8 +31,6 @@ const productStore = useProductStore();
         </div>
         <p class="price">R$ 598,00</p>
         <p class="installments">Até 4x de R$ 152,84 sem juros</p>
-
-        <!-- Quantidade -->
         <div class="quantity">
           <label>Quantidade:</label>
           <button @click="productStore.decreaseQuantity">-</button>
@@ -46,7 +42,6 @@ const productStore = useProductStore();
       </div>
     </div>
 
-    <!-- Informações -->
     <div class="info">
       <h2>Informações do Produto</h2>
       <p>
@@ -54,13 +49,10 @@ const productStore = useProductStore();
       </p>
     </div>
 
-    <!-- Relacionados -->
-
   </div>
 </template>
 
 <style scoped>
-/* Layout geral */
 .product-page {
   font-family: "Inter", sans-serif;
   padding: 1.5rem;
@@ -68,7 +60,6 @@ const productStore = useProductStore();
   margin: auto;
 }
 
-/* Produto principal */
 .product-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -181,7 +172,6 @@ const productStore = useProductStore();
   background: #333;
 }
 
-/* Info */
 .info {
   background: #fff;
   margin-top: 2rem;
@@ -197,7 +187,6 @@ const productStore = useProductStore();
 
 
 
-/* Responsividade */
 @media (max-width: 768px) {
   .product-container {
     grid-template-columns: 1fr;
