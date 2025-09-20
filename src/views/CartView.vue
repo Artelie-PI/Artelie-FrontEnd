@@ -21,6 +21,7 @@ function login() {
         </h1>
 
         <p class="subtitle">A Sacola está vazia!</p>
+        <img src="/src/assets/images/Empty set.png" alt="">
 
         <div class="empty-illustration"></div>
 
@@ -31,7 +32,7 @@ function login() {
         <button class="btn" @click="voltarLoja">Voltar à Loja</button>
 
         <div class="small">
-          <div>Tem uma conta?</div>
+          <div><strong>Tem uma conta?</strong></div>
           <div>
             Faça <a href="#" @click.prevent="login">LOGIN</a> para finalizar suas compras
           </div>
@@ -46,7 +47,7 @@ function login() {
 <style scoped>
 
 .sacola-page {
-  font-family: "Montserrat", sans-serif;
+  font-family: Poppins, sans-serif;
   background: var(--bg);
   color: #111;
   min-height: 100vh;
@@ -76,7 +77,7 @@ function login() {
 .nav-items {
   display: flex;
   gap: 20px;
-  font-size: 13px;
+  font-size: 25px;
 }
 
 .nav-item {
@@ -133,6 +134,8 @@ main {
   border: none;
   font-weight: 700;
   cursor: pointer;
+  background-color: #000787;
+  width: 200px;
 }
 
 .small {
