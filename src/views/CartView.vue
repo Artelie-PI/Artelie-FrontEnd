@@ -1,151 +1,351 @@
 <script setup>
 import { useRouter } from "vue-router";
+import { useCartStore } from "@/stores/cart";
 
 const router = useRouter();
+const cartStore = useCartStore();
 
 function voltarLoja() {
-  router.push("/"); // rota principal
+  router.push("/");
 }
 
 function login() {
-  router.push("/login"); // rota de login
+  router.push("/login");
+}
+
+function increase(item) {
+  item.quantity++;
+}
+function decrease(item) {
+  if (item.quantity > 1) item.quantity--;
 }
 </script>
+
 <template>
-  <div class="sacola-page">
-    <main>
-      <section class="empty-wrap">
-        <h1 class="title">
-          Bem-Vindo à Sacola
-          <img src="/src/assets/images/Shopping bag.png" alt="">
-        </h1>
+  <div class="cart-page">
+    <!-- Se não tiver produtos -->
+    <section v-if="cartStore.items.length === 0" class="empty-wrap">
+      <h1 class="title">
+        Bem-Vindo à Sacola
+        <img src="/src/assets/images/Shopping bag.png" alt="" />
+      </h1>
 
-        <p class="subtitle">A Sacola está vazia!</p>
-        <img src="/src/assets/images/Empty set.png" alt="">
+      <p class="subtitle">A Sacola está vazia!</p>
+      <img src="/src/assets/images/Empty set.png" alt="" />
 
-        <div class="empty-illustration"></div>
+      <p class="lead">
+        Que tal retornar à nossa página principal e procurar pelos melhores produtos?
+      </p>
+      <p class="lead">
+        Já tem uma conta? <span @click="login" class="login-link">Entrar</span>
+      </p>
 
-        <p class="lead">
-          Que tal retornar a nossa página principal e procurar pelos melhores produtos
-        </p>
+      <button class="btn" @click="voltarLoja">Voltar à Loja</button>
+    </section>
 
-        <button class="btn" @click="voltarLoja">Voltar à Loja</button>
+    <!-- Se tiver produtos -->
+    <section v-else class="cart-content">
+      <!-- Coluna esquerda -->
+      <div class="cart-products">
+        <h1>Bem-Vindo à Sacola 🛍️</h1>
+        <table class="cart-table">
+          <thead>
+            <tr>
+              <th>PRODUTO</th>
+              <th>QUANTIDADE</th>
+              <th>TOTAL</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="item in cartStore.items" :key="item.id">
+              <td class="product-cell">
+                <img :src="item.image" class="product-img" />
+                <div>
+                  <h3>{{ item.name }}</h3>
+                  <p>R$ {{ item.price.toFixed(2) }}</p>
+                </div>
+              </td>
+              <td class="quantity-cell">
+                <button @click="decrease(item)">-</button>
+                <span>{{ item.quantity }}</span>
+                <button @click="increase(item)">+</button>
+                <button class="remove" @click="cartStore.removeFromCart(item.id)">×</button>
+              </td>
+              <td class="total-cell">R$ {{ (item.price * item.quantity).toFixed(2) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-        <div class="small">
-          <div><strong>Tem uma conta?</strong></div>
-          <div>
-            Faça <a href="#" @click.prevent="login">LOGIN</a> para finalizar suas compras
+      <!-- Coluna direita -->
+      <div class="cart-summary">
+        <h2>RESUMO DA COMPRA</h2>
+
+        <div class="summary-field">
+          <label>Cupom de Desconto</label>
+          <div class="input-group">
+            <input type="text" placeholder="Digite o código de desconto" />
+            <button class="apply">Aplicar</button>
           </div>
         </div>
-      </section>
-    </main>
+
+        <div class="summary-field">
+          <label>Frete</label>
+          <div class="input-group">
+            <input type="text" placeholder="Digite o seu CEP" />
+            <button class="apply">Aplicar</button>
+          </div>
+        </div>
+
+        <div class="summary-values">
+          <p>
+            Subtotal - {{ cartStore.items.length }} itens
+            <span>R$ {{ cartStore.totalPrice.toFixed(2) }}</span>
+          </p>
+          <p>Desconto Cupom <span>R$ 0,00</span></p>
+          <p>Desconto Frete <span>R$ 32,00</span></p>
+          <h3>
+            TOTAL
+            <span>R$ {{ cartStore.totalPrice.toFixed(2) }}</span>
+          </h3>
+        </div>
+
+        <button class="checkout">Finalizar Compra</button>
+        <button class="continue" @click="voltarLoja">Continuar Comprando</button>
+      </div>
+    </section>
   </div>
 </template>
 
-
-
 <style scoped>
-
-.sacola-page {
-  font-family: Poppins, sans-serif;
-  background: var(--bg);
+.cart-page {
+  font-family: "Inter", sans-serif;
+  background: #fff;
   color: #111;
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+  padding: 2rem;
 }
 
-.topbar {
-  border-top: 6px solid var(--accent);
-}
-
-.site-header {
-  max-width: var(--max-width);
-  margin: 0 auto;
-  padding: 10px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-}
-
-.logo {
-  font-weight: 700;
-  color: #111;
-}
-
-.nav-items {
-  display: flex;
-  gap: 20px;
-  font-size: 25px;
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-main {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 30px 20px;
-}
-
+/* ----------- SACOLA VAZIA ----------- */
 .empty-wrap {
   text-align: center;
-  max-width: 680px;
+  max-width: 560px;
+  margin: auto;
 }
 
 .title {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   font-weight: 800;
-  font-size: 28px;
+  font-size: 26px;
   margin-bottom: 12px;
+  color: #111;
 }
 
 .subtitle {
   font-weight: 500;
-  color: var(--muted);
-  margin-bottom: 22px;
+  font-size: 18px;
+  margin: 10px 0 20px;
+  color: #333;
 }
 
-.empty-illustration {
-  font-size: 64px;
-  margin: 20px 0;
-  opacity: 0.7;
+.empty-wrap img {
+  max-width: 500px;
+  margin: 20px auto;
+  display: block;
 }
 
 .lead {
   font-size: 15px;
-  margin-bottom: 22px;
+  color: #555;
+  line-height: 1.6;
+  margin: 15px 0 25px;
 }
 
+/* Botão principal */
 .btn {
-  padding: 12px 36px;
-  border-radius: 20px;
-  background: var(--button);
+  padding: 14px 36px;
+  border-radius: 12px;
+  background: #001c80;
   color: #fff;
   border: none;
-  font-weight: 700;
+  font-weight: 600;
+  font-size: 15px;
   cursor: pointer;
-  background-color: #000787;
-  width: 200px;
+  transition: background 0.2s;
+  width: 220px;
+}
+.btn:hover {
+  background: #000f4d;
 }
 
-.small {
-  margin-top: 20px;
-  font-size: 13px;
-  color: var(--muted);
-}
-.small a {
-  color: #111;
+/* Link de login */
+.login-link {
   font-weight: 700;
-  text-decoration: none;
+  color: #001c80;
+  cursor: pointer;
+}
+.login-link:hover {
+  text-decoration: underline;
+}
+
+/* ----------- SACOLA COM PRODUTOS ----------- */
+.cart-content {
+  display: flex;
+  gap: 2rem;
+}
+
+/* Coluna produtos */
+.cart-products {
+  flex: 2;
+}
+
+.cart-products h1 {
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 1rem;
+}
+
+.cart-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.cart-table th {
+  text-align: left;
+  font-weight: 700;
+  border-bottom: 2px solid #ddd;
+  padding: 0.8rem;
+}
+
+.cart-table td {
+  border-bottom: 1px solid #eee;
+  padding: 1rem;
+  vertical-align: middle;
+}
+
+.product-cell {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.product-img {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.quantity-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.quantity-cell button {
+  border: 1px solid #aaa;
+  background: none;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.quantity-cell .remove {
+  color: #d00;
+  font-size: 18px;
+  border: none;
+  background: none;
+}
+
+.total-cell {
+  font-weight: 700;
+}
+
+/* Coluna resumo */
+.cart-summary {
+  flex: 1;
+  padding: 1.5rem;
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.cart-summary h2 {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 1rem;
+}
+
+.summary-field {
+  margin-bottom: 1rem;
+}
+
+.summary-field label {
+  font-size: 14px;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.input-group {
+  display: flex;
+  gap: 8px;
+}
+
+.input-group input {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-bottom: 2px solid #111;
+  outline: none;
+}
+
+.input-group .apply {
+  background: #001c80;
+  color: #fff;
+  border: none;
+  padding: 0 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.summary-values p,
+.summary-values h3 {
+  display: flex;
+  justify-content: space-between;
+  margin: 8px 0;
+}
+
+.summary-values h3 {
+  font-weight: 800;
+  margin-top: 1rem;
+}
+
+.checkout {
+  width: 100%;
+  background: #000;
+  color: #fff;
+  padding: 14px;
+  border: none;
+  margin-top: 1.5rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.continue {
+  width: 100%;
+  background: #fff;
+  color: #001c80;
+  border: 2px solid #001c80;
+  padding: 14px;
+  margin-top: 1rem;
+  font-weight: 600;
+  cursor: pointer;
 }
 </style>
