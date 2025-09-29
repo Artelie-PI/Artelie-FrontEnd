@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 
 export const useCartStore = defineStore("cart", {
   state: () => ({
-    items: [], // produtos no carrinho
+    items: [],
   }),
   getters: {
     totalItems: (state) => state.items.reduce((sum, item) => sum + item.quantity, 0),

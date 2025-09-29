@@ -23,7 +23,6 @@ function decrease(item) {
 
 <template>
   <div class="cart-page">
-    <!-- Se não tiver produtos -->
     <section v-if="cartStore.items.length === 0" class="empty-wrap">
       <h1 class="title">
         Bem-Vindo à Sacola
@@ -43,9 +42,8 @@ function decrease(item) {
       <button class="btn" @click="voltarLoja">Voltar à Loja</button>
     </section>
 
-    <!-- Se tiver produtos -->
+    
     <section v-else class="cart-content">
-      <!-- Coluna esquerda -->
       <div class="cart-products">
         <h1>Bem-Vindo à Sacola 🛍️</h1>
         <table class="cart-table">
@@ -77,7 +75,7 @@ function decrease(item) {
         </table>
       </div>
 
-      <!-- Coluna direita -->
+     
       <div class="cart-summary">
         <h2>RESUMO DA COMPRA</h2>
 
@@ -126,7 +124,6 @@ function decrease(item) {
   padding: 2rem;
 }
 
-/* ----------- SACOLA VAZIA ----------- */
 .empty-wrap {
   text-align: center;
   max-width: 560px;
@@ -164,7 +161,7 @@ function decrease(item) {
   margin: 15px 0 25px;
 }
 
-/* Botão principal */
+
 .btn {
   padding: 14px 36px;
   border-radius: 12px;
@@ -181,7 +178,7 @@ function decrease(item) {
   background: #000f4d;
 }
 
-/* Link de login */
+
 .login-link {
   font-weight: 700;
   color: #001c80;
@@ -191,13 +188,12 @@ function decrease(item) {
   text-decoration: underline;
 }
 
-/* ----------- SACOLA COM PRODUTOS ----------- */
 .cart-content {
   display: flex;
   gap: 2rem;
 }
 
-/* Coluna produtos */
+
 .cart-products {
   flex: 2;
 }
@@ -266,7 +262,6 @@ function decrease(item) {
   font-weight: 700;
 }
 
-/* Coluna resumo */
 .cart-summary {
   flex: 1;
   padding: 1.5rem;
