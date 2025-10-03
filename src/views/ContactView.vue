@@ -11,7 +11,7 @@
             <img :src="insta" alt="Instagram" class="social-icon" />
           </a>
           <a v-if="member.linkedin" :href="member.linkedin" target="_blank" rel="noopener">
-            <img :src="linkedin" alt="LinkedIn" class="social-icon" />
+            <img :src="linkedin" alt="LinkedIn" class="linkedin-icon" />
           </a>
           <a v-if="member.github" :href="member.github" target="_blank" rel="noopener">
             <img :src="github" alt="GitHub" class="social-icon" />
@@ -82,22 +82,22 @@ const team = [
 
 .team-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(13.75rem, 1fr));
   gap: 1rem;
   justify-items: center;
 }
 
 .team-member {
-  max-width: 260px;
+  max-width: 16.25rem;
 }
 
 .avatar {
-  width: 160px;
-  height: 160px;
+  width: 10rem;
+  height: 10rem;
   border-radius: 50%;
   object-fit: cover;
   margin-bottom: 1rem;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 0.25rem 0.75rem rgba(0,0,0,0.1);
   transition: transform 0.3s ease;
 }
 
@@ -120,12 +120,19 @@ const team = [
 .socials {
   display: flex;
   justify-content: center;
-  gap: 12px;
+  gap: 0.75rem;
 }
 
 .social-icon {
-  width: 28px;
-  height: 28px;
+  width: 1.75rem;
+  height: 1.75rem;
+  object-fit: contain;
+  transition: transform 0.2s ease;
+}
+
+.linkedin-icon {
+  width: 2rem;
+  height: 2rem;
   object-fit: contain;
   transition: transform 0.2s ease;
 }
@@ -134,11 +141,10 @@ const team = [
   transform: scale(1.15);
 }
 
-/* --- Responsividade --- */
 @media (max-width: 768px) {
   .avatar {
-    width: 120px;
-    height: 120px;
+    width: 7.5rem;
+    height: 7.5rem;
   }
   .team-member h2 {
     font-size: 1.1rem;
@@ -150,8 +156,8 @@ const team = [
 
 @media (max-width: 480px) {
   .avatar {
-    width: 100px;
-    height: 100px;
+    width: 6.25rem;
+    height: 6.25rem;
   }
   .team-member h2 {
     font-size: 1rem;
