@@ -1,14 +1,22 @@
 <script setup>
 import { ref } from "vue";
 import { useProductStore } from "@/stores/relatedProduct";
+import { useCartStore } from "@/stores/cart"; // <-- novo
 
 const productStore = useProductStore();
-
+const cartStore = useCartStore();
 const rating = ref(0);
 
 function setRating(value) {
   rating.value = value;
 }
+
+const currentProduct = {
+  id: 1,
+  name: "Estojo Lápis de Cor Studio Collection Winsor & Newton 50 Peças",
+  price: 598,
+  image: productStore.selectedImage,
+};
 </script>
 
 <template>
@@ -66,7 +74,12 @@ function setRating(value) {
           </div>
         </div>
 
-        <button class="add-btn">Adicionar a Sacola</button>
+        <button
+        class="add-btn"
+        @click="cartStore.addToCart(currentProduct, productStore.quantity)"
+      >
+        Adicionar a Sacola
+      </button>
       </div>
     </div>
 

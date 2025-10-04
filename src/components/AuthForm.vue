@@ -30,7 +30,6 @@ function onRegister() { emit('do-register') }
           <input id="loginPassword" v-model="props.form.loginPassword" type="password" placeholder="Enter your Password" />
         </div>
       </div>
-
       <button type="submit">Login</button>
       <p class="register">Don't have an account? <a href="#" @click.prevent="onRequestRegister">Register here</a></p>
     </div>
