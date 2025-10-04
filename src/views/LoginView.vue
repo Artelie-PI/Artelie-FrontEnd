@@ -4,15 +4,15 @@ import { useRouter } from 'vue-router'
 import LeftPanel from '@/components/LeftPanel.vue'
 import AuthForm from '@/components/AuthForm.vue'
 import { login, register } from '@/api/auth'
+
 const ANIM_MS = 320
 const mode = ref('login') // 'login' | 'register'
 const isAnimating = ref(false)
 const errorMsg = ref('')
 const successMsg = ref('')
-
 const router = useRouter()
 
-
+// Formulários de login e registro
 const form = reactive({
   // login
   loginUsername: '',
@@ -24,6 +24,8 @@ const form = reactive({
   confirmPassword: '',
   full_name: ''
 })
+
+// animação troca para register
 async function animateToRegister() {
   if (mode.value === 'register' || isAnimating.value) return
   mode.value = 'register'
@@ -32,6 +34,7 @@ async function animateToRegister() {
   setTimeout(() => { isAnimating.value = false }, ANIM_MS)
 }
 
+// animação troca para login
 async function animateToLogin() {
   if (mode.value === 'login' || isAnimating.value) return
   mode.value = 'login'
@@ -42,11 +45,14 @@ async function animateToLogin() {
 
 // Login
 async function handleLogin() {
+  errorMsg.value = ''
+  successMsg.value = ''
   try {
     await login(form.loginUsername, form.loginPassword)
     successMsg.value = 'Login realizado com sucesso!'
     router.push('/')
-  } catch {
+  } catch (err) {
+    console.error(err)
     errorMsg.value = 'Username ou senha inválidos!'
   }
 }
@@ -69,7 +75,8 @@ async function handleRegister() {
     })
     successMsg.value = 'Registro realizado com sucesso! Agora faça login.'
     animateToLogin()
-  } catch {
+  } catch (err) {
+    console.error(err)
     errorMsg.value = 'Erro no registro! Verifique os dados.'
   }
 }
