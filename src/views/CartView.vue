@@ -1,346 +1,331 @@
 <script setup>
+import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useCartStore } from "@/stores/cart";
 
 const router = useRouter();
 const cartStore = useCartStore();
 
+const couponCode = ref("");
+const cep = ref("");
+const discount = ref(0);
+const shipping = ref(0);
+
+const address = ref({
+  logradouro: "",
+  bairro: "",
+  localidade: "",
+  uf: ""
+});
+const addressFetched = ref(false);
+
+// Navegação
 function voltarLoja() {
   router.push("/");
 }
 
-function login() {
-  router.push("/login");
-}
-
+// Controle de quantidade
 function increase(item) {
   item.quantity++;
 }
 function decrease(item) {
   if (item.quantity > 1) item.quantity--;
 }
+
+// Cupom
+function applyCoupon() {
+  if (couponCode.value.trim().toUpperCase() === "GBI15") {
+    discount.value = cartStore.totalPrice * 0.15;
+    alert("Cupom aplicado com sucesso! Desconto de 15%.");
+  } else {
+    discount.value = 0;
+    alert("Cupom inválido.");
+  }
+}
+
+// Frete e endereço
+async function calculateShipping() {
+  const cepNumber = cep.value.replace(/\D/g, "");
+  if (cepNumber.length !== 8) {
+    alert("CEP inválido.");
+    return;
+  }
+
+  try {
+    const response = await fetch(`https://viacep.com.br/ws/${cepNumber}/json/`);
+    const data = await response.json();
+
+    if (data.erro) {
+      alert("CEP não encontrado.");
+      shipping.value = 0;
+      addressFetched.value = false;
+      return;
+    }
+
+    address.value = {
+      logradouro: data.logradouro || "",
+      bairro: data.bairro || "",
+      localidade: data.localidade || "",
+      uf: data.uf || ""
+    };
+    addressFetched.value = true;
+
+    // Verifica se há campos faltando
+    const missingFields = [];
+    if (!address.value.logradouro) missingFields.push("Rua");
+    if (!address.value.bairro) missingFields.push("Bairro");
+    if (!address.value.localidade) missingFields.push("Cidade");
+    if (!address.value.uf) missingFields.push("Estado");
+
+    if (missingFields.length > 0) {
+      alert(
+        `O CEP não retornou todas as informações. Por favor, preencha manualmente: ${missingFields.join(
+          ", "
+        )}.`
+      );
+    }
+
+    // Frete
+    shipping.value = data.uf === "SC" ? 0 : 32;
+  } catch {
+    alert("Erro ao buscar informações do CEP.");
+  }
+}
+
+const totalWithDiscountAndShipping = computed(() => {
+  return cartStore.totalPrice - discount.value + shipping.value;
+});
 </script>
 
 <template>
-  <div class="cart-page">
-    <section v-if="cartStore.items.length === 0" class="empty-wrap">
-      <h1 class="title">
-        Bem-Vindo à Sacola
-        <img src="/src/assets/images/Shopping bag.png" alt="" />
-      </h1>
+  <div class="cart-container">
+    <h1 class="title">BEM-VINDO À SACOLA <img src="@/assets/images/Shopping bag.png" alt=""></h1>
 
-      <p class="subtitle">A Sacola está vazia!</p>
-      <img src="/src/assets/images/Empty set.png" alt="" />
+    <div class="cart-content">
+      <!-- Lista de produtos -->
+      <table class="cart-table">
+        <thead>
+          <tr>
+            <th>PRODUTO</th>
+            <th>QUANTIDADE</th>
+            <th>TOTAL</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="item in cartStore.items" :key="item.id">
+            <td class="product-info">
+              <img :src="item.image" alt="Produto" />
+              <div>
+                <p class="product-name">{{ item.name }}</p>
+                <p class="product-price">R$ {{ item.price.toFixed(2) }}</p>
+              </div>
+            </td>
+            <td class="quantity-control">
+              <button @click="decrease(item)">−</button>
+              <span>{{ item.quantity }}</span>
+              <button @click="increase(item)">+</button>
+            </td>
+            <td class="product-total">R$ {{ (item.price * item.quantity).toFixed(2) }}</td>
+          </tr>
+        </tbody>
+      </table>
 
-      <p class="lead">
-        Que tal retornar à nossa página principal e procurar pelos melhores produtos?
-      </p>
-      <p class="lead">
-        Já tem uma conta? <span @click="login" class="login-link">Entrar</span>
-      </p>
-
-      <button class="btn" @click="voltarLoja">Voltar à Loja</button>
-    </section>
-
-    
-    <section v-else class="cart-content">
-      <div class="cart-products">
-        <h1>Bem-Vindo à Sacola 🛍️</h1>
-        <table class="cart-table">
-          <thead>
-            <tr>
-              <th>PRODUTO</th>
-              <th>QUANTIDADE</th>
-              <th>TOTAL</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="item in cartStore.items" :key="item.id">
-              <td class="product-cell">
-                <img :src="item.image" class="product-img" />
-                <div>
-                  <h3>{{ item.name }}</h3>
-                  <p>R$ {{ item.price.toFixed(2) }}</p>
-                </div>
-              </td>
-              <td class="quantity-cell">
-                <button @click="decrease(item)">-</button>
-                <span>{{ item.quantity }}</span>
-                <button @click="increase(item)">+</button>
-                <button class="remove" @click="cartStore.removeFromCart(item.id)">×</button>
-              </td>
-              <td class="total-cell">R$ {{ (item.price * item.quantity).toFixed(2) }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-     
-      <div class="cart-summary">
+      <!-- Resumo -->
+      <aside class="summary">
         <h2>RESUMO DA COMPRA</h2>
 
-        <div class="summary-field">
-          <label>Cupom de Desconto</label>
-          <div class="input-group">
-            <input type="text" placeholder="Digite o código de desconto" />
-            <button class="apply">Aplicar</button>
+        <!-- Cupom -->
+        <div class="summary-section">
+          <label>Cupon de Desconto</label>
+          <div class="input-row">
+            <input v-model="couponCode" type="text" placeholder="Digite o código de desconto" />
+            <button @click="applyCoupon">APLICAR</button>
           </div>
         </div>
 
-        <div class="summary-field">
+        <!-- Frete -->
+        <div class="summary-section">
           <label>Frete</label>
-          <div class="input-group">
-            <input type="text" placeholder="Digite o seu CEP" />
-            <button class="apply">Aplicar</button>
+          <div class="input-row">
+            <input v-model="cep" type="text" placeholder="Digite o seu CEP" />
+            <button @click="calculateShipping">APLICAR</button>
+          </div>
+
+          <!-- Dados do endereço -->
+          <div v-if="addressFetched" class="address-info">
+            <p><strong>Rua:</strong> 
+              <span v-if="address.logradouro">{{ address.logradouro }}</span>
+              <input v-else v-model="address.logradouro" placeholder="Informe sua rua" />
+            </p>
+            <p><strong>Bairro:</strong> 
+              <span v-if="address.bairro">{{ address.bairro }}</span>
+              <input v-else v-model="address.bairro" placeholder="Informe seu bairro" />
+            </p>
+            <p><strong>Cidade:</strong> 
+              <span v-if="address.localidade">{{ address.localidade }}</span>
+              <input v-else v-model="address.localidade" placeholder="Informe sua cidade" />
+            </p>
+            <p><strong>Estado:</strong> 
+              <span v-if="address.uf">{{ address.uf }}</span>
+              <input v-else v-model="address.uf" placeholder="Informe seu estado" />
+            </p>
           </div>
         </div>
 
-        <div class="summary-values">
-          <p>
-            Subtotal - {{ cartStore.items.length }} itens
-            <span>R$ {{ cartStore.totalPrice.toFixed(2) }}</span>
-          </p>
-          <p>Desconto Cupom <span>R$ 0,00</span></p>
-          <p>Desconto Frete <span>R$ 32,00</span></p>
-          <h3>
-            TOTAL
-            <span>R$ {{ cartStore.totalPrice.toFixed(2) }}</span>
-          </h3>
+        <!-- Totais -->
+        <div class="summary-totals">
+          <p>Subtotal - {{ cartStore.items.length }} itens <span>R$ {{ cartStore.totalPrice.toFixed(2) }}</span></p>
+          <p>Desconto Cupom <span>- R$ {{ discount.toFixed(2) }}</span></p>
+          <p>Frete <span>R$ {{ shipping.toFixed(2) }}</span></p>
+          <hr />
+          <p class="total">TOTAL <span>R$ {{ totalWithDiscountAndShipping.toFixed(2) }}</span></p>
         </div>
 
-        <button class="checkout">Finalizar Compra</button>
-        <button class="continue" @click="voltarLoja">Continuar Comprando</button>
-      </div>
-    </section>
+        <button class="btn-finalizar">FINALIZAR COMPRA</button>
+        <button class="btn-continuar" @click="voltarLoja">CONTINUAR COMPRANDO</button>
+      </aside>
+    </div>
   </div>
 </template>
 
 <style scoped>
-.cart-page {
-  font-family: "Inter", sans-serif;
-  background: #fff;
-  color: #111;
-  min-height: 100vh;
-  padding: 2rem;
-}
-
-.empty-wrap {
-  text-align: center;
-  max-width: 560px;
-  margin: auto;
-}
-
-.title {
+/* mesmo CSS da versão anterior */
+.cart-container {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  font-family: "Inter", sans-serif;;
   align-items: center;
-  gap: 10px;
-  font-weight: 800;
-  font-size: 26px;
-  margin-bottom: 12px;
-  color: #111;
+  margin: 2rem;
 }
-
-.subtitle {
-  font-weight: 500;
-  font-size: 18px;
-  margin: 10px 0 20px;
-  color: #333;
+.title {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  text-align: left;
+  width: 100%;
 }
-
-.empty-wrap img {
-  max-width: 500px;
-  margin: 20px auto;
-  display: block;
+.title > img {
+  width: 40px;
+  height: 40px;
+  margin-left: 0.5rem;
 }
-
-.lead {
-  font-size: 15px;
-  color: #555;
-  line-height: 1.6;
-  margin: 15px 0 25px;
-}
-
-
-.btn {
-  padding: 14px 36px;
-  border-radius: 12px;
-  background: #001c80;
-  color: #fff;
-  border: none;
-  font-weight: 600;
-  font-size: 15px;
-  cursor: pointer;
-  transition: background 0.2s;
-  width: 220px;
-}
-.btn:hover {
-  background: #000f4d;
-}
-
-
-.login-link {
-  font-weight: 700;
-  color: #001c80;
-  cursor: pointer;
-}
-.login-link:hover {
-  text-decoration: underline;
-}
-
 .cart-content {
   display: flex;
+  justify-content: space-between;
+  width: 100%;
   gap: 2rem;
 }
-
-
-.cart-products {
-  flex: 2;
-}
-
-.cart-products h1 {
-  font-size: 28px;
-  font-weight: 800;
-  margin-bottom: 1rem;
-}
-
 .cart-table {
-  width: 100%;
+  width: 70%;
   border-collapse: collapse;
 }
-
 .cart-table th {
   text-align: left;
-  font-weight: 700;
-  border-bottom: 2px solid #ddd;
-  padding: 0.8rem;
+  font-weight: bold;
+  border-bottom: 2px solid #000;
+  padding: 0.8rem 0;
 }
-
 .cart-table td {
-  border-bottom: 1px solid #eee;
-  padding: 1rem;
-  vertical-align: middle;
+  padding: 1rem 0;
+  border-bottom: 1px solid #ddd;
 }
-
-.product-cell {
+.product-info {
   display: flex;
   align-items: center;
   gap: 1rem;
 }
-
-.product-img {
+.product-info img {
   width: 100px;
-  height: 100px;
-  object-fit: cover;
-  border: 1px solid #ddd;
-  border-radius: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
-
-.quantity-cell {
+.quantity-control {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
 }
-
-.quantity-cell button {
-  border: 1px solid #aaa;
+.quantity-control button {
+  border: 1px solid #ccc;
   background: none;
-  width: 30px;
-  height: 30px;
+  width: 25px;
+  height: 25px;
   cursor: pointer;
   font-weight: bold;
 }
-
-.quantity-cell .remove {
-  color: #d00;
-  font-size: 18px;
-  border: none;
-  background: none;
-}
-
-.total-cell {
-  font-weight: 700;
-}
-
-.cart-summary {
-  flex: 1;
+.summary {
+  width: 30%;
+  border: 1px solid #e5e5e5;
   padding: 1.5rem;
-  background: #f9f9f9;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-}
-
-.cart-summary h2 {
-  font-size: 20px;
-  font-weight: 800;
-  margin-bottom: 1rem;
-}
-
-.summary-field {
-  margin-bottom: 1rem;
-}
-
-.summary-field label {
-  font-size: 14px;
-  font-weight: 600;
-  display: block;
-  margin-bottom: 0.5rem;
-}
-
-.input-group {
+  background-color: #fff;
   display: flex;
-  gap: 8px;
+  flex-direction: column;
+  gap: 1rem;
 }
-
-.input-group input {
+.input-row {
+  display: flex;
+  margin-top: 0.4rem;
+}
+.input-row input {
   flex: 1;
-  padding: 10px;
+  padding: 0.5rem;
   border: none;
-  border-bottom: 2px solid #111;
-  outline: none;
+  border-bottom: 1px solid #000;
+  font-size: 0.9rem;
 }
-
-.input-group .apply {
-  background: #001c80;
-  color: #fff;
+.input-row button {
+  background: #0a0a0a;
+  color: white;
   border: none;
-  padding: 0 14px;
-  font-weight: 600;
+  padding: 0.4rem 0.8rem;
   cursor: pointer;
-  border-radius: 4px;
+  font-size: 0.8rem;
+  margin-left: 0.4rem;
 }
-
-.summary-values p,
-.summary-values h3 {
+.address-info {
+  margin-top: 1rem;
+  background: #f8f8f8;
+  padding: 0.8rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+.address-info p {
+  margin: 0.3rem 0;
+}
+.address-info input {
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid #aaa;
+  background: transparent;
+  font-size: 0.9rem;
+}
+.summary-totals {
+  font-size: 0.9rem;
+  color: #333;
+}
+.summary-totals p {
   display: flex;
   justify-content: space-between;
-  margin: 8px 0;
+  margin: 0.3rem 0;
 }
-
-.summary-values h3 {
-  font-weight: 800;
-  margin-top: 1rem;
+.summary-totals .total {
+  font-weight: bold;
+  margin-top: 0.6rem;
 }
-
-.checkout {
-  width: 100%;
+.btn-finalizar {
   background: #000;
-  color: #fff;
-  padding: 14px;
+  color: white;
+  padding: 0.8rem;
   border: none;
-  margin-top: 1.5rem;
-  font-weight: 600;
+  font-weight: bold;
   cursor: pointer;
-}
-
-.continue {
-  width: 100%;
-  background: #fff;
-  color: #001c80;
-  border: 2px solid #001c80;
-  padding: 14px;
   margin-top: 1rem;
-  font-weight: 600;
+}
+.btn-continuar {
+  background: white;
+  color: #000;
+  padding: 0.7rem;
+  border: 1px solid #000;
   cursor: pointer;
+  font-weight: bold;
 }
 </style>
