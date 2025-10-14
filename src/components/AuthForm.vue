@@ -58,7 +58,7 @@ function onRegister() { emit('do-register') }
       </div>
 
       <div class="input-group">
-        <label for="password">Password</label>
+        <label for="password">Password (min. 6 caracteres)</label>
         <div class="inputWrapper">
           <input id="password" v-model="props.form.password" type="password" placeholder="Your Password" />
         </div>

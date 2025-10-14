@@ -4,15 +4,15 @@ import { useRouter } from 'vue-router'
 import LeftPanel from '@/components/LeftPanel.vue'
 import AuthForm from '@/components/AuthForm.vue'
 import { login, register } from '@/api/auth'
+
 const ANIM_MS = 320
 const mode = ref('login') // 'login' | 'register'
 const isAnimating = ref(false)
 const errorMsg = ref('')
 const successMsg = ref('')
-
 const router = useRouter()
 
-
+// Formulários de login e registro
 const form = reactive({
   // login
   loginUsername: '',
@@ -24,6 +24,8 @@ const form = reactive({
   confirmPassword: '',
   full_name: ''
 })
+
+// animação troca para register
 async function animateToRegister() {
   if (mode.value === 'register' || isAnimating.value) return
   mode.value = 'register'
@@ -32,6 +34,7 @@ async function animateToRegister() {
   setTimeout(() => { isAnimating.value = false }, ANIM_MS)
 }
 
+// animação troca para login
 async function animateToLogin() {
   if (mode.value === 'login' || isAnimating.value) return
   mode.value = 'login'
@@ -42,11 +45,14 @@ async function animateToLogin() {
 
 // Login
 async function handleLogin() {
+  errorMsg.value = ''
+  successMsg.value = ''
   try {
     await login(form.loginUsername, form.loginPassword)
     successMsg.value = 'Login realizado com sucesso!'
     router.push('/')
-  } catch {
+  } catch (err) {
+    console.error(err)
     errorMsg.value = 'Username ou senha inválidos!'
   }
 }
@@ -55,8 +61,29 @@ async function handleLogin() {
 async function handleRegister() {
   errorMsg.value = ''
   successMsg.value = ''
+
+  // Checagem de campos obrigatórios
+  if (!form.username || !form.email || !form.password || !form.confirmPassword || !form.full_name) {
+    errorMsg.value = 'Preencha todos os campos!'
+    return
+  }
+
+  // Checagem de tamanho da senha
+  if (form.password.length < 6) {
+    errorMsg.value = 'A senha deve ter no mínimo 6 caracteres!'
+    return
+  }
+
+  // Checagem de confirmação de senha
   if (form.password !== form.confirmPassword) {
     errorMsg.value = 'As senhas não conferem!'
+    return
+  }
+
+  // Checagem de formato de email simples
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!emailRegex.test(form.email)) {
+    errorMsg.value = 'Email inválido!'
     return
   }
 
@@ -69,8 +96,27 @@ async function handleRegister() {
     })
     successMsg.value = 'Registro realizado com sucesso! Agora faça login.'
     animateToLogin()
-  } catch {
-    errorMsg.value = 'Erro no registro! Verifique os dados.'
+  } catch (err) {
+    console.error(err)
+    // Checa se o erro é de usuário ou email já existente
+    if (err?.response?.data?.detail) {
+      if (
+        typeof err.response.data.detail === 'string' &&
+        (
+          err.response.data.detail.includes('username') ||
+          err.response.data.detail.includes('email') ||
+          err.response.data.detail.includes('already exists')
+        )
+      ) {
+        errorMsg.value = 'Usuário ou email já cadastrado!'
+      } else {
+        errorMsg.value = err.response.data.detail
+      }
+    } else if (err?.response?.data?.message) {
+      errorMsg.value = err.response.data.message
+    } else {
+      errorMsg.value = 'Erro no registro! Verifique os dados.'
+    }
   }
 }
 </script>
