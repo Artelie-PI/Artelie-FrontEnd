@@ -32,9 +32,9 @@ function handleLogout() {
 
         <!-- Menu de páginas -->
         <nav class="pages slide-item" style="transition-delay: 0.1s;">
-          <RouterLink to="/">Home</RouterLink>
-          <RouterLink to="/contact">Contato</RouterLink>
-          <RouterLink to="/brands">Marcas</RouterLink>
+          <RouterLink to="/">HOME</RouterLink>
+          <RouterLink to="/contact">CONTATO</RouterLink>
+          <RouterLink to="/brands">MARCAS</RouterLink>
         </nav>
 
         <!-- Perfil / Login + Carrinho -->
@@ -59,22 +59,22 @@ function handleLogout() {
       <nav class="category-icons">
         <RouterLink :to="{ name: 'category', params: { slug: 'papeis' } }" title="Papéis">
           <img src="@/assets/images/Papel.svg" alt="Papéis" />
-          <span>Papéis</span>
+          <span>PAPÉIS</span>
         </RouterLink>
 
         <RouterLink :to="{ name: 'category', params: { slug: 'pintura' } }" title="Pintura">
           <img src="@/assets/images/Tinta.svg" alt="Pintura" />
-          <span>Pintura</span>
+          <span>PINTURA</span>
         </RouterLink>
 
         <RouterLink :to="{ name: 'category', params: { slug: 'lapis-canetas' } }" title="Lápis & Canetas">
           <img src="@/assets/images/Lápis.svg" alt="Lápis & Canetas" />
-          <span>Lápis & Canetas</span>
+          <span>LÁPIS & CANETAS</span>
         </RouterLink>
 
         <RouterLink :to="{ name: 'category', params: { slug: 'livros-gibis' } }" title="Livros & Gibis">
           <img src="@/assets/images/Book.svg" alt="Livros & Gibis" />
-          <span>Livros & Gibis</span>
+          <span>LIVROS & GIBIS</span>
         </RouterLink>
       </nav>
     </header>
@@ -82,7 +82,6 @@ function handleLogout() {
 </template>
 
 <style scoped>
-/* Animação de entrada */
 .slide-down-enter-from { opacity: 0; transform: translateY(-60px); }
 .slide-down-enter-active { transition: all 0.7s cubic-bezier(.68,-0.55,.27,1.55); }
 .slide-down-enter-to { opacity: 1; transform: translateY(0); }
@@ -122,11 +121,12 @@ header {
   text-decoration: none;
   font-family: 'Poppins', sans-serif;
   color: #333;
-  font-size: 1.6rem;
+  font-size: 1.3rem;
+  font-weight: 600;
   transition: border-bottom 0.3s, font-size 0.3s;
   border-bottom: 2px solid transparent;
 }
-.pages a:hover { border-bottom: 2px solid #333; font-size: 1.8rem; }
+.pages a:hover { font-size: 1.5rem; }
 
 /* Login + carrinho */
 .perfilShop {
@@ -150,17 +150,19 @@ header {
 .category-icons {
   display: flex;
   justify-content: center;
-  gap: 3rem;
+  gap: 5rem;
   border-top: 1px solid #ddd;
-  padding: .8rem 0;
+  padding: 0.8rem 0;
 }
 .category-icons a {
   display: flex;
-  flex-direction: column;
+  gap: .6rem;
   align-items: center;
   font-size: .9rem;
+  font-weight: 600;
   color: #333;
   text-decoration: none;
+  transition: transform .16s, opacity .16s;
 }
 .category-icons a img {
   width: 2.4rem;
@@ -169,5 +171,5 @@ header {
   opacity: .9;
   transition: transform .16s, opacity .16s;
 }
-.category-icons a:hover img { transform: translateY(-3px) scale(1.05); opacity: 1; }
+.category-icons a:hover { transform: translateY(-3px) scale(1.05); opacity: 1; }
 </style>
