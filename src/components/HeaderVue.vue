@@ -2,7 +2,10 @@
 import { ref, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import { useThemeStore } from '@/stores/themeButton'
 
+
+const themeStore = useThemeStore()
 const showHeader = ref(false)
 const showDrawer = ref(false) // Estado do menu lateral
 
@@ -30,6 +33,9 @@ function handleLogout() {
             <img class="logoImg" src="@/assets/images/ArtelieLogo.png" alt="Artelie Logo" />
           </RouterLink>
         </div>
+  <button @click="themeStore.toggleTheme" class="theme-toggle">
+    Mudar tema
+  </button>
 
         <!-- Botão do menu lateral (mobile) -->
         <button class="menu-btn" @click="showDrawer = true">
@@ -268,14 +274,15 @@ header {
   height: 2.6rem;
 }
 .close-btn {
-  position: absolute;
+  position: absolute; /* Adicionado para garantir posicionamento */
   top: 1rem;
-  right: 1.2rem;
+  right: 1.0rem;
   background: transparent;
   border: none;
   font-size: 2.2rem;
   cursor: pointer;
   color: #333;
+  z-index: 1002; /* Garante que fique acima dos outros elementos */
 }
 
 /* Animação do drawer */
@@ -291,7 +298,7 @@ header {
   .pages,
   .perfilShop,
   .slide-item {
-    display: none !important;
+    display: none;
   }
   .menu-btn {
     display: flex;
@@ -299,5 +306,21 @@ header {
   .drawer {
     display: flex;
   }
+    .close-btn {
+    font-size: 2.8rem;
+    top: 0.7rem;
+    right: 0.7rem;
+    color: #222;
+  }
 }
+.theme-toggle {
+  margin-left: 20px;
+  padding: 8px 16px;
+  background: #444;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
 </style>
