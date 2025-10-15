@@ -35,7 +35,7 @@ const whatsapp =
         </div>
       </div>
       <div class="footer-column">
-        <h4>CATEGORIAS</h4>
+        <p class="footer-title">CATEGORIAS</p>
         <ul>
           <li><RouterLink to="/category/papeis">Papéis</RouterLink></li>
               <li><RouterLink to="/category/pintura">Pintura</RouterLink></li>
@@ -47,7 +47,7 @@ const whatsapp =
 
       <!-- Coluna 3 -->
       <div class="footer-column">
-        <h4>PRODUÇÃO DO SITE</h4>
+        <p class="footer-title">PRODUÇÃO DO SITE</p>
         <ul>
           <li>
             <a href="https://github.com/gabrielmartinsgomes" target="_blank">Gabriel Martins</a>
@@ -62,7 +62,7 @@ const whatsapp =
 
       <!-- Coluna 4 -->
       <div class="footer-column">
-        <h4>FORMAS DE PAGAMENTO</h4>
+        <p class="footer-title">FORMAS DE PAGAMENTO</p>
         <div class="payment-methods">
           <img src="https://img.icons8.com/color/48/mastercard-logo.png" alt="Mastercard" />
           <img
@@ -84,7 +84,7 @@ const whatsapp =
     <!-- Rodapé Inferior -->
     <div class="bottom-footer">
       <span>© 2025 – ArteliêOnline. Todos os direitos reservados.</span>
-      <button class="back-to-top" @click="scrollToTop">⬆ Retornar</button>
+      <button class="back-to-top" @click="scrollToTop">Voltar</button>
     </div>
   </footer>
 </template>
@@ -102,6 +102,13 @@ const whatsapp =
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 40px; /* espaçamento entre colunas */
+}
+
+.footer-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1vh;
+
 }
 
 .footer-column {
@@ -191,7 +198,7 @@ const whatsapp =
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 14px;
+  font-size: 1.2rem;
 }
 
 .back-to-top {
@@ -199,13 +206,14 @@ const whatsapp =
   border: none;
   color: white;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 1.2rem;
+  font-weight: 700;
   display: flex;
   align-items: center;
   gap: 5px;
   transition: color 0.2s;
 }
 .back-to-top:hover {
-  color: #ffcc00;
+  color: #dddddd;
 }
 </style>
