@@ -79,7 +79,7 @@ onMounted(() => {
       <div class="carousel-track" :class="{ transitioning: isTransitioning }" @transitionend="handleTransitionEnd"
            :style="{ transform: `translateX(-${currentIndex * (100 / visibleItems)}%)` }">
         <div class="carousel-item" v-for="(product, i) in displayedProducts" :key="i">
-          <img :src="product.image" :alt="product.name" />
+          <img :src="product.image" :alt="product.name" @click="goToProduct" />
           <p class="name">{{ product.name }}</p>
           <p class="price">{{ product.price }}</p>
           <p class="installment">Até 4x de R$ 58,24 sem juros</p>
@@ -122,6 +122,11 @@ onMounted(() => {
   box-sizing: border-box;
   cursor: pointer;
 }
+.carousel-item:hover {
+  box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+  transform: scale(1.05);
+  transition: transform 0.3s;
+}
 
 .carousel-item img {
   width: 100%;
@@ -130,6 +135,7 @@ onMounted(() => {
   border-radius: 8px;
   margin-bottom: 12px;
 }
+
 
 .name {
   font-weight: 600;
