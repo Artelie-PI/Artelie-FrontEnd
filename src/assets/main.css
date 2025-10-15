@@ -2,13 +2,12 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Poppins', sans-serif;
+  font-family: "Inter", sans-serif;
 }
 body.dark-theme {
   background-color: #222 !important;
   color: #eee !important;
 }
-
 body.dark-theme .footer,
 body.dark-theme header,
 body.dark-theme .drawer,
@@ -18,3 +17,4 @@ body.dark-theme .hello {
   background-color: #222 !important;
   color: #eee !important;
 }
+
