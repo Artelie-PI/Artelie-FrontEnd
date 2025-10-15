@@ -1,10 +1,11 @@
-<!-- src/components/HeaderVue.vue -->
 <script setup>
 import { ref, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 
 const showHeader = ref(false)
+const showDrawer = ref(false) // Estado do menu lateral
+
 onMounted(() => {
   setTimeout(() => {
     showHeader.value = true
@@ -30,14 +31,21 @@ function handleLogout() {
           </RouterLink>
         </div>
 
-        <!-- Menu de páginas -->
+        <!-- Botão do menu lateral (mobile) -->
+        <button class="menu-btn" @click="showDrawer = true">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+        <!-- Menu de páginas (desktop) -->
         <nav class="pages slide-item" style="transition-delay: 0.1s;">
           <RouterLink to="/">HOME</RouterLink>
           <RouterLink to="/contact">CONTATO</RouterLink>
           <RouterLink to="/brands">MARCAS</RouterLink>
         </nav>
 
-        <!-- Perfil / Login + Carrinho -->
+        <!-- Perfil / Login + Carrinho (desktop) -->
         <div class="perfilShop slide-item" style="transition-delay: 0.2s;">
           <template v-if="userStore.isAuthenticated">
             <span class="hello">Olá, <strong>{{ userStore.displayName }}</strong></span>
@@ -48,12 +56,37 @@ function handleLogout() {
               <img src="@/assets/images/Login.png" alt="login" />
             </RouterLink>
           </template>
-
           <RouterLink to="/shop">
             <img src="@/assets/images/Cart.png" alt="cart" />
           </RouterLink>
         </div>
       </div>
+
+      <!-- Menu lateral (drawer) para mobile -->
+      <transition name="drawer">
+        <aside v-if="showDrawer" class="drawer">
+          <button class="close-btn" @click="showDrawer = false">&times;</button>
+          <nav class="drawer-pages">
+            <RouterLink to="/" @click="showDrawer = false">Home</RouterLink>
+            <RouterLink to="/contact" @click="showDrawer = false">Contato</RouterLink>
+            <RouterLink to="/brands" @click="showDrawer = false">Marcas</RouterLink>
+          </nav>
+          <div class="drawer-perfilShop">
+            <template v-if="userStore.isAuthenticated">
+              <span class="hello">Olá, <strong>{{ userStore.displayName }}</strong></span>
+              <button class="logoutBtn" @click="handleLogout">Sair</button>
+            </template>
+            <template v-else>
+              <RouterLink to="/login" @click="showDrawer = false">
+                <img src="@/assets/images/Login.png" alt="login" />
+              </RouterLink>
+            </template>
+            <RouterLink to="/shop" @click="showDrawer = false">
+              <img src="@/assets/images/Cart.png" alt="cart" />
+            </RouterLink>
+          </div>
+        </aside>
+      </transition>
 
       <!-- Barra de categorias -->
       <nav class="category-icons">
@@ -61,17 +94,14 @@ function handleLogout() {
           <img src="@/assets/images/Papel.svg" alt="Papéis" />
           <span>PAPÉIS</span>
         </RouterLink>
-
         <RouterLink :to="{ name: 'category', params: { slug: 'pintura' } }" title="Pintura">
           <img src="@/assets/images/Tinta.svg" alt="Pintura" />
           <span>PINTURA</span>
         </RouterLink>
-
         <RouterLink :to="{ name: 'category', params: { slug: 'lapis-canetas' } }" title="Lápis & Canetas">
           <img src="@/assets/images/Lápis.svg" alt="Lápis & Canetas" />
           <span>LÁPIS & CANETAS</span>
         </RouterLink>
-
         <RouterLink :to="{ name: 'category', params: { slug: 'livros-gibis' } }" title="Livros & Gibis">
           <img src="@/assets/images/Book.svg" alt="Livros & Gibis" />
           <span>LIVROS & GIBIS</span>
@@ -171,5 +201,103 @@ header {
   opacity: .9;
   transition: transform .16s, opacity .16s;
 }
-.category-icons a:hover { transform: translateY(-3px) scale(1.05); opacity: 1; }
+.category-icons a:hover img { transform: translateY(-3px) scale(1.05); opacity: 1; }
+
+/* Botão do menu lateral (hambúrguer) */
+.menu-btn {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  z-index: 1002;
+}
+.menu-btn span {
+  display: block;
+  height: 4px;
+  width: 100%;
+  background: #333;
+  border-radius: 2px;
+  transition: 0.3s;
+}
+
+/* Drawer lateral */
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 75vw;
+  max-width: 320px;
+  height: 100vh;
+  background: #fff;
+  box-shadow: -2px 0 8px rgba(0,0,0,0.13);
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  padding: 2rem 1.5rem;
+  animation: drawerIn 0.3s;
+}
+@keyframes drawerIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+.drawer-pages {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+.drawer-pages a {
+  font-size: 1.5rem;
+  color: #333;
+  text-decoration: none;
+  font-family: 'Poppins', sans-serif;
+}
+.drawer-perfilShop {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  align-items: flex-start;
+}
+.drawer-perfilShop img {
+  width: 2.6rem;
+  height: 2.6rem;
+}
+.close-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1.2rem;
+  background: transparent;
+  border: none;
+  font-size: 2.2rem;
+  cursor: pointer;
+  color: #333;
+}
+
+/* Animação do drawer */
+.drawer-enter-active, .drawer-leave-active {
+  transition: opacity 0.2s;
+}
+.drawer-enter-from, .drawer-leave-to {
+  opacity: 0;
+}
+
+/* Responsividade */
+@media (max-width: 728px) {
+  .pages,
+  .perfilShop,
+  .slide-item {
+    display: none !important;
+  }
+  .menu-btn {
+    display: flex;
+  }
+  .drawer {
+    display: flex;
+  }
+}
 </style>
