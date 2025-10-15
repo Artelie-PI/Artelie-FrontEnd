@@ -37,7 +37,24 @@ function applyCoupon() {
   if (couponCode.value.trim().toUpperCase() === "GBI15") {
     discount.value = cartStore.totalPrice * 0.15;
     alert("Cupom aplicado com sucesso! Desconto de 15%.");
-  } else {
+  }
+  else if (couponCode.value.trim().toUpperCase() === "CAGE777") {
+    discount.value = cartStore.totalPrice * 0.90;
+    alert("Cupom aplicado com sucesso! Desconto de 90%.");
+  }
+  else if (couponCode.value.trim().toUpperCase() === "MURILO10") {
+    discount.value = cartStore.totalPrice * 0.10;
+    alert("Cupom aplicado com sucesso! Desconto de 10%.");
+  }
+  else if (couponCode.value.trim().toUpperCase() === "FRETEGRATIS"  ) {
+    discount.value = shipping.value;
+    alert("Cupom aplicado com sucesso! Frete grátis.");
+  }
+  else if (couponCode.value.trim() === "") {
+    discount.value = 0;
+    alert("Por favor, insira um código de cupom.");
+  }
+   else {
     discount.value = 0;
     alert("Cupom inválido.");
   }

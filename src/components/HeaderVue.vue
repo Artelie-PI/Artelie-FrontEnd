@@ -2,10 +2,6 @@
 import { ref, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import { useThemeStore } from '@/stores/themeButton'
-
-
-const themeStore = useThemeStore()
 const showHeader = ref(false)
 const showDrawer = ref(false) // Estado do menu lateral
 
@@ -33,9 +29,6 @@ function handleLogout() {
             <img class="logoImg" src="@/assets/images/ArtelieLogo.png" alt="Artelie Logo" />
           </RouterLink>
         </div>
-  <button @click="themeStore.toggleTheme" class="theme-toggle">
-    Mudar tema
-  </button>
 
         <!-- Botão do menu lateral (mobile) -->
         <button class="menu-btn" @click="showDrawer = true">
@@ -313,14 +306,4 @@ header {
     color: #222;
   }
 }
-.theme-toggle {
-  margin-left: 20px;
-  padding: 8px 16px;
-  background: #444;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
 </style>
