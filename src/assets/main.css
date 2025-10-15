@@ -4,3 +4,17 @@
   box-sizing: border-box;
   font-family: 'Poppins', sans-serif;
 }
+body.dark-theme {
+  background-color: #222 !important;
+  color: #eee !important;
+}
+
+body.dark-theme .footer,
+body.dark-theme header,
+body.dark-theme .drawer,
+body.dark-theme .pages a,
+body.dark-theme .category-icons a,
+body.dark-theme .hello {
+  background-color: #222 !important;
+  color: #eee !important;
+}
