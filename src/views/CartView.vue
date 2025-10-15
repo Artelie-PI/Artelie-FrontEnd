@@ -15,7 +15,7 @@ const address = ref({
   logradouro: "",
   bairro: "",
   localidade: "",
-  uf: ""
+  uf: "",
 });
 const addressFetched = ref(false);
 
@@ -66,7 +66,7 @@ async function calculateShipping() {
       logradouro: data.logradouro || "",
       bairro: data.bairro || "",
       localidade: data.localidade || "",
-      uf: data.uf || ""
+      uf: data.uf || "",
     };
     addressFetched.value = true;
 
@@ -98,102 +98,198 @@ const totalWithDiscountAndShipping = computed(() => {
 </script>
 
 <template>
-  <div class="cart-container">
-    <h1 class="title">BEM-VINDO À SACOLA <img src="@/assets/images/Shopping bag.png" alt=""></h1>
+  <div class="cart-page">
+    <!-- Estado: sacola vazia -->
+    <section v-if="cartStore.items.length === 0" class="empty-wrap">
+      <h1 class="title">
+        BEM-VINDO À SACOLA <img src="/src/assets/images/Shopping bag.png" alt="sacola" />
+      </h1>
 
-    <div class="cart-content">
-      <!-- Lista de produtos -->
-      <table class="cart-table">
-        <thead>
-          <tr>
-            <th>PRODUTO</th>
-            <th>QUANTIDADE</th>
-            <th>TOTAL</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="item in cartStore.items" :key="item.id">
-            <td class="product-info">
-              <img :src="item.image" alt="Produto" />
-              <div>
-                <p class="product-name">{{ item.name }}</p>
-                <p class="product-price">R$ {{ item.price.toFixed(2) }}</p>
-              </div>
-            </td>
-            <td class="quantity-control">
-              <button @click="decrease(item)">−</button>
-              <span>{{ item.quantity }}</span>
-              <button @click="increase(item)">+</button>
-            </td>
-            <td class="product-total">R$ {{ (item.price * item.quantity).toFixed(2) }}</td>
-          </tr>
-        </tbody>
-      </table>
+      <p class="subtitle">A Sacola está vazia!</p>
 
-      <!-- Resumo -->
-      <aside class="summary">
-        <h2>RESUMO DA COMPRA</h2>
+      <img src="/src/assets/images/Empty set.png" alt="sacola vazia" class="empty-icon" />
 
-        <!-- Cupom -->
-        <div class="summary-section">
-          <label>Cupon de Desconto</label>
-          <div class="input-row">
-            <input v-model="couponCode" type="text" placeholder="Digite o código de desconto" />
-            <button @click="applyCoupon">APLICAR</button>
+      <p class="lead">
+        Que tal retornar à nossa página principal e procurar pelos melhores produtos?
+      </p>
+
+      <button class="btn voltar" @click="voltarLoja">VOLTAR À LOJA</button>
+
+      <p class="login-text">
+        Tem uma conta? <span class="login-link">LOGIN</span> para finalizar suas compras
+      </p>
+    </section>
+
+    <!-- Estado: com produtos -->
+    <div v-else class="cart-container">
+      <h1 class="title">
+        BEM-VINDO À SACOLA <img src="@/assets/images/Shopping bag.png" alt="" />
+      </h1>
+
+      <div class="cart-content">
+        <!-- Lista de produtos -->
+        <table class="cart-table">
+          <thead>
+            <tr>
+              <th>PRODUTO</th>
+              <th>QUANTIDADE</th>
+              <th>TOTAL</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="item in cartStore.items" :key="item.id">
+              <td class="product-info">
+                <img :src="item.image" alt="Produto" />
+                <div>
+                  <p class="product-name">{{ item.name }}</p>
+                  <p class="product-price">R$ {{ item.price.toFixed(2) }}</p>
+                </div>
+              </td>
+              <td class="quantity-control">
+                <button @click="decrease(item)">−</button>
+                <span>{{ item.quantity }}</span>
+                <button @click="increase(item)">+</button>
+              </td>
+              <td class="product-total">R$ {{ (item.price * item.quantity).toFixed(2) }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Resumo -->
+        <aside class="summary">
+          <h2>RESUMO DA COMPRA</h2>
+
+          <!-- Cupom -->
+          <div class="summary-section">
+            <label>Cupom de Desconto</label>
+            <div class="input-row">
+              <input v-model="couponCode" type="text" placeholder="Digite o código de desconto" />
+              <button @click="applyCoupon">APLICAR</button>
+            </div>
           </div>
-        </div>
 
-        <!-- Frete -->
-        <div class="summary-section">
-          <label>Frete</label>
-          <div class="input-row">
-            <input v-model="cep" type="text" placeholder="Digite o seu CEP" />
-            <button @click="calculateShipping">APLICAR</button>
+          <!-- Frete -->
+          <div class="summary-section">
+            <label>Frete</label>
+            <div class="input-row">
+              <input v-model="cep" type="text" placeholder="Digite o seu CEP" />
+              <button @click="calculateShipping">APLICAR</button>
+            </div>
+
+            <!-- Dados do endereço -->
+            <div v-if="addressFetched" class="address-info">
+              <p>
+                <strong>Rua:</strong>
+                <span v-if="address.logradouro">{{ address.logradouro }}</span>
+                <input v-else v-model="address.logradouro" placeholder="Informe sua rua" />
+              </p>
+              <p>
+                <strong>Bairro:</strong>
+                <span v-if="address.bairro">{{ address.bairro }}</span>
+                <input v-else v-model="address.bairro" placeholder="Informe seu bairro" />
+              </p>
+              <p>
+                <strong>Cidade:</strong>
+                <span v-if="address.localidade">{{ address.localidade }}</span>
+                <input v-else v-model="address.localidade" placeholder="Informe sua cidade" />
+              </p>
+              <p>
+                <strong>Estado:</strong>
+                <span v-if="address.uf">{{ address.uf }}</span>
+                <input v-else v-model="address.uf" placeholder="Informe seu estado" />
+              </p>
+            </div>
           </div>
 
-          <!-- Dados do endereço -->
-          <div v-if="addressFetched" class="address-info">
-            <p><strong>Rua:</strong> 
-              <span v-if="address.logradouro">{{ address.logradouro }}</span>
-              <input v-else v-model="address.logradouro" placeholder="Informe sua rua" />
+          <!-- Totais -->
+          <div class="summary-totals">
+            <p>
+              Subtotal - {{ cartStore.items.length }} itens
+              <span>R$ {{ cartStore.totalPrice.toFixed(2) }}</span>
             </p>
-            <p><strong>Bairro:</strong> 
-              <span v-if="address.bairro">{{ address.bairro }}</span>
-              <input v-else v-model="address.bairro" placeholder="Informe seu bairro" />
+            <p>
+              Desconto Cupom <span>- R$ {{ discount.toFixed(2) }}</span>
             </p>
-            <p><strong>Cidade:</strong> 
-              <span v-if="address.localidade">{{ address.localidade }}</span>
-              <input v-else v-model="address.localidade" placeholder="Informe sua cidade" />
+            <p>
+              Frete <span>R$ {{ shipping.toFixed(2) }}</span>
             </p>
-            <p><strong>Estado:</strong> 
-              <span v-if="address.uf">{{ address.uf }}</span>
-              <input v-else v-model="address.uf" placeholder="Informe seu estado" />
+            <hr />
+            <p class="total">
+              TOTAL <span>R$ {{ totalWithDiscountAndShipping.toFixed(2) }}</span>
             </p>
           </div>
-        </div>
 
-        <!-- Totais -->
-        <div class="summary-totals">
-          <p>Subtotal - {{ cartStore.items.length }} itens <span>R$ {{ cartStore.totalPrice.toFixed(2) }}</span></p>
-          <p>Desconto Cupom <span>- R$ {{ discount.toFixed(2) }}</span></p>
-          <p>Frete <span>R$ {{ shipping.toFixed(2) }}</span></p>
-          <hr />
-          <p class="total">TOTAL <span>R$ {{ totalWithDiscountAndShipping.toFixed(2) }}</span></p>
-        </div>
-
-        <button class="btn-finalizar">FINALIZAR COMPRA</button>
-        <button class="btn-continuar" @click="voltarLoja">CONTINUAR COMPRANDO</button>
-      </aside>
+          <button class="btn-finalizar">FINALIZAR COMPRA</button>
+          <button class="btn-continuar" @click="voltarLoja">CONTINUAR COMPRANDO</button>
+        </aside>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-/* mesmo CSS da versão anterior */
+/* ===== SACOLA VAZIA ===== */
+.empty-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  font-family: "Inter", sans-serif;
+}
+.empty-wrap .title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+.empty-wrap .subtitle {
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+}
+.empty-wrap .empty-icon {
+  width: 150px;
+  margin-bottom: 2rem;
+}
+.empty-wrap .lead {
+  font-size: 1rem;
+  color: #333;
+  max-width: 480px;
+  margin-bottom: 1.5rem;
+}
+.empty-wrap .btn.voltar {
+  background-color: #0a0a9f;
+  color: #fff;
+  border: none;
+  padding: 0.8rem 2rem;
+  font-weight: 700;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.3s ease;
+}
+.empty-wrap .btn.voltar:hover {
+  background-color: #05056d;
+}
+.empty-wrap .login-text {
+  margin-top: 2rem;
+  font-size: 0.95rem;
+}
+.empty-wrap .login-link {
+  font-weight: bold;
+  color: #000;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* ===== SACOLA COM ITENS ===== */
 .cart-container {
   display: flex;
   flex-direction: column;
-  font-family: "Inter", sans-serif;;
+  font-family: "Inter", sans-serif;
   align-items: center;
   margin: 2rem;
 }
