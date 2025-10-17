@@ -213,7 +213,6 @@ header {
   background: transparent;
   border: none;
   cursor: pointer;
-  z-index: 1002;
 }
 .menu-btn span {
   display: block;
