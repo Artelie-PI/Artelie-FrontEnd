@@ -105,6 +105,7 @@ watch(
   white-space: nowrap;
   transition: background-color 0.2s ease;
   font-family: Poppins, sans-serif;
+  font-weight: bold;
 }
 .filter-button:hover {
   background-color: #333;
