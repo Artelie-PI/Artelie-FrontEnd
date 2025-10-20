@@ -8,28 +8,6 @@ const route = useRoute()
 const productsStore = useProductsStore()
 const showFilterMenu = ref(false)
 
-const activeFilters = ref([])
-
-const filterOptions = [
-  'A-Z',
-  'Z-A',
-  'Novidades',
-  'Maior preço',
-  'Menor preço'
-]
-
-function toggleFilter(option) {
-  const index = activeFilters.value.indexOf(option)
-  if (index >= 0) {
-    activeFilters.value.splice(index, 1) // desmarca
-  } else {
-    activeFilters.value.push(option) // marca
-  }
-
-  // Aqui você pode aplicar os filtros no store se quiser
-  // productsStore.applyFilters(activeFilters.value)
-}
-
 onMounted(() => {
   productsStore.loadByCategory(route.params.slug)
 })
@@ -49,41 +27,72 @@ function closeFilterMenu() {
 }
 </script>
 
-
 <template>
   <main>
     <h1>Categoria: {{ route.params.slug }}</h1>
 
-    <!-- Botão de filtro à esquerda da barra de pesquisa -->
     <div class="search-filter-wrapper">
+      <!-- Botão de filtro -->
       <button class="filter-button" @click="openFilterMenu">
         FILTRAR PRODUTOS
         <img class="imageFilter" src="@/assets/images/ConfigIcon.png" alt="" height="20px">
       </button>
 
-      <!-- ...existing code... -->
-      <div v-if="showFilterMenu" class="filter-menu-overlay" @click.self="closeFilterMenu">
-        <aside class="filter-menu">
-          <button class="close-btn" @click="closeFilterMenu">×</button>
-          <h3>Ordenar por</h3>
-          <div class="filters">
-          <ul>
-  <li v-for="option in filterOptions" :key="option">
-    <button
-      :class="{ 'active-filter': activeFilters.includes(option) }"
-      @click="toggleFilter(option)"
-    >
-      {{ option }}
-    </button>
-  </li>
-</ul>
+      <!-- Painel lateral de filtros -->
+      <transition name="slide-fade">
+        <div v-if="showFilterMenu" class="filter-menu-overlay" @click.self="closeFilterMenu">
+          <aside class="filter-menu">
+            <button class="close-btn" @click="closeFilterMenu">×</button>
+            <h2 class="filter-title">FILTRAR</h2>
 
-          </div>
-        </aside>
-      </div>
-      <!-- ...existing code... -->
+            <div class="filter-section">
+              <label>Ordenar</label>
+              <select>
+                <option>A-Z</option>
+                <option>Z-A</option>
+                <option>Novidades</option>
+                <option>Maior Preço</option>
+                <option>Menor Preço</option>
+              </select>
+            </div>
 
+            <div class="filter-section">
+              <label>Linha do Material</label>
+              <select>
+                <option>Nome 1</option>
+                <option>Nome 2</option>
+                <option>Nome 3</option>
+              </select>
+            </div>
 
+            <div class="filter-section">
+              <label>Preço</label>
+              <div class="price-inputs">
+                <input type="number" placeholder="De: R$" />
+                <span class="price-separator">para</span>
+                <input type="number" placeholder="R$" />
+              </div>
+            </div>
+
+            <div class="filter-section">
+              <label>Marca</label>
+              <div class="checkbox-group">
+                <label><input type="checkbox" /> Nome 1</label>
+                <label><input type="checkbox" /> Nome 2</label>
+                <label><input type="checkbox" /> Nome 3</label>
+                <label><input type="checkbox" /> Nome 4</label>
+              </div>
+            </div>
+
+            <div class="filter-buttons">
+              <button class="clear-btn">LIMPAR</button>
+              <button class="apply-btn">APLICAR</button>
+            </div>
+          </aside>
+        </div>
+      </transition>
+
+      <!-- Campo de pesquisa -->
       <div class="search-container">
         <img src="@/assets/images/Search.png" alt="Buscar" class="search-icon" />
         <input type="text" placeholder="Pesquisar produto..." class="search-bar" />
@@ -98,7 +107,6 @@ function closeFilterMenu() {
     </div>
   </main>
 </template>
-
 
 <style scoped>
 .products-grid {
@@ -116,7 +124,6 @@ function closeFilterMenu() {
 
 .search-bar {
   padding: 0.5rem 0.5rem 0.5rem 2.5rem;
-  /* espaço para a lupa à esquerda */
   width: 100%;
   font-size: 1rem;
   border: 1px solid #000000;
@@ -133,14 +140,6 @@ function closeFilterMenu() {
   pointer-events: none;
 }
 
-.active-filter {
-  background-color: #000 !important;
-  color: white;
-  font-weight: bold;
-  border: 1px solid #000;
-}
-
-
 .search-filter-wrapper {
   display: flex;
   align-items: center;
@@ -155,7 +154,6 @@ function closeFilterMenu() {
   display: flex;
   align-items: center;
   gap: 8px;
-  /* espaço entre texto e ícone */
   padding: 0.5rem 1rem;
   font-size: 20px;
   background-color: #000;
@@ -178,90 +176,146 @@ function closeFilterMenu() {
   height: 15px;
 }
 
+/* === Painel lateral === */
 .filter-menu-overlay {
   position: fixed;
   top: 0; left: 0;
   width: 100vw; height: 100vh;
-  background: rgba(0,0,0,0.3);
+  background: rgba(0, 0, 0, 0.3);
   z-index: 1000;
   display: flex;
+  justify-content: flex-end;
 }
 
 .filter-menu {
   background: #fff;
-  width: 280px;
-  max-width: 80vw;
+  width: 360px;
   height: 100vh;
-  box-shadow: 2px 0 8px rgba(0,0,0,0.15);
-  padding: 2rem 1rem 1rem 1rem;
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.15);
+  padding: 2rem 1.5rem;
   position: relative;
-  animation: slideIn 0.3s;
-}
-
-@keyframes slideIn {
-  from { transform: translateX(-100%); }
-  to   { transform: translateX(0); }
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
 }
 
 .close-btn {
   position: absolute;
   top: 1rem;
-  right: 1rem;
+  right: 1.2rem;
   background: none;
   border: none;
   font-size: 2rem;
   cursor: pointer;
 }
 
-.filter-menu h3 {
-  margin-top: 0;
-  font-size: 1.2rem;
+.filter-title {
+  font-size: 1.4rem;
   font-weight: bold;
+  margin-bottom: 1.5rem;
 }
 
-.filter-menu ul {
-  list-style: none;
-  padding: 0;
-  margin: 1rem 0 0 0;
+.filter-section {
+  margin-bottom: 1.5rem;
 }
 
-.filter-menu li {
-  margin-bottom: 1rem;
+.filter-section label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
 }
 
-.filter-menu button {
+.filter-section select,
+.filter-section input[type="number"] {
+  width: 100%;
   padding: 0.5rem;
   font-size: 1rem;
-  background: #f5f5f5;
-  border: none;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+.price-inputs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.price-separator {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.checkbox-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.3rem 1rem;
+}
+
+.checkbox-group label {
+  font-size: 0.95rem;
+}
+
+.filter-buttons {
+  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.clear-btn,
+.apply-btn {
+  flex: 1;
+  padding: 0.7rem 0;
+  font-weight: bold;
   border-radius: 4px;
+  border: none;
   cursor: pointer;
-  text-align: left;
   transition: background 0.2s;
 }
 
-.filter-menu button:hover {
+.clear-btn {
+  background: #f3f3f3;
+  color: #000;
+}
+
+.clear-btn:hover {
   background: #e0e0e0;
 }
 
-.filters li {
-  margin-top: 1rem;
-  width: 100%;
+.apply-btn {
+  background: #000;
+  color: #fff;
 }
+
+.apply-btn:hover {
+  background: #333;
+}
+
+/* === Animação === */
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-fade-enter-from {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+.slide-fade-leave-to {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
 @media (max-width: 600px) {
+  .filter-menu {
+    width: 90%;
+  }
+
   .search-container {
     max-width: 70%;
     margin-left: 15px;
-  }
-
-  .search-bar {
-    font-size: 0.95rem;
-    padding: 0.5rem 0.5rem 0.5rem 2.2rem;
-  }
-
-  .search-icon {
-    width: 18px;
-    left: 0.5rem;
   }
 
   .search-filter-wrapper {
