@@ -114,7 +114,7 @@ function handleLogout() {
 .slide-down-enter-from { opacity: 0; transform: translateY(-60px); }
 .slide-down-enter-active { transition: all 0.7s cubic-bezier(.68,-0.55,.27,1.55); }
 .slide-down-enter-to { opacity: 1; transform: translateY(0); }
-.slide-item { opacity: 0; transform: translateY(-40px); animation: slideItemDown 0.7s forwards; }
+.slide-item { opacity: 0; transform: translateY(-20px); animation: slideItemDown 0.7s forwards; }
 .slide-item:nth-child(1) { animation-delay: 0.2s; }
 .slide-item:nth-child(2) { animation-delay: 0.4s; }
 .slide-item:nth-child(3) { animation-delay: 0.6s; }
@@ -138,28 +138,33 @@ header {
   padding: 0 2rem;
 }
 
-.logoImg { height: 10vh; }
+.logoImg {
+  width: 10vw;
+}
 
 /* Links principais */
 .pages {
   display: flex;
-  gap: 2rem;
-  justify-content: center;
+  width: 35vw;
+  justify-content: space-between;
 }
 .pages a {
+  text-align: center;
   text-decoration: none;
   font-family: 'Poppins', sans-serif;
   color: #333;
   font-size: 1.3rem;
   font-weight: 600;
-  transition: border-bottom 0.3s, font-size 0.3s;
-  border-bottom: 2px solid transparent;
-}
-.pages a:hover { font-size: 1.5rem; }
+  transition: font-size 0.3s;
+  width: 8vw;
+  height: 5vh;
+  }
+.pages a:hover { font-size: 1.55rem; }
 
 /* Login + carrinho */
 .perfilShop {
   display: flex;
+  width: 10vw;
   gap: 1.5rem;
   justify-content: flex-end;
   align-items: center;
@@ -185,7 +190,7 @@ header {
 }
 .category-icons a {
   display: flex;
-  gap: .6rem;
+  gap: .9rem;
   align-items: center;
   font-size: .9rem;
   font-weight: 600;
@@ -193,6 +198,9 @@ header {
   text-decoration: none;
   transition: transform .16s, opacity .16s;
 }
+
+.category-icons a:hover { transform: translateY(-3px) scale(1.05); }
+
 .category-icons a img {
   width: 2.4rem;
   height: 2.4rem;
@@ -200,7 +208,7 @@ header {
   opacity: .9;
   transition: transform .16s, opacity .16s;
 }
-.category-icons a:hover img { transform: translateY(-3px) scale(1.05); opacity: 1; }
+.category-icons a:hover img { transform: translateY(-3px) scale(1.04); opacity: 1; }
 
 /* Botão do menu lateral (hambúrguer) */
 .menu-btn {
