@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, nextTick } from "vue";
 import { useRouter } from "vue-router";
 import { useCartStore } from "@/stores/cart";
 
@@ -10,6 +10,7 @@ const couponCode = ref("");
 const cep = ref("");
 const discount = ref(0);
 const shipping = ref(0);
+const canFinalize = ref(false); // controla se o usuário pode finalizar a compra
 
 const address = ref({
   logradouro: "",
@@ -34,27 +35,24 @@ function decrease(item) {
 
 // Cupom
 function applyCoupon() {
-  if (couponCode.value.trim().toUpperCase() === "GBI15") {
+  const code = couponCode.value.trim().toUpperCase();
+
+  if (code === "GBI15") {
     discount.value = cartStore.totalPrice * 0.15;
     alert("Cupom aplicado com sucesso! Desconto de 15%.");
-  }
-  else if (couponCode.value.trim().toUpperCase() === "CAGE777") {
-    discount.value = cartStore.totalPrice * 0.90;
+  } else if (code === "CAGE777") {
+    discount.value = cartStore.totalPrice * 0.9;
     alert("Cupom aplicado com sucesso! Desconto de 90%.");
-  }
-  else if (couponCode.value.trim().toUpperCase() === "MURILO10") {
-    discount.value = cartStore.totalPrice * 0.10;
+  } else if (code === "MURILO10") {
+    discount.value = cartStore.totalPrice * 0.1;
     alert("Cupom aplicado com sucesso! Desconto de 10%.");
-  }
-  else if (couponCode.value.trim().toUpperCase() === "FRETEGRATIS"  ) {
+  } else if (code === "FRETEGRATIS") {
     discount.value = shipping.value;
     alert("Cupom aplicado com sucesso! Frete grátis.");
-  }
-  else if (couponCode.value.trim() === "") {
+  } else if (code === "") {
     discount.value = 0;
     alert("Por favor, insira um código de cupom.");
-  }
-   else {
+  } else {
     discount.value = 0;
     alert("Cupom inválido.");
   }
@@ -76,9 +74,11 @@ async function calculateShipping() {
       alert("CEP não encontrado.");
       shipping.value = 0;
       addressFetched.value = false;
+      canFinalize.value = false;
       return;
     }
 
+    // Preenche dados do endereço
     address.value = {
       logradouro: data.logradouro || "",
       bairro: data.bairro || "",
@@ -86,6 +86,9 @@ async function calculateShipping() {
       uf: data.uf || "",
     };
     addressFetched.value = true;
+
+    // Define frete com base no estado
+    shipping.value = data.uf === "SC" ? 0 : 32;
 
     // Verifica se há campos faltando
     const missingFields = [];
@@ -98,15 +101,70 @@ async function calculateShipping() {
       alert(
         `O CEP não retornou todas as informações. Por favor, preencha manualmente: ${missingFields.join(
           ", "
-        )}.`
+        )}. Após preencher, pressione ENTER para confirmar.`
       );
-    }
 
-    // Frete
-    shipping.value = data.uf === "SC" ? 0 : 32;
+      canFinalize.value = false;
+
+      // Espera o Vue renderizar os inputs antes de adicionar os eventos
+      await nextTick();
+
+      const addressInputs = document.querySelectorAll(
+        "input[name='logradouro'], input[name='bairro'], input[name='localidade'], input[name='uf']"
+      );
+
+      addressInputs.forEach((input) => {
+        input.addEventListener("keydown", (event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+
+            const allFilled =
+              address.value.logradouro.trim().length > 2 &&
+              address.value.bairro.trim().length > 2 &&
+              address.value.localidade.trim().length > 2 &&
+              address.value.uf.trim().length > 1;
+
+            if (allFilled) {
+              canFinalize.value = true;
+              alert("Endereço completo! Agora você pode finalizar a compra.");
+            } else {
+              alert("Preencha todos os campos corretamente antes de confirmar.");
+            }
+          }
+        });
+      });
+    } else {
+      canFinalize.value = true;
+    }
   } catch {
     alert("Erro ao buscar informações do CEP.");
   }
+}
+
+// Finalizar compra
+function finalizarCompra() {
+  if (!addressFetched.value) {
+    alert("Por favor, insira um CEP válido antes de finalizar a compra.");
+    return;
+  }
+
+  if (
+    !address.value.logradouro ||
+    !address.value.bairro ||
+    !address.value.localidade ||
+    !address.value.uf
+  ) {
+    alert("Preencha todos os campos de endereço antes de continuar.");
+    canFinalize.value = false;
+    return;
+  }
+
+  if (!canFinalize.value) {
+    alert("Pressione ENTER após preencher o endereço para continuar.");
+    return;
+  }
+
+  alert("Compra finalizada com sucesso!");
 }
 
 const totalWithDiscountAndShipping = computed(() => {
@@ -116,31 +174,28 @@ const totalWithDiscountAndShipping = computed(() => {
 
 <template>
   <div class="cart-page">
-    <!-- Estado: sacola vazia -->
-    <section v-if="cartStore.items.length === 0" class="empty-wrap">
+    <div v-if="cartStore.items.length === 0" class="empty-wrap">
       <h1 class="title">
-        BEM-VINDO À SACOLA <img src="/src/assets/images/Shopping bag.png" alt="sacola" />
+        BEM-VINDO À SACOLA
+        <img src="/src/assets/images/Shopping bag.png" alt="sacola" />
       </h1>
 
       <p class="subtitle">A Sacola está vazia!</p>
-
       <img src="/src/assets/images/Empty set.png" alt="sacola vazia" class="empty-icon" />
-
       <p class="lead">
         Que tal retornar à nossa página principal e procurar pelos melhores produtos?
       </p>
 
       <button class="btn voltar" @click="voltarLoja">VOLTAR À LOJA</button>
-
       <p class="login-text">
         Tem uma conta? <span class="login-link">LOGIN</span> para finalizar suas compras
       </p>
-    </section>
+    </div>
 
-    <!-- Estado: com produtos -->
     <div v-else class="cart-container">
       <h1 class="title">
-        BEM-VINDO À SACOLA <img src="@/assets/images/Shopping bag.png" alt="" />
+        BEM-VINDO À SACOLA
+        <img src="@/assets/images/Shopping bag.png" alt="" />
       </h1>
 
       <div class="cart-content">
@@ -167,7 +222,9 @@ const totalWithDiscountAndShipping = computed(() => {
                 <span>{{ item.quantity }}</span>
                 <button @click="increase(item)">+</button>
               </td>
-              <td class="product-total">R$ {{ (item.price * item.quantity).toFixed(2) }}</td>
+              <td class="product-total">
+                R$ {{ (item.price * item.quantity).toFixed(2) }}
+              </td>
             </tr>
           </tbody>
         </table>
@@ -180,7 +237,7 @@ const totalWithDiscountAndShipping = computed(() => {
           <div class="summary-section">
             <label>Cupom de Desconto</label>
             <div class="input-row">
-              <input v-model="couponCode" type="text" placeholder="Digite o código de desconto" />
+              <input v-model="couponCode" type="text" placeholder="Digite o código" />
               <button @click="applyCoupon">APLICAR</button>
             </div>
           </div>
@@ -193,27 +250,35 @@ const totalWithDiscountAndShipping = computed(() => {
               <button @click="calculateShipping">APLICAR</button>
             </div>
 
-            <!-- Dados do endereço -->
+            <!-- Endereço -->
             <div v-if="addressFetched" class="address-info">
-              <p>
-                <strong>Rua:</strong>
-                <span v-if="address.logradouro">{{ address.logradouro }}</span>
-                <input v-else v-model="address.logradouro" placeholder="Informe sua rua" />
+              <p><strong>Rua:</strong>
+                <input
+                  v-model="address.logradouro"
+                  name="logradouro"
+                  placeholder="Rua"
+                />
               </p>
-              <p>
-                <strong>Bairro:</strong>
-                <span v-if="address.bairro">{{ address.bairro }}</span>
-                <input v-else v-model="address.bairro" placeholder="Informe seu bairro" />
+              <p><strong>Bairro:</strong>
+                <input
+                  v-model="address.bairro"
+                  name="bairro"
+                  placeholder="Bairro"
+                />
               </p>
-              <p>
-                <strong>Cidade:</strong>
-                <span v-if="address.localidade">{{ address.localidade }}</span>
-                <input v-else v-model="address.localidade" placeholder="Informe sua cidade" />
+              <p><strong>Cidade:</strong>
+                <input
+                  v-model="address.localidade"
+                  name="localidade"
+                  placeholder="Cidade"
+                />
               </p>
-              <p>
-                <strong>Estado:</strong>
-                <span v-if="address.uf">{{ address.uf }}</span>
-                <input v-else v-model="address.uf" placeholder="Informe seu estado" />
+              <p><strong>Estado:</strong>
+                <input
+                  v-model="address.uf"
+                  name="uf"
+                  placeholder="Estado"
+                />
               </p>
             </div>
           </div>
@@ -224,20 +289,24 @@ const totalWithDiscountAndShipping = computed(() => {
               Subtotal - {{ cartStore.items.length }} itens
               <span>R$ {{ cartStore.totalPrice.toFixed(2) }}</span>
             </p>
-            <p>
-              Desconto Cupom <span>- R$ {{ discount.toFixed(2) }}</span>
-            </p>
-            <p>
-              Frete <span>R$ {{ shipping.toFixed(2) }}</span>
-            </p>
+            <p>Desconto Cupom <span>- R$ {{ discount.toFixed(2) }}</span></p>
+            <p>Frete <span>R$ {{ shipping.toFixed(2) }}</span></p>
             <hr />
             <p class="total">
               TOTAL <span>R$ {{ totalWithDiscountAndShipping.toFixed(2) }}</span>
             </p>
           </div>
 
-          <button class="btn-finalizar">FINALIZAR COMPRA</button>
-          <button class="btn-continuar" @click="voltarLoja">CONTINUAR COMPRANDO</button>
+          <button
+            class="btn-finalizar"
+            :disabled="!canFinalize"
+            @click="finalizarCompra"
+          >
+            FINALIZAR COMPRA
+          </button>
+          <button class="btn-continuar" @click="voltarLoja">
+            CONTINUAR COMPRANDO
+          </button>
         </aside>
       </div>
     </div>
@@ -410,6 +479,16 @@ const totalWithDiscountAndShipping = computed(() => {
   border-bottom: 1px solid #aaa;
   background: transparent;
   font-size: 0.9rem;
+  margin-top: 6px;
+}
+.btn-confirm {
+  background: #0a0a0a;
+  color: #fff;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  border-radius: 6px;
 }
 .summary-totals {
   font-size: 0.9rem;
@@ -432,6 +511,11 @@ const totalWithDiscountAndShipping = computed(() => {
   font-weight: bold;
   cursor: pointer;
   margin-top: 1rem;
+  transition: 0.3s;
+}
+.btn-finalizar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 .btn-continuar {
   background: white;
