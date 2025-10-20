@@ -66,6 +66,11 @@ function handleLogout() {
         <aside v-if="showDrawer" class="drawer">
           <button class="close-btn" @click="showDrawer = false">&times;</button>
           <nav class="drawer-pages">
+            <RouterLink to="/">
+              <img src="@/assets/images/ArtelieLogo.png" alt="Artelie Logo"
+                style="width: 120px; margin-bottom: 1.5rem;" />
+            </RouterLink>
+
             <RouterLink to="/" @click="showDrawer = false">Home</RouterLink>
             <RouterLink to="/contact" @click="showDrawer = false">Contato</RouterLink>
             <RouterLink to="/brands" @click="showDrawer = false">Marcas</RouterLink>
@@ -111,14 +116,44 @@ function handleLogout() {
 </template>
 
 <style scoped>
-.slide-down-enter-from { opacity: 0; transform: translateY(-60px); }
-.slide-down-enter-active { transition: all 0.7s cubic-bezier(.68,-0.55,.27,1.55); }
-.slide-down-enter-to { opacity: 1; transform: translateY(0); }
-.slide-item { opacity: 0; transform: translateY(-40px); animation: slideItemDown 0.7s forwards; }
-.slide-item:nth-child(1) { animation-delay: 0.2s; }
-.slide-item:nth-child(2) { animation-delay: 0.4s; }
-.slide-item:nth-child(3) { animation-delay: 0.6s; }
-@keyframes slideItemDown { to { opacity: 1; transform: translateY(0); } }
+.slide-down-enter-from {
+  opacity: 0;
+  transform: translateY(-60px);
+}
+
+.slide-down-enter-active {
+  transition: all 0.7s cubic-bezier(.68, -0.55, .27, 1.55);
+}
+
+.slide-down-enter-to {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.slide-item {
+  opacity: 0;
+  transform: translateY(-40px);
+  animation: slideItemDown 0.7s forwards;
+}
+
+.slide-item:nth-child(1) {
+  animation-delay: 0.2s;
+}
+
+.slide-item:nth-child(2) {
+  animation-delay: 0.4s;
+}
+
+.slide-item:nth-child(3) {
+  animation-delay: 0.6s;
+}
+
+@keyframes slideItemDown {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
 /* Header geral */
 header {
@@ -126,7 +161,7 @@ header {
   display: flex;
   flex-direction: column;
   background-color: #fff;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Linha superior */
@@ -138,7 +173,9 @@ header {
   padding: 0 2rem;
 }
 
-.logoImg { height: 10vh; }
+.logoImg {
+  height: 10vh;
+}
 
 /* Links principais */
 .pages {
@@ -146,6 +183,7 @@ header {
   gap: 2rem;
   justify-content: center;
 }
+
 .pages a {
   text-decoration: none;
   font-family: 'Poppins', sans-serif;
@@ -155,7 +193,10 @@ header {
   transition: border-bottom 0.3s, font-size 0.3s;
   border-bottom: 2px solid transparent;
 }
-.pages a:hover { font-size: 1.5rem; }
+
+.pages a:hover {
+  font-size: 1.5rem;
+}
 
 /* Login + carrinho */
 .perfilShop {
@@ -164,16 +205,38 @@ header {
   justify-content: flex-end;
   align-items: center;
 }
-.perfilShop img { width: 2.6rem; height: 2.6rem; transition: transform 0.3s; }
-.perfilShop img:hover { transform: scale(1.2); }
-.hello { font-family: 'Poppins', sans-serif; font-size: 1.4rem; color: #333; }
+
+.perfilShop img {
+  width: 2.6rem;
+  height: 2.6rem;
+  transition: transform 0.3s;
+}
+
+.perfilShop img:hover {
+  transform: scale(1.2);
+}
+
+.hello {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.4rem;
+  color: #333;
+}
+
 .logoutBtn {
-  background: transparent; border: 1px solid #ddd;
-  padding: .4rem .8rem; margin-left: .6rem; cursor:pointer;
-  border-radius:6px; font-size:1.1rem;
+  background: transparent;
+  border: 1px solid #ddd;
+  padding: .4rem .8rem;
+  margin-left: .6rem;
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: 1.1rem;
   transition: background .18s, transform .12s;
 }
-.logoutBtn:hover { background: rgba(0,0,0,0.06); transform: translateY(-2px); }
+
+.logoutBtn:hover {
+  background: rgba(0, 0, 0, 0.06);
+  transform: translateY(-2px);
+}
 
 /* Navbar inferior */
 .category-icons {
@@ -183,6 +246,7 @@ header {
   border-top: 1px solid #ddd;
   padding: 0.8rem 0;
 }
+
 .category-icons a {
   display: flex;
   gap: .6rem;
@@ -193,6 +257,7 @@ header {
   text-decoration: none;
   transition: transform .16s, opacity .16s;
 }
+
 .category-icons a img {
   width: 2.4rem;
   height: 2.4rem;
@@ -200,7 +265,11 @@ header {
   opacity: .9;
   transition: transform .16s, opacity .16s;
 }
-.category-icons a:hover img { transform: translateY(-3px) scale(1.05); opacity: 1; }
+
+.category-icons a:hover img {
+  transform: translateY(-3px) scale(1.05);
+  opacity: 1;
+}
 
 /* Botão do menu lateral (hambúrguer) */
 .menu-btn {
@@ -214,6 +283,7 @@ header {
   border: none;
   cursor: pointer;
 }
+
 .menu-btn span {
   display: block;
   height: 4px;
@@ -232,41 +302,53 @@ header {
   max-width: 320px;
   height: 100vh;
   background: #fff;
-  box-shadow: -2px 0 8px rgba(0,0,0,0.13);
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.13);
   z-index: 1001;
   display: flex;
   flex-direction: column;
   padding: 2rem 1.5rem;
   animation: drawerIn 0.3s;
 }
+
 @keyframes drawerIn {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
+  from {
+    transform: translateX(100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
 }
+
 .drawer-pages {
   display: flex;
   flex-direction: column;
   gap: 2rem;
   margin-bottom: 2rem;
 }
+
 .drawer-pages a {
   font-size: 1.5rem;
   color: #333;
   text-decoration: none;
   font-family: 'Poppins', sans-serif;
 }
+
 .drawer-perfilShop {
   display: flex;
   flex-direction: column;
   gap: 1.2rem;
   align-items: flex-start;
 }
+
 .drawer-perfilShop img {
   width: 2.6rem;
   height: 2.6rem;
 }
+
 .close-btn {
-  position: absolute; /* Adicionado para garantir posicionamento */
+  position: absolute;
+  /* Adicionado para garantir posicionamento */
   top: 1rem;
   right: 1.0rem;
   background: transparent;
@@ -274,31 +356,39 @@ header {
   font-size: 2.2rem;
   cursor: pointer;
   color: #333;
-  z-index: 1002; /* Garante que fique acima dos outros elementos */
+  z-index: 1002;
+  /* Garante que fique acima dos outros elementos */
 }
 
 /* Animação do drawer */
-.drawer-enter-active, .drawer-leave-active {
+.drawer-enter-active,
+.drawer-leave-active {
   transition: opacity 0.2s;
 }
-.drawer-enter-from, .drawer-leave-to {
+
+.drawer-enter-from,
+.drawer-leave-to {
   opacity: 0;
 }
 
 /* Responsividade */
 @media (max-width: 728px) {
+
   .pages,
   .perfilShop,
   .slide-item {
     display: none;
   }
+
   .menu-btn {
     display: flex;
   }
+
   .drawer {
     display: flex;
   }
-    .close-btn {
+
+  .close-btn {
     font-size: 2.8rem;
     top: 0.7rem;
     right: 0.7rem;
