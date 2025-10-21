@@ -80,13 +80,14 @@ const handleAdd = (item) => {
   max-width: 1120px;
   margin: 24px auto 20px;
   text-align: left;
-  padding: 0 16px;
+  padding: 0 ;
 }
 .section-title {
   font-family: "Poppins", sans-serif;
   font-weight: 500;
   font-size: 1.5rem;
   line-height: 1.3;
+  padding-bottom: 3px;
 }
 .section-rule {
   height: 1px;

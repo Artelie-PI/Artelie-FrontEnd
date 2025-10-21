@@ -139,9 +139,8 @@ const formatPrice = (v) =>
   right: 16px;
   bottom: 0;
   height: 24px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.10);
-  filter: blur(10px);
+  background: rgba(0, 0, 0, 50%);
+  filter: blur(4px);
   pointer-events: none;
 }
 
@@ -149,20 +148,19 @@ const formatPrice = (v) =>
   position: relative;
   width: 100%;
   background: #fff;
-  /* Mantém proporção 4/5 sem distorcer */
-  aspect-ratio: 4 / 5;
   overflow: hidden;
 }
 
-.pc-image {
+.pc-image {left: 16px;
+  right: 16px;
   width: 100%;
   height: 100%;
   object-fit: contain;
-  transition: transform 0.3s ease;
+  transition: transform 0.5s ease;
 }
 
 .pc-link:hover .pc-image {
-  transform: scale(1.02);
+  transform: scale(1.03);
 }
 
 /* Título: 3 linhas, centralizado */
@@ -202,7 +200,7 @@ const formatPrice = (v) =>
 /* Botão cheio */
 .pc-button {
   margin-top: 12px;
-  height: 40px;
+  height: 2rem;
   width: 100%;
   border-radius: 5px;
   background: #000;
