@@ -76,8 +76,7 @@ const currentProduct = {
 
         <button
         class="add-btn"
-        @click="cartStore.addToCart(currentProduct, productStore.quantity)"
-      >
+        @click="cartStore.addToCart(currentProduct, productStore.quantity)">
         Adicionar a Sacola
       </button>
       </div>

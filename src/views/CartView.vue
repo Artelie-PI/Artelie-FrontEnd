@@ -386,9 +386,10 @@ const totalWithDiscountAndShipping = computed(() => {
   font-size: 0.9rem;
 }
 .input-row button {
-  background: #0a0a0a;
+  background: #000787;
   color: white;
   border: none;
+  border-radius: 8px;
   padding: 0.4rem 0.8rem;
   cursor: pointer;
   font-size: 0.8rem;
@@ -435,9 +436,9 @@ const totalWithDiscountAndShipping = computed(() => {
 }
 .btn-continuar {
   background: white;
-  color: #000;
+  color: #000787;
   padding: 0.7rem;
-  border: 1px solid #000;
+  border: 1px solid #000787;
   cursor: pointer;
   font-weight: bold;
 }

@@ -1,216 +1,222 @@
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import { useRouter } from "vue-router";
-import { useProductStore } from "@/stores/relatedProduct";
+import { computed } from 'vue'; // script setup / Composition API [web:18]
+import { RouterLink } from 'vue-router'; // navegação para a página de produto [web:15]
 
-const productStore = useProductStore();
-const router = useRouter();
-
-const visibleItems = ref(4);
-const isTransitioning = ref(false);
-const currentIndex = ref(visibleItems.value);
-
-const baseProducts = computed(() => productStore.relatedProducts || []);
-
-const displayedProducts = computed(() => {
-  const products = baseProducts.value;
-  if (!products.length) return [];
-
-  const repeated = [];
-  const repeatCount = Math.ceil((visibleItems.value * 3) / products.length);
-  for (let i = 0; i < repeatCount; i++) repeated.push(...products);
-
-  return [
-    ...repeated.slice(-visibleItems.value),
-    ...repeated,
-    ...repeated.slice(0, visibleItems.value),
-  ];
+const props = defineProps({
+  products: { type: Array, default: () => [] }, // lista de produtos [web:1]
+  toName: { type: String, default: 'product' }, // nome da rota de detalhes [web:15]
 });
 
-const nextSlide = () => {
-  if (isTransitioning.value) return;
-  isTransitioning.value = true;
-  currentIndex.value++;
-};
+const fallback = [
+  {
+    id: 1,
+    title: 'Estojo Lápis de Cor Studio Collection Winsor & Newton 27 Peças',
+    image: '/img/produtos/wn-lapis-27.png',
+    price: 598,
+    installmentText: 'Até 4x de R$ 58,24 sem juros',
+  },
+  {
+    id: 2,
+    title: 'Estojo Lápis de Cor Studio Collection Winsor & Newton 27 Peças',
+    image: '/img/produtos/wn-lapis-27.png',
+    price: 598,
+    installmentText: 'Até 4x de R$ 58,24 sem juros',
+  },
+  {
+    id: 3,
+    title: 'Estojo Lápis de Cor Studio Collection Winsor & Newton 27 Peças',
+    image: '/img/produtos/wn-lapis-27.png',
+    price: 598,
+    installmentText: 'Até 4x de R$ 58,24 sem juros',
+  },
+  {
+    id: 4,
+    title: 'Estojo Lápis de Cor Studio Collection Winsor & Newton 27 Peças',
+    image: '/img/produtos/wn-lapis-27.png',
+    price: 598,
+    installmentText: 'Até 4x de R$ 58,24 sem juros',
+  },
+];
 
-const prevSlide = () => {
-  if (isTransitioning.value) return;
-  isTransitioning.value = true;
-  currentIndex.value--;
-};
+const list = computed(() => (props.products?.length ? props.products : fallback)); // props ou fallback [web:1]
 
-const handleTransitionEnd = () => {
-  isTransitioning.value = false;
-  const total = displayedProducts.value.length;
-  if (currentIndex.value >= total - visibleItems.value) {
-    currentIndex.value = visibleItems.value;
-  } else if (currentIndex.value <= 0) {
-    currentIndex.value = total - visibleItems.value * 2;
-  }
-};
-
-const goToProduct = () => {
-  router.push("/produto");
-};
-
-const updateVisibleItems = () => {
-  const width = window.innerWidth;
-  if (width >= 1200) visibleItems.value = 4;
-  else if (width >= 992) visibleItems.value = 3;
-  else if (width >= 768) visibleItems.value = 2;
-  else visibleItems.value = 1;
-
-  currentIndex.value = visibleItems.value;
-};
-
-onMounted(() => {
-  window.addEventListener("resize", updateVisibleItems);
-  updateVisibleItems();
-});
+const formatPrice = (v) =>
+  typeof v === 'number' ? v.toFixed(2).replace('.', ',') : v; // formatação simples [web:1]
 </script>
 
 <template>
-  <div class="carousel-container">
-    <!-- Setas -->
-    <button class="arrow left" @click="prevSlide">&#10094;</button>
-    <button class="arrow right" @click="nextSlide">&#10095;</button>
+  <section class="pc-container">
+    <div class="pc-grid">
+      <article v-for="p in list" :key="p.id" class="pc-card">
+        <RouterLink :to="{ name: toName, params: { id: p.id } }" class="pc-link" :aria-label="p.title">
+          <div class="pc-image-wrap">
+            <!-- sombra inferior sob a imagem -->
+            <div aria-hidden="true" class="pc-image-shadow"></div>
+            <div class="pc-image-box">
+              <img :src="p.image" :alt="p.title" class="pc-image" />
+            </div>
+          </div>
 
-    <div class="carousel-wrapper">
-      <div class="carousel-track" :class="{ transitioning: isTransitioning }" @transitionend="handleTransitionEnd"
-           :style="{ transform: `translateX(-${currentIndex * (100 / visibleItems)}%)` }">
-        <div class="carousel-item" v-for="(product, i) in displayedProducts" :key="i">
-          <img :src="product.image" :alt="product.name" @click="goToProduct" />
-          <p class="name">{{ product.name }}</p>
-          <p class="price">{{ product.price }}</p>
-          <p class="installment">Até 4x de R$ 58,24 sem juros</p>
-          <button @click="goToProduct">Adicionar à Sacola</button>
-        </div>
-      </div>
+          <h3 class="pc-title">
+            {{ p.title }}
+          </h3>
+
+
+          <div class="pc-price-area">
+            <div class="pc-price">R$ {{ formatPrice(p.price) }}</div>
+            <div v-if="p.installmentText" class="pc-installments">
+              {{ p.installmentText }}
+            </div>
+          </div>
+        </RouterLink>
+        <button type="button" class="pc-button" @click="$emit('add-to-cart', { id: p.id, title: p.title })">
+          Adicionar a Sacola
+        </button>
+      </article>
     </div>
-  </div>
+  </section>
 </template>
 
 <style scoped>
-.carousel-container {
-  position: relative;
-  overflow: hidden;
-  width: 100%;
-  padding: 20px 0;
+/* Container geral do bloco */
+.pc-container {
+  max-width: 1120px;
+  /* similar a max-w-7xl */
+  margin: 0 auto;
 }
 
-.carousel-wrapper {
-  overflow: hidden;
+/* Grid responsiva 1-2-4 colunas */
+.pc-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
 }
 
-.carousel-track {
-  display: flex;
-  gap: 20px;
-  transition: transform 0.5s ease;
+@media (min-width: 640px) {
+  .pc-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
-.carousel-item {
-  flex: 0 0 calc(25% - 20px);
+@media (min-width: 1024px) {
+  .pc-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Card */
+.pc-card {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  padding: 16px;
-  text-align: center;
-  height: 460px;
-  box-sizing: border-box;
-  cursor: pointer;
-}
-.carousel-item:hover {
-  box-shadow: 0 6px 15px rgba(0,0,0,0.15);
-  transform: scale(1.05);
-  transition: transform 0.3s;
+  align-items: stretch;
 }
 
-.carousel-item img {
-  width: 100%;
-  height: 220px;
-  object-fit: contain;
-  border-radius: 8px;
-  margin-bottom: 12px;
+/* Link clicável que envolve imagem e título */
+.pc-link {
+  display: block;
+  outline: none;
+  text-decoration: none;
+  color: inherit;
 }
 
-
-.name {
-  font-weight: 600;
-  font-size: 14px;
-  margin-bottom: 4px;
+.pc-link:focus-visible {
+  box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.7);
 }
 
-.price {
-  font-size: 14px;
-  color: #444;
-  margin-bottom: 2px;
+/* Wrapper da imagem e sombra inferior */
+.pc-image-wrap {
+  position: relative;
+  background-color: #fff;
+  border-radius: 2px;
 }
 
-.installment {
-  font-size: 12px;
-  color: #888;
-  margin-bottom: 12px;
-}
-
-.carousel-item button {
-  width: 100%;
-  background-color: black;
-  color: white;
-  border: none;
-  padding: 10px 0;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: 0.3s;
-}
-
-.carousel-item button:hover {
-  background-color: #333;
-}
-
-/* Setas */
-.arrow {
+.pc-image-shadow {
   position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: black;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
+  left: 16px;
+  right: 16px;
+  bottom: 0;
+  height: 24px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.10);
+  filter: blur(10px);
+  pointer-events: none;
+}
+
+.pc-image-box {
+  position: relative;
+  width: 100%;
+  background: #fff;
+  /* Mantém proporção 4/5 sem distorcer */
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+}
+
+.pc-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+.pc-link:hover .pc-image {
+  transform: scale(1.02);
+}
+
+/* Título: 3 linhas, centralizado */
+.pc-title {
+  margin-top: 16px;
+  text-align: center;
+  font-size: 14px;
+  line-height: 1.35;
+  font-weight: 500;
+  color: #000;
+  /* neutral-900 */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Área de preço e parcelamento */
+.pc-price-area {
+  margin-top: 12px;
+  text-align: center;
+}
+
+.pc-price {
+  color: #111827;
   font-size: 18px;
+  font-weight: 600;
+}
+
+.pc-installments {
+  margin-top: 4px;
+  color: #6b7280;
+  /* neutral-500 */
+  font-size: 12px;
+}
+
+/* Botão cheio */
+.pc-button {
+  margin-top: 12px;
+  height: 40px;
+  width: 100%;
+  background: #000;
+  color: #fff;
+  padding: 0 16px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
   cursor: pointer;
-  z-index: 2;
-  transition: background 0.3s;
 }
 
-.arrow:hover {
-  background: #333;
+.pc-button:hover {
+  background: #202020;
+  /* neutral-800 */
 }
 
-.arrow.left {
-  left: 0;
-}
-
-.arrow.right {
-  right: 0;
-}
-
-/* Responsivo */
-@media (max-width: 1199px) {
-  .carousel-item { flex: 0 0 calc(33.333% - 20px); }
-}
-@media (max-width: 992px) {
-  .carousel-item { flex: 0 0 calc(50% - 20px); }
-}
-@media (max-width: 768px) {
-  .carousel-item { flex: 0 0 calc(50% - 20px); }
-}
-@media (max-width: 480px) {
-  .carousel-item { flex: 0 0 90%; }
+.pc-button:focus-visible {
+  outline: 2px solid rgba(0, 0, 0, 0.7);
+  outline-offset: 2px;
 }
 </style>
