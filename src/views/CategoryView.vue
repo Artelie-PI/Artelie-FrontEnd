@@ -268,7 +268,6 @@ function closeFilterMenu() {
   flex: 1;
   padding: 0.7rem 0;
   font-weight: bold;
-  border-radius: 4px;
   border: none;
   cursor: pointer;
   transition: background 0.2s;
@@ -276,7 +275,8 @@ function closeFilterMenu() {
 
 .clear-btn {
   background: #f3f3f3;
-  color: #000;
+  border: 1px solid #000787;
+  color: #000787;
 }
 
 .clear-btn:hover {
@@ -284,7 +284,7 @@ function closeFilterMenu() {
 }
 
 .apply-btn {
-  background: #000;
+  background: #000787;
   color: #fff;
 }
 
