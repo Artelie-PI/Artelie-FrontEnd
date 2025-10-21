@@ -56,7 +56,7 @@ function handleLogout() {
             </RouterLink>
           </template>
           <RouterLink to="/shop">
-            <img src="@/assets/images/Cart.png" alt="cart" />
+            <img src="@/assets/images/Cart.png" class="sacolaIcon" alt="Sacola"/>
           </RouterLink>
         </div>
       </div>
@@ -81,7 +81,7 @@ function handleLogout() {
               </RouterLink>
             </template>
             <RouterLink to="/shop" @click="showDrawer = false">
-              <img src="@/assets/images/Cart.png" alt="cart" />
+              <img src="@/assets/images/Cart.png" alt="Sacola" />
             </RouterLink>
           </div>
         </aside>
@@ -125,82 +125,83 @@ header {
   width: 100%;
   display: flex;
   flex-direction: column;
-  background-color: #fff;
+  background-color: white;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 /* Linha superior */
 .header-top {
-  height: 14vh;
+  height: 12vh;
   display: flex;
-  justify-content: space-between;
+  justify-content: space-around;
+  gap: 10rem;
   align-items: center;
-  padding: 0 2rem;
 }
 
-.logoImg { height: 10vh; }
+.logoImg { height: 8vh; }
 
 /* Links principais */
 .pages {
   display: flex;
-  gap: 2rem;
+  gap: 8rem;
   justify-content: center;
 }
 .pages a {
   text-decoration: none;
-  font-family: 'Poppins', sans-serif;
-  color: #333;
-  font-size: 1.3rem;
-  font-weight: 600;
+  color: black;
+  font-weight: 500;
+  font-size: 1rem;
   transition: border-bottom 0.3s, font-size 0.3s;
   border-bottom: 2px solid transparent;
 }
-.pages a:hover { font-size: 1.5rem; }
 
 /* Login + carrinho */
 .perfilShop {
   display: flex;
-  gap: 1.5rem;
+  gap: 1rem;
   justify-content: flex-end;
   align-items: center;
 }
-.perfilShop img { width: 2.6rem; height: 2.6rem; transition: transform 0.3s; }
-.perfilShop img:hover { transform: scale(1.2); }
-.hello { font-family: 'Poppins', sans-serif; font-size: 1.4rem; color: #333; }
+
+.perfilShop img {
+  width: 2rem;
+  height: 2rem; 
+  cursor: pointer;
+}
+
+.hello {
+  font-size: 1.2rem; color: black; 
+}
+
 .logoutBtn {
-  background: transparent; border: 1px solid #ddd;
   padding: .4rem .8rem; margin-left: .6rem; cursor:pointer;
   border-radius:6px; font-size:1.1rem;
-  transition: background .18s, transform .12s;
 }
-.logoutBtn:hover { background: rgba(0,0,0,0.06); transform: translateY(-2px); }
+
 
 /* Navbar inferior */
 .category-icons {
   display: flex;
   justify-content: center;
   gap: 5rem;
-  border-top: 1px solid #ddd;
-  padding: 0.8rem 0;
+  border-top: 1px solid #2c2c2c;
+  padding: 1rem 0;
 }
 .category-icons a {
   display: flex;
-  gap: .6rem;
+  gap: .5rem;
   align-items: center;
-  font-size: .9rem;
-  font-weight: 600;
-  color: #333;
+  font-size: .8rem;
+  font-weight: 500;
+  color: black;
   text-decoration: none;
-  transition: transform .16s, opacity .16s;
 }
 .category-icons a img {
-  width: 2.4rem;
-  height: 2.4rem;
+  width: 1.3rem;
+  height: 1.3rem;
   margin-bottom: .3rem;
-  opacity: .9;
   transition: transform .16s, opacity .16s;
 }
-.category-icons a:hover img { transform: translateY(-3px) scale(1.05); opacity: 1; }
 
 /* Botão do menu lateral (hambúrguer) */
 .menu-btn {

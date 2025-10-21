@@ -25,14 +25,8 @@ const currentProduct = {
       <div class="gallery">
         <img :src="productStore.selectedImage" alt="Produto" class="main-image" />
         <div class="thumbnails">
-          <img
-            v-for="(img, i) in productStore.images"
-            :key="i"
-            :src="img"
-            @click="productStore.selectedImage = img"
-            class="thumb"
-            :class="{ active: productStore.selectedImage === img }"
-          />
+          <img v-for="(img, i) in productStore.images" :key="i" :src="img" @click="productStore.selectedImage = img"
+            class="thumb" :class="{ active: productStore.selectedImage === img }" />
         </div>
       </div>
 
@@ -44,13 +38,7 @@ const currentProduct = {
         </p>
 
         <div class="rating">
-          <span
-            v-for="n in 5"
-            :key="n"
-            class="star"
-            :class="{ full: n <= rating }"
-            @click="setRating(n)"
-          >
+          <span v-for="n in 5" :key="n" class="star" :class="{ full: n <= rating }" @click="setRating(n)">
             ★
           </span>
           <span class="count">({{ rating }} de 5)</span>
@@ -74,11 +62,9 @@ const currentProduct = {
           </div>
         </div>
 
-        <button
-        class="add-btn"
-        @click="cartStore.addToCart(currentProduct, productStore.quantity)">
-        Adicionar a Sacola
-      </button>
+        <button class="add-btn" @click="cartStore.addToCart(currentProduct, productStore.quantity)">
+          Adicionar a Sacola
+        </button>
       </div>
     </div>
 
@@ -112,16 +98,19 @@ const currentProduct = {
   flex-direction: column;
   align-items: center;
 }
+
 .main-image {
   width: 100%;
   border-radius: 0.5rem;
   border: 1px solid #ddd;
 }
+
 .thumbnails {
   display: flex;
   gap: 0.5rem;
   margin-top: 1rem;
 }
+
 .thumb {
   width: 70px;
   height: 70px;
@@ -130,6 +119,7 @@ const currentProduct = {
   cursor: pointer;
   object-fit: cover;
 }
+
 .thumb.active {
   border: 2px solid black;
 }
@@ -139,13 +129,16 @@ const currentProduct = {
   font-weight: 600;
   line-height: 1.3;
 }
+
 .brand {
   margin: 0.3rem 0 0.8rem;
 }
+
 .category {
   color: #666;
   font-size: 0.9rem;
 }
+
 .brand-name {
   color: #2563eb;
   font-weight: 500;
@@ -156,18 +149,23 @@ const currentProduct = {
   align-items: center;
   margin: 0.5rem 0;
 }
+
 .star {
   color: #ccc;
   font-size: 1.4rem;
   cursor: pointer;
   transition: color 0.2s;
 }
+
 .star.full {
-  color: #f5c518; /* amarelo */
+  color: #f5c518;
+  /* amarelo */
 }
+
 .star:hover {
   color: #f5c518;
 }
+
 .count {
   font-size: 0.85rem;
   color: #666;
@@ -180,6 +178,7 @@ const currentProduct = {
   gap: 0.5rem;
   margin: 0.8rem 0;
 }
+
 .color-circle {
   width: 22px;
   height: 22px;
@@ -193,6 +192,7 @@ const currentProduct = {
   font-weight: bold;
   margin-top: 1rem;
 }
+
 .installments {
   font-size: 0.85rem;
   color: #666;
@@ -253,6 +253,7 @@ const currentProduct = {
   cursor: pointer;
   transition: background 0.2s;
 }
+
 .add-btn:hover {
   background: #333;
 }
@@ -264,10 +265,12 @@ const currentProduct = {
   padding: 2rem;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
+
 .info h2 {
   font-size: 1.3rem;
   margin-bottom: 0.75rem;
 }
+
 @media (max-width: 768px) {
   .product-container {
     grid-template-columns: 1fr;

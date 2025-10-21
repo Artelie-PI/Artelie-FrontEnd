@@ -1,6 +1,9 @@
 <script setup>
 import { computed } from 'vue'; // script setup / Composition API [web:18]
 import { RouterLink } from 'vue-router'; // navegação para a página de produto [web:15]
+import { useCartStore } from "@/stores/cart"; // <-- novo
+
+const cartStore = useCartStore();
 
 const props = defineProps({
   products: { type: Array, default: () => [] }, // lista de produtos [web:1]
@@ -69,7 +72,7 @@ const formatPrice = (v) =>
             </div>
           </div>
         </RouterLink>
-        <button type="button" class="pc-button" @click="$emit('add-to-cart', { id: p.id, title: p.title })">
+        <button class="pc-button" @click="cartStore.addToCart(currentProduct, productStore.quantity)">
           Adicionar a Sacola
         </button>
       </article>
