@@ -201,6 +201,7 @@ const formatPrice = (v) =>
   margin-top: 12px;
   height: 40px;
   width: 100%;
+  border-radius: 5px;
   background: #000;
   color: #fff;
   padding: 0 16px;
