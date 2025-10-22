@@ -25,6 +25,12 @@ function openFilterMenu() {
 function closeFilterMenu() {
   showFilterMenu.value = false
 }
+
+const ordenarOpen = ref(false)
+const linhaOpen = ref(false)
+const precoOpen = ref(false)
+const marcaOpen = ref(false)
+
 </script>
 
 <template>
@@ -45,42 +51,61 @@ function closeFilterMenu() {
             <button class="close-btn" @click="closeFilterMenu">×</button>
             <h2 class="filter-title">FILTRAR</h2>
 
-            <div class="filter-section">
-              <label>Ordenar</label>
-              <select>
-                <option>A-Z</option>
-                <option>Z-A</option>
-                <option>Novidades</option>
-                <option>Maior Preço</option>
-                <option>Menor Preço</option>
-              </select>
-            </div>
-
-            <div class="filter-section">
-              <label>Linha do Material</label>
-              <select>
-                <option>Nome 1</option>
-                <option>Nome 2</option>
-                <option>Nome 3</option>
-              </select>
-            </div>
-
-            <div class="filter-section">
-              <label>Preço</label>
-              <div class="price-inputs">
-                <input type="number" placeholder="De: R$" />
-                <span class="price-separator">para</span>
-                <input type="number" placeholder="R$" />
+            <!-- ORDENAR -->
+            <div class="accordion-section">
+              <div class="accordion-header" @click="ordenarOpen = !ordenarOpen">
+                <span>Ordenar</span>
+                <span>{{ ordenarOpen ? '▲' : '▼' }}</span>
+              </div>
+              <div v-if="ordenarOpen" class="accordion-content checkbox-inline">
+                <label><input type="checkbox" /> A-Z</label>
+                <label><input type="checkbox" /> Z-A</label>
+                <label><input type="checkbox" /> Novidades</label>
+                <label><input type="checkbox" /> Maior Preço</label>
+                <label><input type="checkbox" /> Menor Preço</label>
               </div>
             </div>
 
-            <div class="filter-section">
-              <label>Marca</label>
-              <div class="checkbox-group">
+            <!-- LINHA DO MATERIAL -->
+            <div class="accordion-section">
+              <div class="accordion-header" @click="linhaOpen = !linhaOpen">
+                <span>Linha do Material</span>
+                <span>{{ linhaOpen ? '▲' : '▼' }}</span>
+              </div>
+              <div v-if="linhaOpen" class="accordion-content">
+                <select>
+                  <option>Nome 1</option>
+                  <option>Nome 2</option>
+                  <option>Nome 3</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- PREÇO -->
+            <div class="accordion-section">
+              <div class="accordion-header" @click="precoOpen = !precoOpen">
+                <span>Preço</span>
+                <span>{{ precoOpen ? '▲' : '▼' }}</span>
+              </div>
+              <div v-if="precoOpen" class="accordion-content price-inputs">
+                <input class="preco" type="number" placeholder="De: R$" />
+                <span class="price-separator">para</span>
+                <input class="preco" type="number" placeholder="R$" />
+              </div>
+            </div>
+
+            <!-- MARCA -->
+            <div class="accordion-section">
+              <div class="accordion-header" @click="marcaOpen = !marcaOpen">
+                <span>Marca</span>
+                <span>{{ marcaOpen ? '▲' : '▼' }}</span>
+              </div>
+              <div v-if="marcaOpen" class="accordion-content checkbox-group">
                 <label><input type="checkbox" /> Nome 1</label>
                 <label><input type="checkbox" /> Nome 2</label>
                 <label><input type="checkbox" /> Nome 3</label>
                 <label><input type="checkbox" /> Nome 4</label>
+                <label><input type="checkbox" /> Nome 5</label>
               </div>
             </div>
 
@@ -89,6 +114,7 @@ function closeFilterMenu() {
               <button class="apply-btn">APLICAR</button>
             </div>
           </aside>
+
         </div>
       </transition>
 
@@ -179,8 +205,10 @@ function closeFilterMenu() {
 /* === Painel lateral === */
 .filter-menu-overlay {
   position: fixed;
-  top: 0; left: 0;
-  width: 100vw; height: 100vh;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
   background: rgba(0, 0, 0, 0.3);
   z-index: 1000;
   display: flex;
@@ -327,5 +355,34 @@ function closeFilterMenu() {
   .filter-button {
     width: 100%;
   }
+}
+.accordion-section {
+  border-bottom: 1px solid #eee;
+  padding: 1rem 0;
+}
+
+.accordion-header {
+  display: flex;
+  justify-content: space-between;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.accordion-content {
+  margin-top: 0.8rem;
+}
+
+.checkbox-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+}
+
+.checkbox-inline label {
+  font-size: 0.9rem;
+}
+.preco{
+  width: 80px;
 }
 </style>
