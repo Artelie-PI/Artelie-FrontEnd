@@ -1,6 +1,6 @@
-// src/stores/user.js
 import { defineStore } from 'pinia'
 import { login as apiLogin, logout as apiLogout } from '@/api/auth'
+import apiClient from '@/axios'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -8,23 +8,25 @@ export const useUserStore = defineStore('user', {
     accessToken: localStorage.getItem('access_token') || null,
     refreshToken: localStorage.getItem('refresh_token') || null,
   }),
-
   getters: {
     isAuthenticated: (state) => !!state.accessToken,
     displayName: (state) => state.user?.username || 'Usuário',
   },
-
   actions: {
-    async login(username, password) {
-      const data = await apiLogin(username, password)
+    async login(email, password) {
+      const data = await apiLogin(email, password)
       this.accessToken = data.access
       this.refreshToken = data.refresh
       localStorage.setItem('access_token', data.access)
       localStorage.setItem('refresh_token', data.refresh)
-
-      this.user = { username } // simulação, depois pode buscar no backend
+      // Busca infos do usuário autenticado
+      try {
+        const { data: userData } = await apiClient.get('/users/me')
+        this.user = userData
+      } catch {
+        this.user = { email }
+      }
     },
-
     logout() {
       this.user = null
       this.accessToken = null

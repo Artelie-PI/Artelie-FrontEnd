@@ -15,7 +15,7 @@ const router = useRouter()
 // Formulários de login e registro
 const form = reactive({
   // login
-  loginUsername: '',
+  loginEmail: '',
   loginPassword: '',
   // register
   username: '',
@@ -25,7 +25,6 @@ const form = reactive({
   full_name: ''
 })
 
-// animação troca para register
 async function animateToRegister() {
   if (mode.value === 'register' || isAnimating.value) return
   mode.value = 'register'
@@ -34,7 +33,6 @@ async function animateToRegister() {
   setTimeout(() => { isAnimating.value = false }, ANIM_MS)
 }
 
-// animação troca para login
 async function animateToLogin() {
   if (mode.value === 'login' || isAnimating.value) return
   mode.value = 'login'
@@ -43,44 +41,39 @@ async function animateToLogin() {
   setTimeout(() => { isAnimating.value = false }, ANIM_MS)
 }
 
-// Login
+// Login (atualizado p/ email)
 async function handleLogin() {
   errorMsg.value = ''
   successMsg.value = ''
   try {
-    await login(form.loginUsername, form.loginPassword)
+    await login(form.loginEmail, form.loginPassword)
     successMsg.value = 'Login realizado com sucesso!'
     router.push('/')
   } catch (err) {
-    console.error(err)
-    errorMsg.value = 'Username ou senha inválidos!'
+    errorMsg.value = err?.response?.data?.detail || 'Email ou senha inválidos!'
   }
 }
 
-// Registro
+// Registro (envia password_confirm e mostra msg de verificação de email)
 async function handleRegister() {
   errorMsg.value = ''
   successMsg.value = ''
 
-  // Checagem de campos obrigatórios
   if (!form.username || !form.email || !form.password || !form.confirmPassword || !form.full_name) {
     errorMsg.value = 'Preencha todos os campos!'
     return
   }
 
-  // Checagem de tamanho da senha
-  if (form.password.length < 6) {
-    errorMsg.value = 'A senha deve ter no mínimo 6 caracteres!'
+  if (form.password.length < 8) {
+    errorMsg.value = 'A senha deve ter no mínimo 8 caracteres!'
     return
   }
 
-  // Checagem de confirmação de senha
   if (form.password !== form.confirmPassword) {
     errorMsg.value = 'As senhas não conferem!'
     return
   }
 
-  // Checagem de formato de email simples
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   if (!emailRegex.test(form.email)) {
     errorMsg.value = 'Email inválido!'
@@ -88,34 +81,24 @@ async function handleRegister() {
   }
 
   try {
-    await register({
+    const resposta = await register({
       username: form.username,
       email: form.email,
       password: form.password,
+      password_confirm: form.confirmPassword,
       full_name: form.full_name
     })
-    successMsg.value = 'Registro realizado com sucesso! Agora faça login.'
-    animateToLogin()
+    successMsg.value = resposta?.message || 'Registro realizado! Verifique seu email antes de logar.'
   } catch (err) {
-    console.error(err)
-    // Checa se o erro é de usuário ou email já existente
-    if (err?.response?.data?.detail) {
-      if (
-        typeof err.response.data.detail === 'string' &&
-        (
-          err.response.data.detail.includes('username') ||
-          err.response.data.detail.includes('email') ||
-          err.response.data.detail.includes('already exists')
-        )
-      ) {
-        errorMsg.value = 'Usuário ou email já cadastrado!'
-      } else {
-        errorMsg.value = err.response.data.detail
-      }
-    } else if (err?.response?.data?.message) {
-      errorMsg.value = err.response.data.message
+    if (err?.response?.data) {
+      if (err.response.data.username) errorMsg.value = 'Usuário já cadastrado'
+      else if (err.response.data.email) errorMsg.value = 'Email já cadastrado'
+      else if (typeof err.response.data.detail === 'string') errorMsg.value = err.response.data.detail
+      else if (err.response.data.error) errorMsg.value = err.response.data.error
+      else if (err.response.data.message) errorMsg.value = err.response.data.message
+      else errorMsg.value = 'Erro no registro! Verifique os dados.'
     } else {
-      errorMsg.value = 'Erro no registro! Verifique os dados.'
+      errorMsg.value = 'Erro desconhecido ao registrar.'
     }
   }
 }
@@ -124,13 +107,10 @@ async function handleRegister() {
 <template>
   <main :class="{ 'register-mode': mode === 'register' }">
     <LeftPanel :mode="mode" :moving="isAnimating" />
-
     <div class="login-container">
       <p class="titleLogin">{{ mode === 'login' ? 'LOGIN' : 'REGISTER' }}</p>
-
       <p v-if="errorMsg" class="error">{{ errorMsg }}</p>
       <p v-if="successMsg" class="success">{{ successMsg }}</p>
-
       <AuthForm
         :form="form"
         :mode="mode"

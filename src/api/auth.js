@@ -1,8 +1,8 @@
 import apiClient from '@/axios'
 
 // Login
-export async function login(username, password) {
-  const { data } = await apiClient.post('/token/', { username, password })
+export async function login(email, password) {
+  const { data } = await apiClient.post('/token/', { email, password })
   localStorage.setItem('access_token', data.access)
   localStorage.setItem('refresh_token', data.refresh)
   return data

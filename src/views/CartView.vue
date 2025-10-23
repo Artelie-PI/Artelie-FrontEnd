@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from "vue";
-import { useRouter } from "vue-router";
+import { RouterLink, useRouter } from "vue-router";
 import { useCartStore } from "@/stores/cart";
 
 const router = useRouter();
@@ -133,7 +133,7 @@ const totalWithDiscountAndShipping = computed(() => {
       <button class="btn voltar" @click="voltarLoja">VOLTAR À LOJA</button>
 
       <p class="login-text">
-        Tem uma conta? <span class="login-link">LOGIN</span> para finalizar suas compras
+        Tem uma conta? <span class="login-link"><RouterLink to="/login">LOGIN</RouterLink></span> para finalizar suas compras
       </p>
     </section>
 
