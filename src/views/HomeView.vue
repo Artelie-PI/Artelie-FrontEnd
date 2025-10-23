@@ -32,9 +32,9 @@ const featured = [
   },
 ];
 // Mudar esse código do Button para adicionar o produto ao carrinho
-const handleAdd = (item) => {
-  console.log('Adicionar ao carrinho', item); // substitua por sua lógica
-};
+// const handleAdd = (item) => {
+//  console.log('Adicionar ao carrinho', item); // substitua por sua lógica
+// };
 
 </script>
 

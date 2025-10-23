@@ -2,7 +2,6 @@
 import { onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useProductsStore } from '@/stores/products'
-import ProductCard from '@/components/ProductCard.vue'
 
 const route = useRoute()
 const productsStore = useProductsStore()
