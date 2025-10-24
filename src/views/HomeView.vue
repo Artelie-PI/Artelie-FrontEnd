@@ -1,5 +1,5 @@
 <script setup>
-import ProductCarousel from '@/components/ProductCarousel.vue'; // componente de produtos [web:1]
+import ProductCarousel from '@/components/ProductCarousel.vue';
 
 const featured = [
   {
@@ -30,6 +30,27 @@ const featured = [
     price: 598,
     installmentText: 'Até 4x de R$ 58,24 sem juros',
   },
+  {
+    id: 5,
+    title: 'Estojo Lápis de Cor Studio Collection Winsor & Newton 27 Peças',
+    image: 'https://frutodearte.com.br/cdn/shop/files/884955085226-wn_sc_colour_pencils_wallet_27pc_884955085226_front.jpg?v=1728500414&width=600',
+    price: 598,
+    installmentText: 'Até 4x de R$ 58,24 sem juros',
+  },
+  {
+    id: 6,
+    title: 'Estojo Lápis de Cor Studio Collection Winsor & Newton 27 Peças',
+    image: 'https://frutodearte.com.br/cdn/shop/files/884955085226-wn_sc_colour_pencils_wallet_27pc_884955085226_front.jpg?v=1728500414&width=600',
+    price: 598,
+    installmentText: 'Até 4x de R$ 58,24 sem juros',
+  },
+  {
+    id: 7,
+    title: 'Estojo Lápis de Cor Studio Collection Winsor & Newton 27 Peças',
+    image: 'https://frutodearte.com.br/cdn/shop/files/884955085226-wn_sc_colour_pencils_wallet_27pc_884955085226_front.jpg?v=1728500414&width=600',
+    price: 598,
+    installmentText: 'Até 4x de R$ 58,24 sem juros',
+  }  
 ];
 // Mudar esse código do Button para adicionar o produto ao carrinho
 // const handleAdd = (item) => {
@@ -42,14 +63,14 @@ const featured = [
   <main class="home-main">
     <h1 class="visually-hidden">Página Inicial</h1>
     <p class="home-subtitle">Bem-vindo ao Artelie, sua plataforma de gerenciamento de projetos.</p>
-
-    <!-- Section title igual ao Figma -->
-    <div class="section-header">
-      <h2 class="section-title">Produtos em Destaque</h2>
-      <div class="section-rule" aria-hidden="true"></div>
-    </div>
-
-    <ProductCarousel :products="featured" />
+    
+    
+    <ProductCarousel 
+      :products="featured"
+      title="Produtos em Destaque"
+      :show-view-all="true"
+      @view-all="$router.push('/produtos')"
+    />
   </main>
 </template>
 
@@ -57,10 +78,8 @@ const featured = [
 
 .home-main {
   padding: 2rem;
-  text-align: center; /* o conteúdo dos cards pode ficar centralizado, o título é controlado pelo header */
+  text-align: center;
 }
-
-/*Style para esconder o título visualmente mas mantém para acessibilidade */
 .visually-hidden {
   position: absolute !important;
   width: 1px; height: 1px;
@@ -74,8 +93,6 @@ const featured = [
   color: #4b5563;
   font-size: 0.95rem;
 }
-
-/* Header da seção no estilo do Figma */
 .section-header {
   max-width: 1120px;
   margin: 24px auto 20px;
