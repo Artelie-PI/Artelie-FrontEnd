@@ -1,79 +1,3 @@
-<template>
-  <div class="carousel-container">
-    <div class="carousel-header">
-      <div class="header-left">
-        <h2 class="carousel-title">{{ title }}</h2>
-      </div>
-    </div>
-
-    <div class="carousel-wrapper">
-      <button 
-        @click="prev" 
-        class="carousel-nav prev" 
-        :disabled="currentIndex === 0"
-        aria-label="Anterior"
-      >
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <polyline points="15 18 9 12 15 6"/>
-        </svg>
-      </button>
-
-      <div class="carousel-track-container" ref="trackContainer">
-        <div 
-          class="carousel-track" 
-          :style="{ transform: `translateX(-${currentIndex * slideWidth}px)` }"
-        >
-          <div 
-            v-for="product in products" 
-            :key="product.id"
-            class="carousel-slide"
-            :style="{ width: `${slideWidth}px` }"
-          >
-            <div class="product-wrapper">
-              <div class="product-card">
-                <router-link :to="`/produto`" class="product-link">
-                  <div class="product-image">
-                    <img :src="product.image" :alt="product.title" />
-                  </div>
-
-                  <div class="product-info">
-                    <p class="product-category">{{ product.category || 'PAPERBLANKS' }}</p>
-                    <h3 class="product-title">{{ product.title }}</h3>
-                    
-                    <div class="product-pricing">
-                      <span class="product-price">R$ {{ formatPrice(product.price) }}</span>
-                      <span class="product-installment">{{ product.installmentText }}</span>
-                    </div>
-                  </div>
-                </router-link>
-              </div>
-
-              <button 
-                @click="addToCart(product)" 
-                class="btn-add-cart"
-                :disabled="loading[product.id]"
-              >
-                {{ loading[product.id] ? 'Adicionando...' : 'Adicionar a Sacola' }}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <button 
-        @click="next" 
-        class="carousel-nav next" 
-        :disabled="currentIndex >= maxIndex"
-        aria-label="Próximo"
-      >
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <polyline points="9 18 15 12 9 6"/>
-        </svg>
-      </button>
-    </div>
-  </div>
-</template>
-
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useCartStore } from '@/stores/cart';
@@ -95,8 +19,8 @@ const props = defineProps({
 });
 
 defineEmits(['view-all']);
-const cartStore = useCartStore();
 
+const cartStore = useCartStore();
 const currentIndex = ref(0);
 const trackContainer = ref(null);
 const slideWidth = ref(280);
@@ -108,7 +32,8 @@ const maxIndex = computed(() => {
 });
 
 const formatPrice = (price) => {
-  return parseFloat(price).toFixed(2).replace('.', ',');
+  const numPrice = typeof price === 'number' ? price : parseFloat(price);
+  return numPrice.toFixed(2).replace('.', ',');
 };
 
 const prev = () => {
@@ -128,8 +53,8 @@ const addToCart = async (product) => {
   try {
     await cartStore.addToCart({
       id: product.id,
-      name: product.title,
-      price: product.price,
+      title: product.title || product.name,
+      price: typeof product.price === 'number' ? product.price : parseFloat(product.price),
       image: product.image
     });
   } catch (error) {
@@ -141,7 +66,6 @@ const addToCart = async (product) => {
 
 const calculateLayout = () => {
   if (!trackContainer.value) return;
-  
   const containerWidth = trackContainer.value.offsetWidth;
   const gap = 20;
   
@@ -167,26 +91,60 @@ onUnmounted(() => {
 });
 </script>
 
+<template>
+  <div class="carousel-container">
+    <div class="carousel-wrapper">
+      <button @click="prev" class="carousel-nav prev" :disabled="currentIndex === 0" aria-label="Anterior">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+      </button>
+      
+      <div class="carousel-track-container" ref="trackContainer">
+        <div class="carousel-track" :style="{ transform: `translateX(-${currentIndex * slideWidth}px)` }">
+          <div v-for="product in products" :key="product.id" class="carousel-slide"
+            :style="{ width: `${slideWidth}px` }">
+            <div class="product-wrapper">
+              <div class="product-card">
+                <router-link :to="`/produto/${product.id}`" class="product-link">
+                  <div class="product-image">
+                    <img :src="product.image" :alt="product.title || product.name" />
+                  </div>
+
+                  <div class="product-info">
+                    <p class="product-category">{{ product.category || 'PRODUTOS' }}</p>
+                    <h3 class="product-title">{{ product.title || product.name }}</h3>
+
+                    <div class="product-pricing">
+                      <span class="product-price">R$ {{ formatPrice(product.price) }}</span>
+                      <span class="product-installment">{{ product.installmentText || `Até 4x sem juros` }}</span>
+                    </div>
+                  </div>
+                </router-link>
+              </div>
+              <button @click="addToCart(product)" class="btn-add-cart" :disabled="loading[product.id]">
+                {{ loading[product.id] ? 'Adicionando...' : 'Adicionar a Sacola' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <button @click="next" class="carousel-nav next" :disabled="currentIndex >= maxIndex" aria-label="Próximo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <polyline points="9 18 15 12 9 6" />
+        </svg>
+      </button>
+    </div>
+  </div>
+</template>
+
 <style scoped>
 .carousel-container {
+  margin-top: 100px;
   max-width: 1120px;
   margin: 0 auto;
   padding: 0 1rem;
-}
-
-.carousel-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-}
-
-.carousel-title {
-  font-family: "Poppins", sans-serif;
-  font-size: 1.75rem;
-  font-weight: 500;
-  margin: 0;
-  color: #333;
 }
 
 .carousel-wrapper {
@@ -347,7 +305,7 @@ onUnmounted(() => {
   background: #000;
   color: #fff;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   border: none;
   cursor: pointer;
   transition: all 0.3s;
@@ -367,10 +325,6 @@ onUnmounted(() => {
 }
 
 @media (max-width: 1024px) {
-  .carousel-title {
-    font-size: 1.5rem;
-  }
-
   .carousel-nav {
     width: 40px;
     height: 40px;
@@ -380,16 +334,6 @@ onUnmounted(() => {
 @media (max-width: 768px) {
   .carousel-container {
     padding: 0 0.5rem;
-  }
-
-  .carousel-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-  }
-
-  .btn-view-all {
-    width: 100%;
   }
 
   .carousel-nav {

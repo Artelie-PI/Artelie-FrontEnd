@@ -1,31 +1,87 @@
+<script setup>
+import { ref, onMounted } from "vue";
+import { useRoute } from "vue-router";
+import { useCartStore } from "@/stores/cart";
+import { fetchRelatedProducts } from "@/api/products";
+
+const route = useRoute();
+const cartStore = useCartStore();
+const relatedProducts = ref([]);
+const loading = ref(true);
+const error = ref(null);
+
+function addToCart(product) {
+  cartStore.addToCart({
+    id: product.id,
+    title: product.name,
+    price: product.price,
+    image: product.image,
+  });
+}
+
+onMounted(async () => {
+  try {
+    loading.value = true;
+    const productId = route.params.id;
+    
+    // Tenta buscar produtos relacionados
+    let products = await fetchRelatedProducts(productId);
+    
+    // Se não encontrou relacionados, busca produtos da mesma categoria
+    if (products.length === 0) {
+      console.log('Endpoint de relacionados não existe, buscando da mesma categoria...');
+      // Por enquanto, retorna array vazio até implementar busca por categoria
+      products = [];
+    }
+    
+    relatedProducts.value = products.map(product => ({
+      id: product.id,
+      name: product.name,
+      price: `R$ ${parseFloat(product.price).toFixed(2).replace('.', ',')}`,
+      image: product.image || product.images?.[0]?.image,
+    }));
+  } catch (err) {
+    console.error('Erro ao carregar produtos relacionados:', err);
+    error.value = null; // Não mostra erro, apenas não exibe produtos
+  } finally {
+    loading.value = false;
+  }
+});
+</script>
+
 <template>
   <div class="related-wrapper">
     <div class="related">
       <h2>Explorar outros itens semelhantes</h2>
-      <div class="related-grid">
+
+      <div v-if="loading" class="loading-state">
+        <p>Carregando produtos relacionados...</p>
+      </div>
+
+      <div v-else-if="error" class="error-state">
+        <p>{{ error }}</p>
+      </div>
+
+      <div v-else-if="relatedProducts.length === 0" class="empty-state">
+        <p>Nenhum produto relacionado encontrado.</p>
+      </div>
+
+      <div v-else class="related-grid">
         <div
-          v-for="(related, i) in productStore.relatedProducts"
-          :key="i"
+          v-for="related in relatedProducts"
+          :key="related.id"
           class="related-card"
         >
-          <img :src="related.image" class="related-img" />
-
+          <img :src="related.image" :alt="related.name" class="related-img" />
           <h3 class="related-name">{{ related.name }}</h3>
-
           <p class="related-price">{{ related.price }}</p>
-          <p class="related-installments">Até 4x de R$ 152,84 sem juros</p>
-
-          <button class="add-btn">Adicionar à Sacola</button>
+          <p class="related-installments">Até 4x de R$ {{ (parseFloat(related.price.replace('R$ ', '').replace(',', '.')) / 4).toFixed(2).replace('.', ',') }} sem juros</p>
+          <button class="add-btn" @click="addToCart(related)">Adicionar à Sacola</button>
         </div>
       </div>
     </div>
   </div>
 </template>
-
-<script setup>
-import { useProductStore } from "@/stores/relatedProduct";
-const productStore = useProductStore();
-</script>
 
 <style scoped>
 .related-wrapper {
@@ -40,6 +96,16 @@ const productStore = useProductStore();
   margin-bottom: 1.2rem;
   border-bottom: 1px solid #ddd;
   padding-bottom: 0.4rem;
+}
+
+.loading-state, .error-state, .empty-state {
+  padding: 2rem;
+  text-align: center;
+  color: #666;
+}
+
+.error-state {
+  color: #dc2626;
 }
 
 .related-grid {
@@ -58,6 +124,7 @@ const productStore = useProductStore();
   justify-content: space-between;
   transition: border 0.2s ease, transform 0.2s ease;
 }
+
 .related-card:hover {
   transform: translateY(-3px);
   border: 1px solid #999;
@@ -103,6 +170,7 @@ const productStore = useProductStore();
   cursor: pointer;
   transition: background 0.2s ease;
 }
+
 .add-btn:hover {
   background: #333;
 }

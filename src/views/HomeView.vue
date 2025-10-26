@@ -1,91 +1,78 @@
 <script setup>
-import ProductCarousel from '@/components/ProductCarousel.vue';
+import { ref, onMounted } from 'vue';
+import CardProcucts from '@/components/CardProducts.vue';
+import { fetchFeaturedProducts } from '@/api/products';
+import { formatProduct } from '@/utils/productHelper';
 
-const featured = [
-  {
-    id: 1,
-    title: 'Estojo Lápis de Cor Studio Collection Winsor & Newton 27 Peças',
-    image: 'https://frutodearte.com.br/cdn/shop/files/884955085226-wn_sc_colour_pencils_wallet_27pc_884955085226_front.jpg?v=1728500414&width=600',
-    price: 598,
-    installmentText: 'Até 4x de R$ 58,24 sem juros',
-  },
-  {
-    id: 2,
-    title: 'Estojo Lápis de Cor Studio Collection Winsor & Newton 27 Peças',
-    image: 'https://frutodearte.com.br/cdn/shop/files/884955085226-wn_sc_colour_pencils_wallet_27pc_884955085226_front.jpg?v=1728500414&width=600',
-    price: 598,
-    installmentText: 'Até 4x de R$ 58,24 sem juros',
-  },
-  {
-    id: 3,
-    title: 'Estojo Lápis de Cor Studio Collection Winsor & Newton 27 Peças',
-    image: 'https://frutodearte.com.br/cdn/shop/files/884955085226-wn_sc_colour_pencils_wallet_27pc_884955085226_front.jpg?v=1728500414&width=600',
-    price: 598,
-    installmentText: 'Até 4x de R$ 58,24 sem juros',
-  },
-  {
-    id: 4,
-    title: 'Estojo Lápis de Cor Studio Collection Winsor & Newton 27 Peças',
-    image: 'https://frutodearte.com.br/cdn/shop/files/884955085226-wn_sc_colour_pencils_wallet_27pc_884955085226_front.jpg?v=1728500414&width=600',
-    price: 598,
-    installmentText: 'Até 4x de R$ 58,24 sem juros',
-  },
-  {
-    id: 5,
-    title: 'Estojo Lápis de Cor Studio Collection Winsor & Newton 27 Peças',
-    image: 'https://frutodearte.com.br/cdn/shop/files/884955085226-wn_sc_colour_pencils_wallet_27pc_884955085226_front.jpg?v=1728500414&width=600',
-    price: 598,
-    installmentText: 'Até 4x de R$ 58,24 sem juros',
-  },
-  {
-    id: 6,
-    title: 'Estojo Lápis de Cor Studio Collection Winsor & Newton 27 Peças',
-    image: 'https://frutodearte.com.br/cdn/shop/files/884955085226-wn_sc_colour_pencils_wallet_27pc_884955085226_front.jpg?v=1728500414&width=600',
-    price: 598,
-    installmentText: 'Até 4x de R$ 58,24 sem juros',
-  },
-  {
-    id: 7,
-    title: 'Estojo Lápis de Cor Studio Collection Winsor & Newton 27 Peças',
-    image: 'https://frutodearte.com.br/cdn/shop/files/884955085226-wn_sc_colour_pencils_wallet_27pc_884955085226_front.jpg?v=1728500414&width=600',
-    price: 598,
-    installmentText: 'Até 4x de R$ 58,24 sem juros',
-  }  
-];
-// Mudar esse código do Button para adicionar o produto ao carrinho
-// const handleAdd = (item) => {
-//  console.log('Adicionar ao carrinho', item); // substitua por sua lógica
-// };
+const featured = ref([]);
+const loading = ref(true);
+const error = ref(null);
 
+onMounted(async () => {
+  try {
+    loading.value = true;
+    const response = await fetchFeaturedProducts();
+    
+    console.log('Resposta da API:', response);
+    
+    const products = Array.isArray(response) ? response : (response.results || []);
+    
+    if (products.length === 0) {
+      console.warn('Nenhum produto encontrado, a API pode estar sem produtos cadastrados');
+    }
+    
+    featured.value = products.map(formatProduct);
+    
+  } catch (err) {
+    console.error('Erro ao carregar produtos em destaque:', err);
+    console.error('Detalhes:', err.response?.data || err.message);
+    error.value = 'Erro ao carregar produtos. A API pode estar offline.';
+  } finally {
+    loading.value = false;
+  }
+});
 </script>
 
 <template>
   <main class="home-main">
     <h1 class="visually-hidden">Página Inicial</h1>
     <p class="home-subtitle">Bem-vindo ao Artelie, sua plataforma de gerenciamento de projetos.</p>
-    
-    
-    <ProductCarousel 
-      :products="featured"
-      title="Produtos em Destaque"
-      :show-view-all="true"
-      @view-all="$router.push('/produtos')"
-    />
+
+    <div class="section-header">
+      <h2 class="section-title">Produtos em Destaque</h2>
+      <div class="section-rule" aria-hidden="true"></div>
+    </div>
+
+    <div v-if="loading" class="loading-state">
+      <div class="loading-spinner"></div>
+      <p>Carregando produtos...</p>
+      <p class="loading-hint">Se demorar muito, o servidor pode estar iniciando (±30s)</p>
+    </div>
+
+    <div v-else-if="error" class="error-state">
+      <p>{{ error }}</p>
+    </div>
+
+    <CardProcucts v-else :products="featured" />
   </main>
 </template>
 
 <style scoped>
-
 .home-main {
   padding: 2rem;
   text-align: center;
 }
+
 .visually-hidden {
   position: absolute !important;
-  width: 1px; height: 1px;
-  padding: 0; margin: -1px;
-  overflow: hidden; clip: rect(0, 0, 0, 0);
-  white-space: nowrap; border: 0;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .home-subtitle {
@@ -93,12 +80,14 @@ const featured = [
   color: #4b5563;
   font-size: 0.95rem;
 }
+
 .section-header {
   max-width: 1120px;
   margin: 24px auto 20px;
   text-align: left;
-  padding: 0 ;
+  padding: 0;
 }
+
 .section-title {
   font-family: "Poppins", sans-serif;
   font-weight: 500;
@@ -106,9 +95,20 @@ const featured = [
   line-height: 1.3;
   padding-bottom: 3px;
 }
+
 .section-rule {
   height: 1px;
   background: #000;
   width: 100%;
+}
+
+.loading-state, .error-state {
+  padding: 2rem;
+  text-align: center;
+  color: #666;
+}
+
+.error-state {
+  color: #dc2626;
 }
 </style>

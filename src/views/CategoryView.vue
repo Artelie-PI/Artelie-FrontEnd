@@ -1,19 +1,43 @@
 <script setup>
-import { onMounted, watch } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { useProductsStore } from '@/stores/products'
+import { fetchProductsByCategory } from '@/api/products'
+import CardProducts from '@/components/CardProducts.vue'
 
 const route = useRoute()
-const productsStore = useProductsStore()
+const products = ref([])
+const loading = ref(false)
+const error = ref(null)
+const searchQuery = ref('')
+
+async function loadProducts() {
+  loading.value = true
+  error.value = null
+  try {
+    const data = await fetchProductsByCategory(route.params.slug)
+    products.value = data.map(product => ({
+      id: product.id,
+      title: product.name,
+      image: product.image || product.images?.[0]?.image,
+      price: parseFloat(product.price),
+      installmentText: `Até 4x de R$ ${(parseFloat(product.price) / 4).toFixed(2).replace('.', ',')} sem juros`,
+    }))
+  } catch (err) {
+    console.error('Erro ao carregar produtos:', err)
+    error.value = 'Erro ao carregar produtos'
+  } finally {
+    loading.value = false
+  }
+}
 
 onMounted(() => {
-  productsStore.loadByCategory(route.params.slug)
+  loadProducts()
 })
 
 watch(
   () => route.params.slug,
-  (newSlug) => {
-    productsStore.loadByCategory(newSlug)
+  () => {
+    loadProducts()
   }
 )
 </script>
@@ -22,62 +46,52 @@ watch(
   <main>
     <h1>Categoria: {{ route.params.slug }}</h1>
 
-    <!-- Botão de filtro à esquerda da barra de pesquisa -->
     <div class="search-filter-wrapper">
-      <button class="filter-button">FILTRAR PRODUTOS <img class="imageFilter" src="@/assets/images/ConfigIcon.png" alt="" height="20px"></button>
-
+      <button class="filter-button">
+        FILTRAR PRODUTOS 
+        <img class="imageFilter" src="@/assets/images/ConfigIcon.png" alt="" height="20px">
+      </button>
 
       <div class="search-container">
         <img src="@/assets/images/Search.png" alt="Buscar" class="search-icon" />
         <input
           type="text"
+          v-model="searchQuery"
           placeholder="Pesquisar produto..."
           class="search-bar"
         />
       </div>
     </div>
 
-    <div v-if="productsStore.loading">Carregando...</div>
-    <div v-else-if="productsStore.error">{{ productsStore.error }}</div>
-
-    <div v-else class="products-grid">
-      <ProductCard
-        v-for="product in productsStore.items"
-        :key="product.id"
-        :product="product"
-      />
+    <div v-if="loading" class="loading-state">Carregando produtos...</div>
+    <div v-else-if="error" class="error-state">{{ error }}</div>
+    <div v-else-if="products.length === 0" class="empty-state">
+      Nenhum produto encontrado nesta categoria.
     </div>
+
+    <CardProducts v-else :products="products" />
   </main>
 </template>
 
-
 <style scoped>
-.products-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 1rem;
+main {
   padding: 1rem;
 }
-.search-container {
-  position: relative;
-  max-width: 400px;
-  width: 100%;
+
+h1 {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  text-transform: capitalize;
 }
-.search-bar {
-  padding: 0.5rem 0.5rem 0.5rem 2.5rem; /* espaço para a lupa à esquerda */
-  width: 100%;
-  font-size: 1rem;
-  border: 1px solid #000000;
-  box-sizing: border-box;
+
+.loading-state, .error-state, .empty-state {
+  padding: 2rem;
+  text-align: center;
+  color: #666;
 }
-.search-icon {
-  position: absolute;
-  left: 0.8rem;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 20px;
-  height: 20px;
-  pointer-events: none;
+
+.error-state {
+  color: #dc2626;
 }
 
 .search-filter-wrapper {
@@ -93,7 +107,7 @@ watch(
 .filter-button {
   display: flex;
   align-items: center;
-  gap: 8px; /* espaço entre texto e ícone */
+  gap: 8px;
   padding: 0.5rem 1rem;
   font-size: 20px;
   background-color: #000;
@@ -106,6 +120,7 @@ watch(
   font-family: Poppins, sans-serif;
   font-weight: bold;
 }
+
 .filter-button:hover {
   background-color: #333;
 }
@@ -115,20 +130,47 @@ watch(
   height: 15px;
 }
 
+.search-container {
+  position: relative;
+  max-width: 400px;
+  width: 100%;
+}
+
+.search-bar {
+  padding: 0.5rem 0.5rem 0.5rem 2.5rem;
+  width: 100%;
+  font-size: 1rem;
+  border: 1px solid #000000;
+  box-sizing: border-box;
+}
+
+.search-icon {
+  position: absolute;
+  left: 0.8rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+}
+
 @media (max-width: 600px) {
   .search-container {
     max-width: 70%;
     margin-left: 15px;
   }
+  
   .search-bar {
     font-size: 0.95rem;
     padding: 0.5rem 0.5rem 0.5rem 2.2rem;
   }
+  
   .search-icon {
     width: 18px;
     left: 0.5rem;
   }
-    .search-filter-wrapper {
+  
+  .search-filter-wrapper {
     flex-direction: column;
     align-items: stretch;
     gap: 0.5rem;
