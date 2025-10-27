@@ -12,7 +12,7 @@ const errorMsg = ref('')
 const successMsg = ref('')
 const router = useRouter()
 
-// Formulários de login e registro
+// Estado do formulário (pai é o "dono" do estado)
 const form = reactive({
   // login
   loginEmail: '',
@@ -41,20 +41,29 @@ async function animateToLogin() {
   setTimeout(() => { isAnimating.value = false }, ANIM_MS)
 }
 
-// Login (atualizado p/ email)
+// Atualiza o form quando o filho emitir update:form
+function onUpdateForm(v) {
+  Object.assign(form, v)
+}
+
+// Login usando src/api/auth.js
 async function handleLogin() {
   errorMsg.value = ''
   successMsg.value = ''
+  if (!form.loginEmail || !form.loginPassword) {
+    errorMsg.value = 'Informe email e senha.'
+    return
+  }
   try {
-    await login(form.loginEmail, form.loginPassword)
+    await login({ email: form.loginEmail, password: form.loginPassword })
     successMsg.value = 'Login realizado com sucesso!'
-    router.push('/')
+    setTimeout(() => router.push('/'), 300)
   } catch (err) {
-    errorMsg.value = err?.response?.data?.detail || 'Email ou senha inválidos!'
+    errorMsg.value = err?.message || 'Email ou senha inválidos!'
   }
 }
 
-// Registro (envia password_confirm e mostra msg de verificação de email)
+// Registro (exibe mensagem amigável se backend não tem endpoint)
 async function handleRegister() {
   errorMsg.value = ''
   successMsg.value = ''
@@ -63,17 +72,14 @@ async function handleRegister() {
     errorMsg.value = 'Preencha todos os campos!'
     return
   }
-
   if (form.password.length < 8) {
     errorMsg.value = 'A senha deve ter no mínimo 8 caracteres!'
     return
   }
-
   if (form.password !== form.confirmPassword) {
     errorMsg.value = 'As senhas não conferem!'
     return
   }
-
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   if (!emailRegex.test(form.email)) {
     errorMsg.value = 'Email inválido!'
@@ -81,25 +87,16 @@ async function handleRegister() {
   }
 
   try {
-    const resposta = await register({
+    const resp = await register({
       username: form.username,
       email: form.email,
-      password: form.password,
-      password_confirm: form.confirmPassword,
-      full_name: form.full_name
+      password: form.password
     })
-    successMsg.value = resposta?.message || 'Registro realizado! Verifique seu email antes de logar.'
+    successMsg.value = resp?.message || 'Registro realizado! Verifique seu email antes de logar.'
+    setTimeout(() => animateToLogin(), 1200)
   } catch (err) {
-    if (err?.response?.data) {
-      if (err.response.data.username) errorMsg.value = 'Usuário já cadastrado'
-      else if (err.response.data.email) errorMsg.value = 'Email já cadastrado'
-      else if (typeof err.response.data.detail === 'string') errorMsg.value = err.response.data.detail
-      else if (err.response.data.error) errorMsg.value = err.response.data.error
-      else if (err.response.data.message) errorMsg.value = err.response.data.message
-      else errorMsg.value = 'Erro no registro! Verifique os dados.'
-    } else {
-      errorMsg.value = 'Erro desconhecido ao registrar.'
-    }
+    // auth.js revisado retorna uma mensagem clara quando o backend não tem rota pública
+    errorMsg.value = err?.message || 'Erro no registro! Verifique os dados.'
   }
 }
 </script>
@@ -107,13 +104,17 @@ async function handleRegister() {
 <template>
   <main :class="{ 'register-mode': mode === 'register' }">
     <LeftPanel :mode="mode" :moving="isAnimating" />
+
     <div class="login-container">
       <p class="titleLogin">{{ mode === 'login' ? 'LOGIN' : 'REGISTER' }}</p>
+
       <p v-if="errorMsg" class="error">{{ errorMsg }}</p>
       <p v-if="successMsg" class="success">{{ successMsg }}</p>
+
       <AuthForm
         :form="form"
         :mode="mode"
+        @update:form="onUpdateForm"
         @request-register="animateToRegister"
         @request-login="animateToLogin"
         @do-login="handleLogin"
@@ -139,7 +140,7 @@ main {
   background-color: #fff;
   padding: 2rem;
   border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
 
   margin-left: 30vw;
   width: calc(100vw - 30vw);
@@ -150,9 +151,9 @@ main {
   align-items: center;
 
   transition:
-    margin 0.32s cubic-bezier(.2,.9,.3,1),
-    width 0.32s cubic-bezier(.2,.9,.3,1),
-    transform 0.32s cubic-bezier(.2,.9,.3,1),
+    margin 0.32s cubic-bezier(.2, .9, .3, 1),
+    width 0.32s cubic-bezier(.2, .9, .3, 1),
+    transform 0.32s cubic-bezier(.2, .9, .3, 1),
     border-radius 0.32s,
     background-color 0.32s,
     box-shadow 0.32s;
@@ -166,7 +167,21 @@ main.register-mode .login-container {
   transform: translateX(-2vw) scale(1.01);
 }
 
-.titleLogin { font-size: 3rem; font-weight: 600; margin-bottom: 1rem; }
-.error { color: red; font-size: 1rem; margin-bottom: 1rem; }
-.success { color: green; font-size: 1rem; margin-bottom: 1rem; }
+.titleLogin {
+  font-size: 3rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.error {
+  color: red;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+.success {
+  color: green;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
 </style>

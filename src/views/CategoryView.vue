@@ -3,6 +3,7 @@ import { ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { fetchProductsByCategory } from '@/api/products'
 import CardProducts from '@/components/CardProducts.vue'
+import LoadingSpinner from '@/components/LoadingSpinner.vue'
 
 const route = useRoute()
 const products = ref([])
@@ -15,12 +16,12 @@ async function loadProducts() {
   error.value = null
   try {
     const data = await fetchProductsByCategory(route.params.slug)
-    products.value = data.map(product => ({
+    products.value = (data || []).map(product => ({
       id: product.id,
       title: product.name,
       image: product.image || product.images?.[0]?.image,
-      price: parseFloat(product.price),
-      installmentText: `Até 4x de R$ ${(parseFloat(product.price) / 4).toFixed(2).replace('.', ',')} sem juros`,
+      price: Number(product.price),
+      installmentText: `Até 4x de R$ ${(Number(product.price) / 4).toFixed(2).replace('.', ',')} sem juros`,
     }))
   } catch (err) {
     console.error('Erro ao carregar produtos:', err)
@@ -30,16 +31,8 @@ async function loadProducts() {
   }
 }
 
-onMounted(() => {
-  loadProducts()
-})
-
-watch(
-  () => route.params.slug,
-  () => {
-    loadProducts()
-  }
-)
+onMounted(loadProducts)
+watch(() => route.params.slug, loadProducts)
 </script>
 
 <template>
@@ -48,28 +41,21 @@ watch(
 
     <div class="search-filter-wrapper">
       <button class="filter-button">
-        FILTRAR PRODUTOS 
+        FILTRAR PRODUTOS
         <img class="imageFilter" src="@/assets/images/ConfigIcon.png" alt="" height="20px">
       </button>
 
       <div class="search-container">
         <img src="@/assets/images/Search.png" alt="Buscar" class="search-icon" />
-        <input
-          type="text"
-          v-model="searchQuery"
-          placeholder="Pesquisar produto..."
-          class="search-bar"
-        />
+        <input type="text" v-model="searchQuery" placeholder="Pesquisar produto..." class="search-bar" />
       </div>
     </div>
 
-    <div v-if="loading" class="loading-state">Carregando produtos...</div>
+    <LoadingSpinner v-if="loading" size="large" />
     <div v-else-if="error" class="error-state">{{ error }}</div>
-    <div v-else-if="products.length === 0" class="empty-state">
-      Nenhum produto encontrado nesta categoria.
-    </div>
+    <div v-else-if="products.length === 0" class="empty-state">Nenhum produto encontrado nesta categoria.</div>
 
-    <CardProducts v-else :products="products" />
+    <CardProducts v-else :products="products.filter(p => p.title.toLowerCase().includes(searchQuery.toLowerCase()))" />
   </main>
 </template>
 
@@ -84,7 +70,8 @@ h1 {
   text-transform: capitalize;
 }
 
-.loading-state, .error-state, .empty-state {
+.error-state,
+.empty-state {
   padding: 2rem;
   text-align: center;
   color: #666;
@@ -159,17 +146,17 @@ h1 {
     max-width: 70%;
     margin-left: 15px;
   }
-  
+
   .search-bar {
     font-size: 0.95rem;
     padding: 0.5rem 0.5rem 0.5rem 2.2rem;
   }
-  
+
   .search-icon {
     width: 18px;
     left: 0.5rem;
   }
-  
+
   .search-filter-wrapper {
     flex-direction: column;
     align-items: stretch;

@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import CardProcucts from '@/components/CardProducts.vue';
+import CardProducts from '@/components/CardProducts.vue';
+import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import { fetchFeaturedProducts } from '@/api/products';
 import { formatProduct } from '@/utils/productHelper';
 
@@ -8,29 +9,27 @@ const featured = ref([]);
 const loading = ref(true);
 const error = ref(null);
 
-onMounted(async () => {
+async function loadProducts() {
   try {
     loading.value = true;
+    error.value = null;
     const response = await fetchFeaturedProducts();
-    
-    console.log('Resposta da API:', response);
-    
-    const products = Array.isArray(response) ? response : (response.results || []);
-    
-    if (products.length === 0) {
-      console.warn('Nenhum produto encontrado, a API pode estar sem produtos cadastrados');
-    }
-    
+
+    const products = Array.isArray(response) ? response : (response?.results || []);
     featured.value = products.map(formatProduct);
-    
   } catch (err) {
     console.error('Erro ao carregar produtos em destaque:', err);
-    console.error('Detalhes:', err.response?.data || err.message);
-    error.value = 'Erro ao carregar produtos. A API pode estar offline.';
+    if (err.message?.includes('MaxClients') || err.response?.status === 500) {
+      error.value = '⚠️ Servidor temporariamente indisponível. Tente novamente em alguns segundos.';
+    } else {
+      error.value = 'Erro ao carregar produtos. Verifique sua conexão.';
+    }
   } finally {
     loading.value = false;
   }
-});
+}
+
+onMounted(loadProducts);
 </script>
 
 <template>
@@ -43,17 +42,12 @@ onMounted(async () => {
       <div class="section-rule" aria-hidden="true"></div>
     </div>
 
-    <div v-if="loading" class="loading-state">
-      <div class="loading-spinner"></div>
-      <p>Carregando produtos...</p>
-      <p class="loading-hint">Se demorar muito, o servidor pode estar iniciando (±30s)</p>
-    </div>
-
+    <LoadingSpinner v-if="loading" size="large" />
     <div v-else-if="error" class="error-state">
       <p>{{ error }}</p>
+      <button @click="loadProducts" class="retry-button">🔄 Tentar Novamente</button>
     </div>
-
-    <CardProcucts v-else :products="featured" />
+    <CardProducts v-else :products="featured" />
   </main>
 </template>
 
@@ -102,13 +96,26 @@ onMounted(async () => {
   width: 100%;
 }
 
-.loading-state, .error-state {
+.error-state {
   padding: 2rem;
   text-align: center;
-  color: #666;
+  color: #dc2626;
 }
 
-.error-state {
-  color: #dc2626;
+.retry-button {
+  margin-top: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: #3498db;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.retry-button:hover {
+  background: #2980b9;
 }
 </style>

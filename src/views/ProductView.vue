@@ -3,6 +3,7 @@ import { ref, onMounted, computed } from "vue";
 import { useRoute } from "vue-router";
 import { useCartStore } from "@/stores/cart";
 import { fetchProductById } from "@/api/products";
+import LoadingSpinner from "@/components/LoadingSpinner.vue";
 
 const route = useRoute();
 const cartStore = useCartStore();
@@ -13,26 +14,16 @@ const loading = ref(true);
 const error = ref(null);
 const selectedImage = ref(null);
 
-function setRating(value) {
-  rating.value = value;
-}
-
-function increaseQuantity() {
-  quantity.value++;
-}
-
-function decreaseQuantity() {
-  if (quantity.value > 1) quantity.value--;
-}
+function setRating(value) { rating.value = value; }
+function increaseQuantity() { quantity.value++; }
+function decreaseQuantity() { if (quantity.value > 1) quantity.value--; }
 
 const productImages = computed(() => {
   if (!product.value) return [];
   const images = [];
   if (product.value.image) images.push(product.value.image);
   if (product.value.images) {
-    product.value.images.forEach(img => {
-      if (img.image) images.push(img.image);
-    });
+    product.value.images.forEach(img => { if (img.image) images.push(img.image); });
   }
   return images;
 });
@@ -42,8 +33,8 @@ const currentProduct = computed(() => {
   return {
     id: product.value.id,
     title: product.value.name,
-    price: parseFloat(product.value.price),
-    image: selectedImage.value || product.value.image,
+    price: Number(product.value.price),
+    image: selectedImage.value || product.value.image || '',
   };
 });
 
@@ -52,7 +43,7 @@ onMounted(async () => {
     loading.value = true;
     const productId = route.params.id;
     product.value = await fetchProductById(productId);
-    selectedImage.value = productImages.value[0];
+    selectedImage.value = productImages.value[0] ?? product.value.image ?? '';
   } catch (err) {
     console.error('Erro ao carregar produto:', err);
     error.value = 'Erro ao carregar produto';
@@ -64,9 +55,7 @@ onMounted(async () => {
 
 <template>
   <div class="product-page">
-    <div v-if="loading" class="loading-state">
-      <p>Carregando produto...</p>
-    </div>
+    <LoadingSpinner v-if="loading" size="large" message="Carregando produto..." />
 
     <div v-else-if="error" class="error-state">
       <p>{{ error }}</p>
@@ -74,16 +63,10 @@ onMounted(async () => {
 
     <div v-else-if="product" class="product-container">
       <div class="gallery">
-        <img :src="selectedImage" :alt="product.name" class="main-image" />
+        <img :src="selectedImage || '/placeholder.png'" :alt="product.name" class="main-image" />
         <div class="thumbnails" v-if="productImages.length > 1">
-          <img
-            v-for="(img, i) in productImages"
-            :key="i"
-            :src="img"
-            @click="selectedImage = img"
-            class="thumb"
-            :class="{ active: selectedImage === img }"
-          />
+          <img v-for="(img, i) in productImages" :key="i" :src="img" @click="selectedImage = img" class="thumb"
+            :class="{ active: selectedImage === img }" />
         </div>
       </div>
 
@@ -95,14 +78,13 @@ onMounted(async () => {
         </p>
 
         <div class="rating">
-          <span v-for="n in 5" :key="n" class="star" :class="{ full: n <= rating }" @click="setRating(n)">
-            ★
-          </span>
+          <span v-for="n in 5" :key="n" class="star" :class="{ full: n <= rating }" @click="setRating(n)">★</span>
           <span class="count">({{ rating }} de 5)</span>
         </div>
 
-        <p class="price">R$ {{ parseFloat(product.price).toFixed(2).replace('.', ',') }}</p>
-        <p class="installments">Até 4x de R$ {{ (parseFloat(product.price) / 4).toFixed(2).replace('.', ',') }} sem juros</p>
+        <p class="price">R$ {{ Number(product.price).toFixed(2).replace('.', ',') }}</p>
+        <p class="installments">Até 4x de R$ {{ (Number(product.price) / 4).toFixed(2).replace('.', ',') }} sem juros
+        </p>
 
         <div class="quantity">
           <label class="quantity-label">Quantidade</label>
@@ -134,13 +116,9 @@ onMounted(async () => {
   margin: auto;
 }
 
-.loading-state, .error-state {
+.error-state {
   padding: 3rem;
   text-align: center;
-  color: #666;
-}
-
-.error-state {
   color: #dc2626;
 }
 
@@ -181,7 +159,7 @@ onMounted(async () => {
   border: 2px solid black;
 }
 
-.title {
+.details .title {
   font-size: 1.6rem;
   font-weight: 600;
   line-height: 1.3;

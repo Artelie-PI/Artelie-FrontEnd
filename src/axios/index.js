@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const apiClient = axios.create({
-  baseURL: 'https://artelie-backend.onrender.com/api',
+  baseURL: 'https://artelie-backend.onrender.com',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -23,7 +23,7 @@ apiClient.interceptors.response.use(
       const refresh = localStorage.getItem('refresh_token')
       if (refresh) {
         try {
-          const { data } = await apiClient.post('/token/refresh/', { refresh })
+          const { data } = await apiClient.post('/api/token/refresh/', { refresh })
           localStorage.setItem('access_token', data.access)
           originalRequest.headers.Authorization = `Bearer ${data.access}`
           originalRequest._retry = true

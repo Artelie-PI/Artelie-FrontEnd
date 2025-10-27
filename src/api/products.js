@@ -17,7 +17,7 @@ async function fetchWithRetry(url, retries = 2, delay = 2000) {
 
 // Buscar todos os produtos
 export async function fetchAllProducts() {
-  const data = await fetchWithRetry('/products/')
+  const data = await fetchWithRetry('/products/') // ✅ SEM /api
   return Array.isArray(data) ? data : (data.results || [])
 }
 
@@ -85,7 +85,7 @@ export async function fetchRelatedProducts(productId) {
 // Buscar categorias
 export async function fetchCategories() {
   try {
-    const data = await fetchWithRetry('/categories/')
+    const data = await fetchWithRetry('/category/') // ✅ Endpoint correto da API
     return Array.isArray(data) ? data : (data.results || [])
   } catch (error) {
     console.error('Erro ao buscar categorias:', error)

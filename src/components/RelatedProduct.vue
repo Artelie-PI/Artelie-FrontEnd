@@ -3,6 +3,7 @@ import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { useCartStore } from "@/stores/cart";
 import { fetchRelatedProducts } from "@/api/products";
+import LoadingSpinner from "@/components/LoadingSpinner.vue";
 
 const route = useRoute();
 const cartStore = useCartStore();
@@ -14,7 +15,7 @@ function addToCart(product) {
   cartStore.addToCart({
     id: product.id,
     title: product.name,
-    price: product.price,
+    price: Number(product.price), // garantir number no store
     image: product.image,
   });
 }
@@ -23,26 +24,22 @@ onMounted(async () => {
   try {
     loading.value = true;
     const productId = route.params.id;
-    
-    // Tenta buscar produtos relacionados
     let products = await fetchRelatedProducts(productId);
-    
-    // Se não encontrou relacionados, busca produtos da mesma categoria
-    if (products.length === 0) {
-      console.log('Endpoint de relacionados não existe, buscando da mesma categoria...');
-      // Por enquanto, retorna array vazio até implementar busca por categoria
+
+    // fallback – por enquanto vazio (implementar por categoria depois)
+    if (!Array.isArray(products) || products.length === 0) {
       products = [];
     }
-    
+
     relatedProducts.value = products.map(product => ({
       id: product.id,
       name: product.name,
-      price: `R$ ${parseFloat(product.price).toFixed(2).replace('.', ',')}`,
+      price: Number(product.price),
       image: product.image || product.images?.[0]?.image,
     }));
   } catch (err) {
     console.error('Erro ao carregar produtos relacionados:', err);
-    error.value = null; // Não mostra erro, apenas não exibe produtos
+    error.value = null; // não exibir erro, só não mostra cards
   } finally {
     loading.value = false;
   }
@@ -54,9 +51,7 @@ onMounted(async () => {
     <div class="related">
       <h2>Explorar outros itens semelhantes</h2>
 
-      <div v-if="loading" class="loading-state">
-        <p>Carregando produtos relacionados...</p>
-      </div>
+      <LoadingSpinner v-if="loading" size="medium" message="Carregando produtos relacionados..." />
 
       <div v-else-if="error" class="error-state">
         <p>{{ error }}</p>
@@ -67,15 +62,13 @@ onMounted(async () => {
       </div>
 
       <div v-else class="related-grid">
-        <div
-          v-for="related in relatedProducts"
-          :key="related.id"
-          class="related-card"
-        >
-          <img :src="related.image" :alt="related.name" class="related-img" />
+        <div v-for="related in relatedProducts" :key="related.id" class="related-card">
+          <img :src="related.image || '/placeholder.png'" :alt="related.name" class="related-img" />
           <h3 class="related-name">{{ related.name }}</h3>
-          <p class="related-price">{{ related.price }}</p>
-          <p class="related-installments">Até 4x de R$ {{ (parseFloat(related.price.replace('R$ ', '').replace(',', '.')) / 4).toFixed(2).replace('.', ',') }} sem juros</p>
+          <p class="related-price">R$ {{ related.price.toFixed(2).replace('.', ',') }}</p>
+          <p class="related-installments">
+            Até 4x de R$ {{ (related.price / 4).toFixed(2).replace('.', ',') }} sem juros
+          </p>
           <button class="add-btn" @click="addToCart(related)">Adicionar à Sacola</button>
         </div>
       </div>
@@ -98,7 +91,8 @@ onMounted(async () => {
   padding-bottom: 0.4rem;
 }
 
-.loading-state, .error-state, .empty-state {
+.error-state,
+.empty-state {
   padding: 2rem;
   text-align: center;
   color: #666;
@@ -132,8 +126,9 @@ onMounted(async () => {
 
 .related-img {
   width: 100%;
-  height: auto;
+  aspect-ratio: 4/5;
   object-fit: contain;
+  background: #fff;
   margin-bottom: 0.8rem;
 }
 
@@ -159,8 +154,8 @@ onMounted(async () => {
 }
 
 .add-btn {
-  background: black;
-  color: white;
+  background: #000;
+  color: #fff;
   font-size: 0.9rem;
   font-weight: 500;
   padding: 0.7rem;
