@@ -6,16 +6,16 @@ import AuthForm from '@/components/AuthForm.vue'
 import { login, register } from '@/api/auth'
 
 const ANIM_MS = 320
-const mode = ref('login') // 'login' | 'register'
+const mode = ref('login')
 const isAnimating = ref(false)
 const errorMsg = ref('')
 const successMsg = ref('')
 const router = useRouter()
 
-// Formulários de login e registro
+
 const form = reactive({
   // login
-  loginUsername: '',
+  loginEmail: '',
   loginPassword: '',
   // register
   username: '',
@@ -25,62 +25,75 @@ const form = reactive({
   full_name: ''
 })
 
-// animação troca para register
 async function animateToRegister() {
   if (mode.value === 'register' || isAnimating.value) return
+  errorMsg.value = ''
+  successMsg.value = ''
   mode.value = 'register'
   await nextTick()
   isAnimating.value = true
   setTimeout(() => { isAnimating.value = false }, ANIM_MS)
 }
 
-// animação troca para login
 async function animateToLogin() {
   if (mode.value === 'login' || isAnimating.value) return
+  errorMsg.value = ''
+  successMsg.value = ''
   mode.value = 'login'
   await nextTick()
   isAnimating.value = true
   setTimeout(() => { isAnimating.value = false }, ANIM_MS)
 }
 
-// Login
 async function handleLogin() {
   errorMsg.value = ''
   successMsg.value = ''
+
+  if (!form.loginEmail || !form.loginPassword) {
+    errorMsg.value = 'Preencha email e senha!'
+    return
+  }
+
   try {
-    await login(form.loginUsername, form.loginPassword)
+    await login(form.loginEmail, form.loginPassword)
     successMsg.value = 'Login realizado com sucesso!'
-    router.push('/')
+    setTimeout(() => {
+      router.push('/')
+    }, 1000)
   } catch (err) {
-    console.error(err)
-    errorMsg.value = 'Username ou senha inválidos!'
+    console.error('Erro no login:', err)
+
+    if (err?.response?.status === 401) {
+      errorMsg.value = 'Email ou senha incorretos!'
+    } else if (err?.response?.status === 400) {
+      errorMsg.value = 'Dados inválidos. Verifique email e senha.'
+    } else if (err?.response?.data?.detail) {
+      errorMsg.value = err.response.data.detail
+    } else {
+      errorMsg.value = 'Erro ao fazer login. Tente novamente.'
+    }
   }
 }
 
-// Registro
 async function handleRegister() {
   errorMsg.value = ''
   successMsg.value = ''
 
-  // Checagem de campos obrigatórios
   if (!form.username || !form.email || !form.password || !form.confirmPassword || !form.full_name) {
     errorMsg.value = 'Preencha todos os campos!'
     return
   }
 
-  // Checagem de tamanho da senha
-  if (form.password.length < 6) {
-    errorMsg.value = 'A senha deve ter no mínimo 6 caracteres!'
+  if (form.password.length < 8) {
+    errorMsg.value = 'A senha deve ter no mínimo 8 caracteres!'
     return
   }
 
-  // Checagem de confirmação de senha
   if (form.password !== form.confirmPassword) {
     errorMsg.value = 'As senhas não conferem!'
     return
   }
 
-  // Checagem de formato de email simples
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   if (!emailRegex.test(form.email)) {
     errorMsg.value = 'Email inválido!'
@@ -88,34 +101,52 @@ async function handleRegister() {
   }
 
   try {
-    await register({
+    const resposta = await register({
       username: form.username,
       email: form.email,
       password: form.password,
+      password_confirm: form.confirmPassword,
       full_name: form.full_name
     })
-    successMsg.value = 'Registro realizado com sucesso! Agora faça login.'
-    animateToLogin()
+
+    successMsg.value = resposta?.message || 'Registro realizado! Verifique seu email antes de fazer login.'
+
+    form.username = ''
+    form.email = ''
+    form.password = ''
+    form.confirmPassword = ''
+    form.full_name = ''
   } catch (err) {
-    console.error(err)
-    // Checa se o erro é de usuário ou email já existente
-    if (err?.response?.data?.detail) {
-      if (
-        typeof err.response.data.detail === 'string' &&
-        (
-          err.response.data.detail.includes('username') ||
-          err.response.data.detail.includes('email') ||
-          err.response.data.detail.includes('already exists')
-        )
-      ) {
-        errorMsg.value = 'Usuário ou email já cadastrado!'
+    console.error('Erro no registro:', err)
+
+    if (err?.response?.data) {
+      const errorData = err.response.data
+
+      if (errorData.username) {
+        errorMsg.value = Array.isArray(errorData.username)
+          ? errorData.username[0]
+          : 'Usuário já cadastrado'
+      } else if (errorData.email) {
+        errorMsg.value = Array.isArray(errorData.email)
+          ? errorData.email[0]
+          : 'Email já cadastrado'
+      } else if (errorData.password) {
+        errorMsg.value = Array.isArray(errorData.password)
+          ? errorData.password[0]
+          : 'Senha não atende aos requisitos'
+      } else if (errorData.password_confirm) {
+        errorMsg.value = Array.isArray(errorData.password_confirm)
+          ? errorData.password_confirm[0]
+          : 'As senhas não conferem'
+      } else if (errorData.detail) {
+        errorMsg.value = errorData.detail
+      } else if (errorData.error) {
+        errorMsg.value = errorData.error
       } else {
-        errorMsg.value = err.response.data.detail
+        errorMsg.value = 'Erro no registro! Verifique os dados.'
       }
-    } else if (err?.response?.data?.message) {
-      errorMsg.value = err.response.data.message
     } else {
-      errorMsg.value = 'Erro no registro! Verifique os dados.'
+      errorMsg.value = 'Erro desconhecido ao registrar.'
     }
   }
 }
@@ -160,7 +191,6 @@ main {
   padding: 2rem;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-
   margin-left: 30vw;
   width: calc(100vw - 30vw);
   height: 100vh;
@@ -168,7 +198,6 @@ main {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-
   transition:
     margin 0.32s cubic-bezier(.2,.9,.3,1),
     width 0.32s cubic-bezier(.2,.9,.3,1),
