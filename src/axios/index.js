@@ -1,14 +1,12 @@
-// src/axios/index.js
 import axios from 'axios'
 
 const apiClient = axios.create({
-  baseURL: 'http://127.0.0.1:19003/',
+  baseURL: 'http://127.0.0.1:19003', 
   headers: {
     'Content-Type': 'application/json',
   },
 })
 
-// Envia token automaticamente se existir
 apiClient.interceptors.request.use((config) => {
   const token = localStorage.getItem('access_token')
   if (token) {
@@ -17,4 +15,39 @@ apiClient.interceptors.request.use((config) => {
   return config
 })
 
+apiClient.interceptors.response.use(
+  response => response,
+  async error => {
+    const originalRequest = error.config
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      const refresh = localStorage.getItem('refresh_token')
+
+      if (refresh) {
+        try {
+          originalRequest._retry = true
+          const { data } = await axios.post('http://127.0.0.1:19003/token/refresh/', {
+            refresh
+          })
+
+          localStorage.setItem('access_token', data.access)
+          originalRequest.headers.Authorization = `Bearer ${data.access}`
+
+          return apiClient(originalRequest)
+        } catch (refreshError) {
+          localStorage.removeItem('access_token')
+          localStorage.removeItem('refresh_token')
+          window.location.href = '/login'
+          return Promise.reject(refreshError)
+        }
+      } else {
+        window.location.href = '/login'
+      }
+    }
+
+    return Promise.reject(error)
+  }
+)
+
 export default apiClient
+
