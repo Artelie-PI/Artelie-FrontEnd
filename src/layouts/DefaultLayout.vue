@@ -7,10 +7,9 @@ import SidebarSacola from '@/components/SidebarSacola.vue'
 <template>
   <HeaderVue />
   <SidebarSacola />
-    <RouterView />
+  <RouterView />
   <FooterVue />
 </template>
 
 <style scoped>
-
 </style>

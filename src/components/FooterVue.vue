@@ -2,19 +2,19 @@
 const scrollToTop = () => {
   window.scrollTo({ top: 0, behavior: "smooth" });
 };
-import instagram from "@/assets/images/Instagram.png";
-import tiktok from "@/assets/images/TikTok.png";
-import facebook from "@/assets/images/Facebook1.png";
+import instagram from "@/assets/images/instagram.png";
+import tiktok from "@/assets/images/tik-tok.png";
+import facebook from "@/assets/images/facebook.png";
+import whatsapp from "@/assets/images/whatsapp.png";
 import logo from "@/assets/images/Logo.png";
 import { RouterLink } from "vue-router";
 
-const whatsapp =
-  "https://www.pikpng.com/pngl/b/49-494277_logo-whatsapp-png-branco-logo-whatsapp-branco-png.png";
 </script>
 
 <template>
   <footer class="footer">
     <div class="footer-container">
+      <!-- Coluna 1 -->
       <div class="footer-column">
         <div class="logo">
           <img :src="logo" alt="Logo Arteliê" />
@@ -34,16 +34,17 @@ const whatsapp =
           </a>
         </div>
       </div>
+
+      <!-- Coluna 2 -->
       <div class="footer-column">
         <p class="footer-title">CATEGORIAS</p>
         <ul>
           <li><RouterLink to="/category/papeis">Papéis</RouterLink></li>
-              <li><RouterLink to="/category/pintura">Pintura</RouterLink></li>
-              <li><RouterLink to="/category/lapis-canetas">Lápis & Canetas</RouterLink></li>
-              <li><RouterLink to="/category/livros-gibis">Livros & Gibis</RouterLink></li>
-            </ul>
-          </div>
-
+          <li><RouterLink to="/category/pintura">Pintura</RouterLink></li>
+          <li><RouterLink to="/category/lapis-canetas">Lápis & Canetas</RouterLink></li>
+          <li><RouterLink to="/category/livros-gibis">Livros & Gibis</RouterLink></li>
+        </ul>
+      </div>
 
       <!-- Coluna 3 -->
       <div class="footer-column">
@@ -91,37 +92,45 @@ const whatsapp =
 
 <style scoped>
 .footer {
-  background-color: #000080; /* azul escuro */
+  background-color: #000787;
   color: white;
-  padding: 50px 80px;
+  /* Reduz padding vertical para evitar “footer gigante” */
+  padding: 24px 0 16px 0;
   font-family: "Inter", sans-serif;
 }
 
+/* Container central com largura máxima */
 .footer-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px;
+
   display: flex;
   justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 40px; /* espaçamento entre colunas */
+  align-items: flex-start;
+  gap: 32px;
+  flex-wrap: wrap; /* permite quebrar em telas menores */
 }
 
 .footer-title {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 600;
-  margin-bottom: 1vh;
-
+  margin: 0 0 8px 0;
 }
 
+/* Colunas com largura mínima, sem forçar altura */
 .footer-column {
-  min-width: 180px;
-  font-size: 16px; /* ajustado para ficar mais próximo do Figma */
+  min-width: 200px;
+  flex: 1 1 220px; /* responsivo: cresce/se ajusta sem quebrar layout */
+  font-size: 0.95rem;
 }
 
 .footer-column h4 {
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   font-weight: 600;
   font-size: 14px;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
 }
 
 .footer-column ul {
@@ -132,88 +141,98 @@ const whatsapp =
 
 .footer-column ul li {
   margin-bottom: 8px;
-  cursor: pointer;
   transition: color 0.2s;
 }
-.footer-column ul li a {
+
+.footer-column ul li a,
+.footer-column ul li :deep(a) {
   color: white;
   text-decoration: none;
-}
-.footer-column ul li a:hover {
-  text-decoration: underline;
-}
-.footer-column ul li:hover {
-  color: #ffcc00; /* amarelo claro ao passar o mouse */
-}
-.footer-column ul li:last-child {
-  margin-bottom: 0;
-}
-.footer-column ul li RouterLink {
-  text-decoration: none;
-  color: white;
-}
-.footer-column ul li RouterLink:hover {
-  text-decoration: underline;
 }
 
 .logo img {
   max-width: 120px;
-  margin-bottom: 20px;
+  height: auto;
+  margin-bottom: 16px;
 }
 
 .social-icons {
   display: flex;
-  gap: 15px;
-  margin-top: 10px;
+  gap: 12px;
+  margin-top: 8px;
 }
 
 .social-icons img {
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   cursor: pointer;
   transition: transform 0.2s;
 }
 
-.social-icons img:hover {
-  transform: scale(1.1);
-}
-
 .payment-methods {
   display: flex;
-  gap: 15px;
+  gap: 10px;
   align-items: center;
   flex-wrap: wrap;
-  margin-top: 10px;
+  margin-top: 6px;
 }
 
 .payment-methods img {
-  height: 35px;
+  height: 28px;
   width: auto;
 }
 
+/* Rodapé inferior compacto */
 .bottom-footer {
+  max-width: 1280px;
+  margin: 16px auto 0 auto;
+  padding: 12px 24px 0 24px;
   border-top: 1px solid rgba(255, 255, 255, 0.3);
-  margin-top: 30px;
-  padding-top: 15px;
+
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 1.2rem;
+  gap: 12px;
+
+  font-size: 0.95rem;
+  line-height: 1.4;
 }
 
 .back-to-top {
   background: none;
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 6px;
   color: white;
   cursor: pointer;
-  font-size: 1.2rem;
+  font-size: 0.95rem;
   font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  transition: color 0.2s;
+  padding: 6px 12px;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
 }
 .back-to-top:hover {
-  color: #dddddd;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.7);
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .footer-container {
+    gap: 24px;
+  }
+  .footer-column {
+    flex: 1 1 45%;
+  }
+  .bottom-footer {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    gap: 8px;
+  }
+}
+@media (max-width: 420px) {
+  .footer-column {
+    flex: 1 1 100%;
+  }
 }
 </style>
