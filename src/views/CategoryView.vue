@@ -1,165 +1,461 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
-import { fetchProductsByCategory } from '@/api/products'
-import CardProducts from '@/components/CardProducts.vue'
-import LoadingSpinner from '@/components/LoadingSpinner.vue'
+import { ref, reactive, computed, onMounted, watch } from "vue";
+import { useRoute } from "vue-router";
+import apiClient from "@/axios";
+import SidebarFilter from "@/components/SidebarFilter.vue";
 
-const route = useRoute()
-const products = ref([])
-const loading = ref(false)
-const error = ref(null)
-const searchQuery = ref('')
+// Estado principal
+const route = useRoute();
+const products = ref([]);
+const isLoading = ref(false);
+const errorMsg = ref("");
 
+// Abertura da sidebar de filtros
+const isFilterOpen = ref(false);
+
+// Pesquisa (com debounce)
+const search = ref("");
+let searchDebounce = null;
+
+// Filtros selecionados
+const filters = reactive({
+  sort: null, // 'az' | 'za' | 'new' | 'price_desc' | 'price_asc'
+  materials: [], // array de strings
+  brands: [], // array de strings
+  priceMin: null, // number
+  priceMax: null, // number
+});
+
+// Opções (facetas) derivadas dos produtos carregados
+const facets = reactive({
+  brands: [],
+  materials: [],
+});
+
+// Chips para exibir abaixo do botão de filtro
+const chips = computed(() => {
+  const list = [];
+  if (filters.sort) {
+    const map = {
+      az: "A-Z",
+      za: "Z-A",
+      new: "Novidades",
+      price_desc: "Maior Preço",
+      price_asc: "Menor Preço",
+    };
+    list.push({ key: "sort", label: map[filters.sort] || filters.sort, group: "sort" });
+  }
+  filters.materials.forEach((m) =>
+    list.push({ key: `mat:${m}`, label: m, group: "materials", value: m })
+  );
+  filters.brands.forEach((b) => list.push({ key: `br:${b}`, label: b, group: "brands", value: b }));
+  if (filters.priceMin != null)
+    list.push({
+      key: "pmin",
+      label: `De R$ ${Number(filters.priceMin).toFixed(2)}`,
+      group: "priceMin",
+    });
+  if (filters.priceMax != null)
+    list.push({
+      key: "pmax",
+      label: `Até R$ ${Number(filters.priceMax).toFixed(2)}`,
+      group: "priceMax",
+    });
+  return list;
+});
+
+// Nome da categoria (do slug)
+const categoryTitle = computed(() => {
+  const slug = route.params.slug || "";
+  // Capitaliza e troca hifens por espaços
+  return String(slug)
+    .replace(/-/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+});
+
+// Busca produtos da API (carrega todos da categoria; filtros aplicados no client)
 async function loadProducts() {
-  loading.value = true
-  error.value = null
+  isLoading.value = true;
+  errorMsg.value = "";
   try {
-    const data = await fetchProductsByCategory(route.params.slug)
-    products.value = (data || []).map(product => ({
-      id: product.id,
-      title: product.name,
-      image: product.image || product.images?.[0]?.image,
-      price: Number(product.price),
-      installmentText: `Até 4x de R$ ${(Number(product.price) / 4).toFixed(2).replace('.', ',')} sem juros`,
-    }))
-  } catch (err) {
-    console.error('Erro ao carregar produtos:', err)
-    error.value = 'Erro ao carregar produtos'
+    const slug = route.params.slug;
+    // Endpoint base do seu backend: /products
+    // Primeiro tenta por slug; caso o backend use outro param, trocamos aqui depois
+    const { data } = await apiClient.get("/products", { params: { category_slug: slug } });
+    const list = Array.isArray(data) ? data : data?.results || [];
+    products.value = list.map((p) => ({
+      id: p.id,
+      title: p.title || p.name || "Produto",
+      price: Number(p.price || 0),
+      brand: p.brand?.name || p.brand || null,
+      material: p.material || p.attributes?.material || null,
+      image: p.image || p.images?.[0] || p.thumbnail || "",
+    }));
+    // Gera facetas únicas
+    const setBrands = new Set();
+    const setMaterials = new Set();
+    for (const p of products.value) {
+      if (p.brand) setBrands.add(p.brand);
+      if (p.material) setMaterials.add(p.material);
+    }
+    facets.brands = Array.from(setBrands).sort();
+    facets.materials = Array.from(setMaterials).sort();
+  } catch (e) {
+    errorMsg.value = "Erro ao carregar produtos da categoria.";
   } finally {
-    loading.value = false
+    isLoading.value = false;
   }
 }
 
-onMounted(loadProducts)
-watch(() => route.params.slug, loadProducts)
+// Aplica filtros vindos da Sidebar
+function onApplyFilters(payload) {
+  filters.sort = payload.sort || null;
+  filters.materials = payload.materials || [];
+  filters.brands = payload.brands || [];
+  filters.priceMin =
+    payload.priceMin != null && payload.priceMin !== "" ? Number(payload.priceMin) : null;
+  filters.priceMax =
+    payload.priceMax != null && payload.priceMax !== "" ? Number(payload.priceMax) : null;
+  isFilterOpen.value = false;
+}
+
+// Limpa filtros via Sidebar
+function onClearFilters() {
+  filters.sort = null;
+  filters.materials = [];
+  filters.brands = [];
+  filters.priceMin = null;
+  filters.priceMax = null;
+}
+
+// Remover chip individual
+function removeChip(chip) {
+  if (chip.group === "sort") filters.sort = null;
+  if (chip.group === "materials")
+    filters.materials = filters.materials.filter((m) => m !== chip.value);
+  if (chip.group === "brands") filters.brands = filters.brands.filter((b) => b !== chip.value);
+  if (chip.group === "priceMin") filters.priceMin = null;
+  if (chip.group === "priceMax") filters.priceMax = null;
+}
+
+// Produtos filtrados/ordenados/pesquisados
+const filteredProducts = computed(() => {
+  const q = search.value.trim().toLowerCase();
+  let list = [...products.value];
+
+  // Pesquisa por nome
+  if (q) {
+    list = list.filter((p) => p.title?.toLowerCase().includes(q));
+  }
+
+  // Marca
+  if (filters.brands.length) {
+    list = list.filter((p) => p.brand && filters.brands.includes(p.brand));
+  }
+  // Material
+  if (filters.materials.length) {
+    list = list.filter((p) => p.material && filters.materials.includes(p.material));
+  }
+  // Preço
+  if (filters.priceMin != null) list = list.filter((p) => p.price >= Number(filters.priceMin));
+  if (filters.priceMax != null) list = list.filter((p) => p.price <= Number(filters.priceMax));
+
+  // Ordenação
+  switch (filters.sort) {
+    case "az":
+      list.sort((a, b) => a.title.localeCompare(b.title));
+      break;
+    case "za":
+      list.sort((a, b) => b.title.localeCompare(a.title));
+      break;
+    case "new":
+      // Se houver campo created_at no futuro, ordenar por data desc.
+      // Por ora, mantém como veio.
+      break;
+    case "price_desc":
+      list.sort((a, b) => b.price - a.price);
+      break;
+    case "price_asc":
+      list.sort((a, b) => a.price - b.price);
+      break;
+  }
+  return list;
+});
+
+// Debounce da pesquisa
+watch(search, (v) => {
+  if (searchDebounce) clearTimeout(searchDebounce);
+  searchDebounce = setTimeout(() => {
+    // A computada já reage — nada extra necessário
+  }, 250);
+});
+
+watch(
+  () => route.params.slug,
+  () => {
+    // Troca de categoria
+    search.value = "";
+    onClearFilters();
+    loadProducts();
+  }
+);
+
+onMounted(loadProducts);
 </script>
 
 <template>
-  <main>
-    <h1>Categoria: {{ route.params.slug }}</h1>
+  <main class="category-page">
+    <div class="category-header">
+      <h1 class="category-title">{{ categoryTitle }}</h1>
 
-    <div class="search-filter-wrapper">
-      <button class="filter-button">
-        FILTRAR PRODUTOS
-        <img class="imageFilter" src="@/assets/images/ConfigIcon.png" alt="" height="20px">
-      </button>
+      <div class="tools-row">
+        <button class="filter-btn" @click="isFilterOpen = true">
+          FILTRAR PRODUTOS
+          <span class="filter-icon">☰</span>
+        </button>
 
-      <div class="search-container">
-        <img src="@/assets/images/Search.png" alt="Buscar" class="search-icon" />
-        <input type="text" v-model="searchQuery" placeholder="Pesquisar produto..." class="search-bar" />
+        <div class="search-box">
+          <span class="search-icon">🔎</span>
+          <input
+            type="text"
+            class="search-input"
+            placeholder="Pesquisar Produto"
+            v-model="search"
+            aria-label="Pesquisar Produto"
+          />
+        </div>
+      </div>
+
+      <!-- Chips de filtros aplicados -->
+      <div v-if="chips.length" class="chips-row">
+        <button
+          v-for="c in chips"
+          :key="c.key"
+          class="chip"
+          @click="removeChip(c)"
+          :title="`Remover filtro ${c.label}`"
+        >
+          {{ c.label }}
+          <span class="chip-x">×</span>
+        </button>
+        <button class="chip-clear" @click="onClearFilters">Limpar filtros</button>
       </div>
     </div>
 
-    <LoadingSpinner v-if="loading" size="large" />
-    <div v-else-if="error" class="error-state">{{ error }}</div>
-    <div v-else-if="products.length === 0" class="empty-state">Nenhum produto encontrado nesta categoria.</div>
+    <!-- Lista / Grid de produtos -->
+    <section class="products-section">
+      <p v-if="errorMsg" class="error">{{ errorMsg }}</p>
 
-    <CardProducts v-else :products="products.filter(p => p.title.toLowerCase().includes(searchQuery.toLowerCase()))" />
+      <div v-if="isLoading" class="grid">
+        <div v-for="i in 8" :key="i" class="card skeleton"></div>
+      </div>
+
+      <div v-else class="grid">
+        <article v-for="p in filteredProducts" :key="p.id" class="card">
+          <img :src="p.image" :alt="p.title" class="thumb" />
+          <h3 class="title">{{ p.title }}</h3>
+          <p class="price">R$ {{ p.price.toFixed(2).replace(".", ",") }}</p>
+          <button class="add-btn">Adicionar à Sacola</button>
+        </article>
+      </div>
+    </section>
+
+    <!-- Sidebar de Filtro -->
+    <SidebarFilter
+      :open="isFilterOpen"
+      :facets="facets"
+      :selected="filters"
+      @close="isFilterOpen = false"
+      @apply="onApplyFilters"
+      @clear="onClearFilters"
+    />
   </main>
 </template>
 
 <style scoped>
-main {
-  padding: 1rem;
+.category-page {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 16px 24px 32px 24px;
 }
 
-h1 {
-  font-size: 1.8rem;
-  margin-bottom: 1rem;
-  text-transform: capitalize;
-}
-
-.error-state,
-.empty-state {
-  padding: 2rem;
-  text-align: center;
-  color: #666;
-}
-
-.error-state {
-  color: #dc2626;
-}
-
-.search-filter-wrapper {
+.category-header {
   display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.category-title {
+  font-size: 28px;
+  font-weight: 800;
+  margin: 8px 0 4px 0;
+  letter-spacing: 0.02em;
+}
+
+.tools-row {
+  display: flex;
+  gap: 12px;
   align-items: center;
-  gap: 0.5rem;
-  max-width: 100%;
-  margin-bottom: 1rem;
-  padding: 0 1rem;
   flex-wrap: wrap;
 }
 
-.filter-button {
-  display: flex;
+.filter-btn {
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 0.5rem 1rem;
-  font-size: 20px;
-  background-color: #000;
-  color: white;
-  border: none;
+  background: #111;
+  color: #fff;
+  border: 0;
+  border-radius: 6px;
+  height: 40px;
+  padding: 0 14px;
+  font-weight: 800;
   cursor: pointer;
-  border-radius: 4px;
-  white-space: nowrap;
-  transition: background-color 0.2s ease;
-  font-weight: bold;
+}
+.filter-btn .filter-icon {
+  opacity: 0.9;
 }
 
-.imageFilter {
-  width: 15px;
-  height: 15px;
-}
-
-.search-container {
+.search-box {
   position: relative;
-  max-width: 400px;
-  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  min-width: 260px;
+  flex: 1 1 280px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 0 12px 0 36px;
+  background: #fff;
 }
-
-.search-bar {
-  padding: 0.5rem 0.5rem 0.5rem 2.5rem;
-  width: 100%;
-  font-size: 1rem;
-  border: 1px solid #000000;
-  box-sizing: border-box;
-}
-
 .search-icon {
   position: absolute;
-  left: 0.8rem;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 20px;
-  height: 20px;
-  pointer-events: none;
+  left: 10px;
+  font-size: 14px;
+  opacity: 0.7;
+}
+.search-input {
+  flex: 1;
+  border: 0;
+  outline: none;
+  font-size: 14px;
+  background: transparent;
 }
 
-@media (max-width: 600px) {
-  .search-container {
-    max-width: 70%;
-    margin-left: 15px;
-  }
+.chips-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #f1f1f1;
+  color: #111;
+  border: 1px solid #e5e5e5;
+  border-radius: 999px;
+  height: 30px;
+  padding: 0 10px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.chip .chip-x {
+  opacity: 0.7;
+}
+.chip-clear {
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 0;
+  background: #eee;
+  font-weight: 700;
+  cursor: pointer;
+}
 
-  .search-bar {
-    font-size: 0.95rem;
-    padding: 0.5rem 0.5rem 0.5rem 2.2rem;
-  }
+.products-section {
+  margin-top: 8px;
+}
 
-  .search-icon {
-    width: 18px;
-    left: 0.5rem;
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+}
+@media (max-width: 1100px) {
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+}
+@media (max-width: 780px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 480px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
 
-  .search-filter-wrapper {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.5rem;
-  }
+.card {
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+}
+.card .thumb {
+  width: 100%;
+  height: 170px;
+  object-fit: contain;
+  border-radius: 6px;
+  background: #fafafa;
+}
+.card .title {
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+  min-height: 36px;
+}
+.card .price {
+  font-size: 15px;
+  font-weight: 800;
+  margin: 4px 0 8px 0;
+}
+.card .add-btn {
+  width: 100%;
+  height: 36px;
+  border-radius: 6px;
+  border: 0;
+  font-weight: 800;
+  background: #111;
+  color: #fff;
+  cursor: pointer;
+}
 
-  .filter-button {
-    width: 100%;
+.skeleton {
+  background: linear-gradient(90deg, #f3f3f3 25%, #f7f7f7 37%, #f3f3f3 63%);
+  background-size: 400% 100%;
+  animation: shimmer 1.2s ease-in-out infinite;
+  height: 240px;
+  border-radius: 8px;
+}
+@keyframes shimmer {
+  0% {
+    background-position: 100% 0;
   }
+  100% {
+    background-position: 0 0;
+  }
+}
+
+.error {
+  color: #d00;
+  font-weight: 700;
 }
 </style>
