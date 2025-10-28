@@ -8,10 +8,12 @@ export const useUserStore = defineStore('user', {
     accessToken: localStorage.getItem('access_token') || null,
     refreshToken: localStorage.getItem('refresh_token') || null,
   }),
+
   getters: {
     isAuthenticated: (state) => !!state.accessToken,
-    displayName: (state) => state.user?.username || 'Usuário',
+    displayName: (state) => state.user?.username || state.user?.email || 'Usuário',
   },
+
   actions: {
     async login(email, password) {
       const data = await apiLogin(email, password)
@@ -19,19 +21,32 @@ export const useUserStore = defineStore('user', {
       this.refreshToken = data.refresh
       localStorage.setItem('access_token', data.access)
       localStorage.setItem('refresh_token', data.refresh)
-      // Busca infos do usuário autenticado
+
       try {
-        const { data: userData } = await apiClient.get('/users/me')
+        const { data: userData } = await apiClient.get('/api/users/me/')
         this.user = userData
       } catch {
         this.user = { email }
       }
     },
+    
     logout() {
       this.user = null
       this.accessToken = null
       this.refreshToken = null
       apiLogout()
     },
+
+    async loadUser() {
+      if (this.accessToken) {
+        try {
+          const { data } = await apiClient.get('/api/users/me/')
+          this.user = data
+        } catch (error) {
+          console.error('Erro ao carregar usuário:', error)
+          this.logout()
+        }
+      }
+    }
   },
 })
