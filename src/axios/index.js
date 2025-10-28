@@ -26,9 +26,7 @@ apiClient.interceptors.response.use(
       if (refresh) {
         try {
           originalRequest._retry = true
-          const { data } = await axios.post('http://127.0.0.1:19003/token/refresh/', {
-            refresh
-          })
+          const { data } = await apiClient.post('/token/refresh/', { refresh })
 
           localStorage.setItem('access_token', data.access)
           originalRequest.headers.Authorization = `Bearer ${data.access}`

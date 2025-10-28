@@ -50,7 +50,7 @@ const subtotal = computed(() => {
       <section class="suggestions">
         <h2 class="suggestions-title">Conheça alguns produtos interessantes</h2>
         <div class="suggestions-line"></div>
-        <!-- Aqui você pode adicionar um componente de produtos relacionados -->
+        <!-- Aqui você pode adicionar um componente de produtos relacionados -->>
       </section>
     </template>
 
@@ -124,7 +124,7 @@ const subtotal = computed(() => {
               <span>R$ 0,00</span>
             </div>
             <div class="total-line">
-              <span>Desconto Frete</span>
+              <span>Frete</span>
               <span>R$ 32,00</span>
             </div>
             <div class="total-line total-final">

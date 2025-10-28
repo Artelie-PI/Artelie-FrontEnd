@@ -157,7 +157,7 @@ async function handleRegister() {
     <LeftPanel :mode="mode" :moving="isAnimating" />
 
     <div class="login-container">
-      <p class="titleLogin">{{ mode === 'login' ? 'LOGIN' : 'REGISTER' }}</p>
+      <p class="titleLogin">{{ mode === 'login' ? 'LOGIN' : 'CADASTRO' }}</p>
 
       <p v-if="errorMsg" class="error">{{ errorMsg }}</p>
       <p v-if="successMsg" class="success">{{ successMsg }}</p>

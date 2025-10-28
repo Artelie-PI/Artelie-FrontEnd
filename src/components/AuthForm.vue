@@ -23,38 +23,38 @@ function onRegister() { emit('do-register') }
             id="loginEmail"
             v-model="props.form.loginEmail"
             type="email"
-            placeholder="Enter your Email"
+            placeholder="Digite seu Email"
             required
           />
         </div>
       </div>
 
       <div class="input-group">
-        <label for="loginPassword">Password</label>
+        <label for="loginPassword">Senha</label>
         <div class="inputWrapper">
           <span><img class="userIcon" src="@/assets/images/passwordIcon.png" alt="lock" /></span>
           <input
             id="loginPassword"
             v-model="props.form.loginPassword"
             type="password"
-            placeholder="Enter your Password"
+            placeholder="Digite sua Senha"
             required
           />
         </div>
       </div>
       <button type="submit">Login</button>
-      <p class="register">Don't have an account? <a href="#" @click.prevent="onRequestRegister">Register here</a></p>
+      <p class="register">Não tem uma conta?<a href="#" @click.prevent="onRequestRegister">Cadastre-se</a></p>
     </div>
 
     <!-- Register -->
     <div v-if="props.mode === 'register'" class="form-block">
       <div class="input-group">
-        <label for="username">Username</label>
+        <label for="username">Nome de Usuário</label>
         <div class="inputWrapper">
           <input
             id="username"
             v-model="props.form.username"
-            placeholder="Your Username"
+            placeholder="Seu nome de usuário"
             required
             minlength="3"
           />
@@ -68,32 +68,32 @@ function onRegister() { emit('do-register') }
             id="email"
             v-model="props.form.email"
             type="email"
-            placeholder="Your Email"
+            placeholder="Seu email"
             required
           />
         </div>
       </div>
 
       <div class="input-group">
-        <label for="full_name">Full Name</label>
+        <label for="full_name">Nome Completo</label>
         <div class="inputWrapper">
           <input
             id="full_name"
             v-model="props.form.full_name"
-            placeholder="Your Full Name"
+            placeholder="Seu nome completo"
             required
           />
         </div>
       </div>
 
       <div class="input-group">
-        <label for="password">Password (min. 8 caracteres)</label>
+        <label for="password">Senha (min. 8 caracteres)</label>
         <div class="inputWrapper">
           <input
             id="password"
             v-model="props.form.password"
             type="password"
-            placeholder="Your Password"
+            placeholder="Sua senha"
             required
             minlength="8"
           />
@@ -101,21 +101,21 @@ function onRegister() { emit('do-register') }
       </div>
 
       <div class="input-group">
-        <label for="confirmPassword">Confirm Password</label>
+        <label for="confirmPassword">Confirme sua Senha</label>
         <div class="inputWrapper">
           <input
             id="confirmPassword"
             v-model="props.form.confirmPassword"
             type="password"
-            placeholder="Repeat Password"
+            placeholder="Repita sua senha"
             required
             minlength="8"
           />
         </div>
       </div>
 
-      <button type="submit">Register</button>
-      <p class="register">Already have an account? <a href="#" @click.prevent="onRequestLogin">Login here</a></p>
+      <button type="submit">Cadastrar</button>
+      <p class="register">Já tem uma conta?<a href="#" @click.prevent="onRequestLogin">Faça login</a></p>
     </div>
   </form>
 </template>

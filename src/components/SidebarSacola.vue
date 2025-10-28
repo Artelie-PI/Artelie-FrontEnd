@@ -8,7 +8,7 @@ const cartStore = useCartStore();
 const router = useRouter();
 function goToCheckout() {
   close();
-  router.push({ name: 'shop' });
+  router.push({ name: 'cart' });
 }
 </script>
 
