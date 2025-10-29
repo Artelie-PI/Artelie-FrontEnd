@@ -205,9 +205,10 @@ onMounted(loadProducts);
 
 <template>
   <main class="category-page">
-    <div class="category-header">
-      <h1 class="category-title">{{ categoryTitle }}</h1>
-
+      <div class="section-header">
+        <h2 class="section-title">{{ categoryTitle }}</h2>
+        <div class="section-rule" aria-hidden="true"></div>
+      </div>
       <div class="tools-row">
         <button class="filter-btn" @click="isFilterOpen = true">
           FILTRAR PRODUTOS
@@ -216,31 +217,20 @@ onMounted(loadProducts);
 
         <div class="search-box">
           <span class="search-icon">🔎</span>
-          <input
-            type="text"
-            class="search-input"
-            placeholder="Pesquisar Produto"
-            v-model="search"
-            aria-label="Pesquisar Produto"
-          />
+          <input type="text" class="search-input" placeholder="Pesquisar Produto" v-model="search"
+            aria-label="Pesquisar Produto" />
         </div>
       </div>
 
       <!-- Chips de filtros aplicados -->
       <div v-if="chips.length" class="chips-row">
-        <button
-          v-for="c in chips"
-          :key="c.key"
-          class="chip"
-          @click="removeChip(c)"
-          :title="`Remover filtro ${c.label}`"
-        >
+        <button v-for="c in chips" :key="c.key" class="chip" @click="removeChip(c)"
+          :title="`Remover filtro ${c.label}`">
           {{ c.label }}
           <span class="chip-x">×</span>
         </button>
         <button class="chip-clear" @click="onClearFilters">Limpar filtros</button>
       </div>
-    </div>
 
     <!-- Lista / Grid de produtos -->
     <section class="products-section">
@@ -261,14 +251,8 @@ onMounted(loadProducts);
     </section>
 
     <!-- Sidebar de Filtro -->
-    <SidebarFilter
-      :open="isFilterOpen"
-      :facets="facets"
-      :selected="filters"
-      @close="isFilterOpen = false"
-      @apply="onApplyFilters"
-      @clear="onClearFilters"
-    />
+    <SidebarFilter :open="isFilterOpen" :facets="facets" :selected="filters" @close="isFilterOpen = false"
+      @apply="onApplyFilters" @clear="onClearFilters" />
   </main>
 </template>
 
@@ -279,18 +263,26 @@ onMounted(loadProducts);
   padding: 16px 24px 32px 24px;
 }
 
-.category-header {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 8px;
+
+.section-header {
+  max-width: 1120px;
+  margin: 24px auto 20px;
+  text-align: left;
+  padding: 0;
 }
 
-.category-title {
-  font-size: 28px;
-  font-weight: 800;
-  margin: 8px 0 4px 0;
-  letter-spacing: 0.02em;
+.section-title {
+  font-family: "Poppins", sans-serif;
+  font-weight: 500;
+  font-size: 1.5rem;
+  line-height: 1.3;
+  padding-bottom: 3px;
+}
+
+.section-rule {
+  height: 1px;
+  background: #000;
+  width: 100%;
 }
 
 .tools-row {
@@ -313,6 +305,7 @@ onMounted(loadProducts);
   font-weight: 800;
   cursor: pointer;
 }
+
 .filter-btn .filter-icon {
   opacity: 0.9;
 }
@@ -329,12 +322,14 @@ onMounted(loadProducts);
   padding: 0 12px 0 36px;
   background: #fff;
 }
+
 .search-icon {
   position: absolute;
   left: 10px;
   font-size: 14px;
   opacity: 0.7;
 }
+
 .search-input {
   flex: 1;
   border: 0;
@@ -348,6 +343,7 @@ onMounted(loadProducts);
   gap: 8px;
   flex-wrap: wrap;
 }
+
 .chip {
   display: inline-flex;
   align-items: center;
@@ -361,9 +357,11 @@ onMounted(loadProducts);
   cursor: pointer;
   font-weight: 600;
 }
+
 .chip .chip-x {
   opacity: 0.7;
 }
+
 .chip-clear {
   height: 30px;
   padding: 0 12px;
@@ -383,16 +381,19 @@ onMounted(loadProducts);
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 18px;
 }
+
 @media (max-width: 1100px) {
   .grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
+
 @media (max-width: 780px) {
   .grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
 @media (max-width: 480px) {
   .grid {
     grid-template-columns: 1fr;
@@ -409,6 +410,7 @@ onMounted(loadProducts);
   gap: 8px;
   background: #fff;
 }
+
 .card .thumb {
   width: 100%;
   height: 170px;
@@ -416,17 +418,20 @@ onMounted(loadProducts);
   border-radius: 6px;
   background: #fafafa;
 }
+
 .card .title {
   font-size: 14px;
   font-weight: 700;
   text-align: center;
   min-height: 36px;
 }
+
 .card .price {
   font-size: 15px;
   font-weight: 800;
   margin: 4px 0 8px 0;
 }
+
 .card .add-btn {
   width: 100%;
   height: 36px;
@@ -445,10 +450,12 @@ onMounted(loadProducts);
   height: 240px;
   border-radius: 8px;
 }
+
 @keyframes shimmer {
   0% {
     background-position: 100% 0;
   }
+
   100% {
     background-position: 0 0;
   }

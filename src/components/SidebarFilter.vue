@@ -64,11 +64,10 @@ const hasFilters = computed(
   <transition name="sidebar-filter">
     <div v-if="open" class="overlay" @click.self="emit('close')">
       <aside class="panel">
+        <img src="/src/assets/images/Cancel.png" class="close-btn" alt="Fechar" @click="emit('close')" />
         <header class="sidebar-head">
-          <img src="/src/assets/images/Cancel.png" class="close-btn" alt="Fechar" @click="emit('close')" />
           <h2 class="head-title">FILTRAR</h2>
         </header>
-        <div class="head-sep" aria-hidden="true"></div>
 
         <!-- Conteúdo rolável -->
         <div class="content">
@@ -79,12 +78,13 @@ const hasFilters = computed(
               <img src="/src/assets/images/Seta.png" alt="" class="arrow" :class="{ open: openSection.order }" />
             </button>
             <div v-show="openSection.order" class="sec-body">
-              <label class="opt"><input type="radio" name="sort" value="az" v-model="local.sort" /> A-Z</label>
-              <label class="opt"><input type="radio" name="sort" value="za" v-model="local.sort" /> Z-A</label>
-              <label class="opt"><input type="radio" name="sort" value="new" v-model="local.sort" /> Novidades</label>
-              <label class="opt"><input type="radio" name="sort" value="price_desc" v-model="local.sort" /> Maior
+              <label class="opt"><input type="checkbox" name="sort" value="az" v-model="local.sort" /> A-Z</label>
+              <label class="opt"><input type="checkbox" name="sort" value="za" v-model="local.sort" /> Z-A</label>
+              <label class="opt"><input type="checkbox" name="sort" value="new" v-model="local.sort" />
+                Novidades</label>
+              <label class="opt"><input type="checkbox" name="sort" value="price_desc" v-model="local.sort" /> Maior
                 Preço</label>
-              <label class="opt"><input type="radio" name="sort" value="price_asc" v-model="local.sort" /> Menor
+              <label class="opt"><input type="checkbox" name="sort" value="price_asc" v-model="local.sort" /> Menor
                 Preço</label>
             </div>
           </section>
@@ -190,7 +190,7 @@ const hasFilters = computed(
   position: relative;
   box-shadow: -6px 0 32px rgba(23, 23, 23, 0.09);
   display: grid;
-  grid-template-rows: auto 1px 1fr auto;
+  grid-template-rows: auto 1fr auto;
   --arrow-closed: 0deg;
   --arrow-open: 180deg;
 }
@@ -207,20 +207,15 @@ const hasFilters = computed(
 .sidebar-head {
   padding: 20px 24px 14px 24px;
   display: flex;
-  align-items: center;
-  gap: 8px;
+  border-bottom: 1px solid #D5D5D5;
+  margin: 0 20px;
+
 }
 
 .head-title {
   font-size: 1.8rem;
   font-weight: 600;
   margin: 45px auto 40px auto;
-}
-
-.head-sep {
-  height: 1px;
-  background: #000;
-  opacity: 0.12;
 }
 
 /* Conteúdo rolável */
@@ -231,7 +226,7 @@ const hasFilters = computed(
 }
 
 .sec {
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid #D5D5D5;
 }
 
 .sec:last-child {
@@ -246,7 +241,6 @@ const hasFilters = computed(
   padding: 14px 0;
   font-weight: 500;
   font-size: 1.1rem;
-  letter-spacing: 0.01em;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -267,20 +261,23 @@ const hasFilters = computed(
 
 .sec-body {
   padding: 0 0 14px 0;
-  display: grid;
-  gap: 8px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  flex-wrap: wrap;
+  font-size: 0.9rem;
+  gap: 30px;
 }
 
 .opt {
   display: inline-flex;
   gap: 8px;
   align-items: center;
-  font-weight: 600;
 }
 
 .muted {
-  color: #888;
-  font-size: 13px;
+  color: #A0A0A0;
+  font-size: 0.9rem;
 }
 
 .price-row {
@@ -299,20 +296,21 @@ const hasFilters = computed(
 
 /* Footer (mantido) */
 .footer {
-  padding: 50px 24px;
-  background: #fff;
+  padding: 50px 0;
+  margin: 0 24px;
   position: sticky;
-  border-top: 1px solid #f0f0f0;
   display: grid;
+  background: #fff;
+  border-top: 1px solid #D5D5D5 ;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: 20px;
 }
 
 .buttonClear {
-  height: 44px;
+  padding: 4px;
   background: #fff;
   color: #000787;
-  border: 2px solid #000787;
+  border: 1px solid #000787;
   font-size: 1.2rem;
   font-weight: 600;
   cursor: pointer;
@@ -324,7 +322,6 @@ const hasFilters = computed(
 }
 
 .buttonApply {
-  height: 44px;
   background: #000787;
   color: #fff;
   border: none;
