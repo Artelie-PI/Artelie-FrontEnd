@@ -172,9 +172,9 @@ function goToCheckout() {
 }
 
 .empty-title {
-  font-size: 1.6rem;
-  font-weight: 700;
-  color: #101010;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #000;
   margin: 0 0 12px 0;
 }
 
@@ -191,12 +191,10 @@ function goToCheckout() {
   background: #000787;
   color: #fff;
   border: none;
-  border-radius: 16px;
-  font-size: 1.1rem;
-  width: 240px;
-  height: 40px;
-  padding: 0 20px;
-  font-weight: 700;
+  border-radius: 14px;
+  font-size: 1.2rem;
+  padding: 4px 30px;
+  font-weight: 600;
   cursor: pointer;
   margin: 8px 0 12px 0;
 }
@@ -206,10 +204,10 @@ function goToCheckout() {
 }
 
 .login-msg {
-  color: #000;  gap: 8px;
-
-  font-size: 1rem;
-  font-weight: 700;
+  color: #000;
+  gap: 8px;
+  font-size: 1.2rem;
+  font-weight: 600;
   margin: 4px 0;
 }
 
@@ -219,7 +217,7 @@ function goToCheckout() {
 
 .login-link {
   color: #000;
-  font-weight: 800;
+  font-weight: 500;
   text-decoration: underline;  height: 100px;
 
 }

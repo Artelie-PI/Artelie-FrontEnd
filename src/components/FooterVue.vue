@@ -74,10 +74,6 @@ import { RouterLink } from "vue-router";
             src="https://artpoin.com/wp-content/uploads/2023/09/artpoin-logo-pix.png"
             alt="PIX"
           />
-          <img
-            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRCeFOcf9LrQo11_tf9lMiV-_yRxlEcH0vgRQ&s"
-            alt="Boleto"
-          />
         </div>
       </div>
     </div>
@@ -85,7 +81,7 @@ import { RouterLink } from "vue-router";
     <!-- Rodapé Inferior -->
     <div class="bottom-footer">
       <span>© 2025 – ArteliêOnline. Todos os direitos reservados.</span>
-      <button class="back-to-top" @click="scrollToTop">Voltar</button>
+      <button class="back-to-top" @click="scrollToTop">Retornar</button>
     </div>
   </footer>
 </template>
@@ -94,17 +90,13 @@ import { RouterLink } from "vue-router";
 .footer {
   background-color: #000787;
   color: white;
-  /* Reduz padding vertical para evitar “footer gigante” */
-  padding: 24px 0 16px 0;
-  font-family: "Inter", sans-serif;
+  padding: 40px 0 5px;
 }
 
 /* Container central com largura máxima */
 .footer-container {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 0 24px;
-
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -185,33 +177,25 @@ import { RouterLink } from "vue-router";
 /* Rodapé inferior compacto */
 .bottom-footer {
   max-width: 1280px;
-  margin: 16px auto 0 auto;
-  padding: 12px 24px 0 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.3);
-
+  margin: 16px auto;
+  padding-top: 10px;
+  border-top: 1px solid #fff;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-
   font-size: 0.95rem;
-  line-height: 1.4;
 }
 
 .back-to-top {
   background: none;
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  border: none;
   border-radius: 6px;
   color: white;
   cursor: pointer;
   font-size: 0.95rem;
-  font-weight: 700;
   padding: 6px 12px;
   transition: background-color 0.2s, color 0.2s, border-color 0.2s;
-}
-.back-to-top:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.7);
 }
 
 /* Responsivo */

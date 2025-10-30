@@ -50,7 +50,6 @@ const subtotal = computed(() => {
       <section class="suggestions">
         <h2 class="suggestions-title">Conheça alguns produtos interessantes</h2>
         <div class="suggestions-line"></div>
-        <!-- Aqui você pode adicionar um componente de produtos relacionados -->>
       </section>
     </template>
 
@@ -173,6 +172,7 @@ const subtotal = computed(() => {
 
 .empty-title, .cart-title {
   font-size: 1.8rem;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, .5);
   font-weight: 700;
   color: #000;
   letter-spacing: 0.02em;

@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue';
+import CarouselMain from '@/components/CarouselMain.vue';
 import CardProducts from '@/components/CardProducts.vue';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import { fetchFeaturedProducts } from '@/api/products';
@@ -14,7 +15,6 @@ async function loadProducts() {
     loading.value = true;
     error.value = null;
     const response = await fetchFeaturedProducts();
-
     const products = Array.isArray(response) ? response : (response?.results || []);
     featured.value = products.map(formatProduct);
   } catch (err) {
@@ -35,7 +35,13 @@ onMounted(loadProducts);
 <template>
   <main class="home-main">
     <h1 class="visually-hidden">Página Inicial</h1>
-    <p class="home-subtitle">Bem-vindo ao Artelie, sua plataforma de gerenciamento de projetos.</p>
+
+    <!-- Carrossel principal -->
+    <LoadingSpinner v-if="loading" size="large" />
+    <CarouselMain v-else></CarouselMain>
+
+    <p class="home-subtitle">Bem-vindo ao Arteliê - A plataforma onde você encontra os melhores produtos para seus
+      projetos.</p>
 
     <div class="section-header">
       <h2 class="section-title">Produtos em Destaque</h2>
@@ -47,13 +53,13 @@ onMounted(loadProducts);
       <p>{{ error }}</p>
       <button @click="loadProducts" class="retry-button">🔄 Tentar Novamente</button>
     </div>
-    <CardProducts v-else :products="featured" />
+    <CardProducts v-else :products="featured.slice(0, 8)" />
   </main>
 </template>
 
 <style scoped>
 .home-main {
-  padding: 2rem;
+  padding: 2rem 0 2rem;
   text-align: center;
 }
 
@@ -70,7 +76,7 @@ onMounted(loadProducts);
 }
 
 .home-subtitle {
-  margin: 0 0 8px;
+  margin: 8px 16px 8px;
   color: #4b5563;
   font-size: 0.95rem;
 }
@@ -79,7 +85,7 @@ onMounted(loadProducts);
   max-width: 1120px;
   margin: 24px auto 20px;
   text-align: left;
-  padding: 0;
+  padding: 0 16px;
 }
 
 .section-title {
