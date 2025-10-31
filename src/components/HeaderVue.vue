@@ -127,6 +127,7 @@ header {
   justify-content: center;
 }
 .pages a {
+  text-align: center;
   text-decoration: none;
   color: black;
   font-weight: 500;
@@ -164,6 +165,9 @@ header {
   color: black;
   text-decoration: none;
 }
+
+.category-icons a:hover { transform: translateY(-3px) scale(1.05); }
+
 .category-icons a img {
   width: 1.3rem;
   height: 1.3rem;
