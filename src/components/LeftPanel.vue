@@ -11,8 +11,8 @@ const cls = computed(() => ({
 
 <template>
   <div :class="cls">
-    <p class="Title">{{ props.mode === 'login' ? 'Welcome Back!' : 'Bem Vindo!' }}</p>
-    <p class="instruction" v-if="props.mode === 'login'">Please login to continue</p>
+    <p class="Title">{{ props.mode === 'login' ? 'Bem Vindo de Volta!' : 'Bem Vindo!' }}</p>
+    <p class="instruction" v-if="props.mode === 'login'">Faça login para continuar</p>
     <p class="instruction" v-else>Faça seu Cadastro para comprar os produtos em nosso site.</p>
   </div>
 </template>

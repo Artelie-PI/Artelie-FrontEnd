@@ -157,19 +157,13 @@ async function handleRegister() {
     <LeftPanel :mode="mode" :moving="isAnimating" />
 
     <div class="login-container">
-      <p class="titleLogin">{{ mode === 'login' ? 'LOGIN' : 'REGISTER' }}</p>
+      <p class="titleLogin">{{ mode === 'login' ? 'LOGIN' : 'CADASTRO' }}</p>
 
       <p v-if="errorMsg" class="error">{{ errorMsg }}</p>
       <p v-if="successMsg" class="success">{{ successMsg }}</p>
 
-      <AuthForm
-        :form="form"
-        :mode="mode"
-        @request-register="animateToRegister"
-        @request-login="animateToLogin"
-        @do-login="handleLogin"
-        @do-register="handleRegister"
-      />
+      <AuthForm :form="form" :mode="mode" @request-register="animateToRegister" @request-login="animateToLogin"
+        @do-login="handleLogin" @do-register="handleRegister" />
     </div>
   </main>
 </template>
@@ -190,7 +184,7 @@ main {
   background-color: #fff;
   padding: 2rem;
   border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
   margin-left: 30vw;
   width: calc(100vw - 30vw);
   height: 100vh;
@@ -199,9 +193,9 @@ main {
   justify-content: center;
   align-items: center;
   transition:
-    margin 0.32s cubic-bezier(.2,.9,.3,1),
-    width 0.32s cubic-bezier(.2,.9,.3,1),
-    transform 0.32s cubic-bezier(.2,.9,.3,1),
+    margin 0.32s cubic-bezier(.2, .9, .3, 1),
+    width 0.32s cubic-bezier(.2, .9, .3, 1),
+    transform 0.32s cubic-bezier(.2, .9, .3, 1),
     border-radius 0.32s,
     background-color 0.32s,
     box-shadow 0.32s;
@@ -215,7 +209,21 @@ main.register-mode .login-container {
   transform: translateX(-2vw) scale(1.01);
 }
 
-.titleLogin { font-size: 3rem; font-weight: 600; margin-bottom: 1rem; }
-.error { color: red; font-size: 1rem; margin-bottom: 1rem; }
-.success { color: green; font-size: 1rem; margin-bottom: 1rem; }
+.titleLogin {
+  font-size: 3rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.error {
+  color: red;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+.success {
+  color: green;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
 </style>
