@@ -20,7 +20,7 @@ const formatPrice = (v) =>
 function addProduct(product) {
   cartStore.addToCart({
     id: product.id,
-    title: product.title, // ✅ Usa 'title' que é o campo que está vindo
+    title: product.title,
     price: product.price,
     image: product.image,
   })
@@ -46,7 +46,7 @@ function addProduct(product) {
           </div>
 
           <h3 class="pc-title">
-            {{ p.title }} <!-- ✅ Mudou de p.name para p.title -->
+            {{ p.title }}
           </h3>
 
           <div class="pc-price-area">
@@ -63,7 +63,6 @@ function addProduct(product) {
     </div>
   </section>
 </template>
-
 
 <style scoped>
 .pc-container {
@@ -99,10 +98,13 @@ function addProduct(product) {
   display: flex;
   flex-direction: column;
   align-items: stretch;
+  height: 100%; /* ✅ Ocupa toda altura disponível */
 }
 
 .pc-link {
-  display: block;
+  display: flex; /* ✅ Adicionado flex */
+  flex-direction: column; /* ✅ Adicionado flex-direction */
+  flex: 1; /* ✅ Cresce para empurrar o botão */
   outline: none;
   text-decoration: none;
   color: inherit;
@@ -134,7 +136,7 @@ function addProduct(product) {
   width: 100%;
   background: #fff;
   overflow: hidden;
-  min-height: 250px; /* ✅ Altura mínima para evitar layout quebrado */
+  min-height: 250px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -153,7 +155,6 @@ function addProduct(product) {
   transform: scale(1.03);
 }
 
-/* ✅ Estilo para produtos sem imagem */
 .pc-no-image {
   width: 100%;
   height: 100%;
@@ -172,6 +173,7 @@ function addProduct(product) {
   line-height: 1.35;
   font-weight: 500;
   color: #000;
+  min-height: 58px; /* ✅ Altura mínima fixa para 3 linhas (14px * 1.35 * 3 ≈ 57px) */
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
@@ -181,6 +183,7 @@ function addProduct(product) {
 .pc-price-area {
   margin-top: 12px;
   text-align: center;
+  margin-bottom: auto; /* ✅ Empurra o conteúdo seguinte (botão) para baixo */
 }
 
 .pc-price {
@@ -193,6 +196,7 @@ function addProduct(product) {
   margin-top: 4px;
   color: #6b7280;
   font-size: 12px;
+  min-height: 18px; /* ✅ Garante espaço mesmo quando não tem parcela */
 }
 
 .pc-button {
@@ -207,6 +211,7 @@ function addProduct(product) {
   font-weight: 600;
   border: none;
   cursor: pointer;
+  flex-shrink: 0; /* ✅ Impede que o botão encolha */
 }
 
 .pc-button:hover {
