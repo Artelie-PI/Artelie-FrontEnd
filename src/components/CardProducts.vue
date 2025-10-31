@@ -20,7 +20,7 @@ const formatPrice = (v) =>
 function addProduct(product) {
   cartStore.addToCart({
     id: product.id,
-    title: product.title,
+    title: product.title, // ✅ Usa 'title' que é o campo que está vindo
     price: product.price,
     image: product.image,
   })
@@ -40,12 +40,13 @@ function addProduct(product) {
           <div class="pc-image-wrap">
             <div aria-hidden="true" class="pc-image-shadow"></div>
             <div class="pc-image-box">
-              <img :src="p.image" :alt="p.title" class="pc-image" />
+              <img v-if="p.image" :src="p.image" :alt="p.title" class="pc-image" />
+              <div v-else class="pc-no-image">Sem imagem</div>
             </div>
           </div>
 
           <h3 class="pc-title">
-            {{ p.title }}
+            {{ p.title }} <!-- ✅ Mudou de p.name para p.title -->
           </h3>
 
           <div class="pc-price-area">
@@ -62,6 +63,7 @@ function addProduct(product) {
     </div>
   </section>
 </template>
+
 
 <style scoped>
 .pc-container {
@@ -132,6 +134,10 @@ function addProduct(product) {
   width: 100%;
   background: #fff;
   overflow: hidden;
+  min-height: 250px; /* ✅ Altura mínima para evitar layout quebrado */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .pc-image {
@@ -145,6 +151,18 @@ function addProduct(product) {
 
 .pc-link:hover .pc-image {
   transform: scale(1.03);
+}
+
+/* ✅ Estilo para produtos sem imagem */
+.pc-no-image {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f5;
+  color: #999;
+  font-size: 14px;
 }
 
 .pc-title {

@@ -1,5 +1,7 @@
 // src/api/products.js
+
 import apiClient from '@/axios'
+import { enrichProductsWithImages, enrichProductWithImage } from '@/utils/imageMapping'
 
 // Função auxiliar para retry em caso de erro
 async function fetchWithRetry(url, retries = 2, delay = 2000) {
@@ -17,30 +19,28 @@ async function fetchWithRetry(url, retries = 2, delay = 2000) {
 
 // Buscar todos os produtos
 export async function fetchAllProducts() {
-  const data = await fetchWithRetry('/products/') // ✅ SEM /api
-  return Array.isArray(data) ? data : (data.results || [])
+  const data = await fetchWithRetry('/products/')
+  const products = Array.isArray(data) ? data : (data.results || [])
+  return enrichProductsWithImages(products) // ✅ Adiciona imagens
 }
 
 // Buscar produtos por categoria
 export async function fetchProductsByCategory(slug) {
   try {
-    // Tenta primeiro com category__slug (padrão Django)
     const data = await fetchWithRetry(`/products/?category__slug=${slug}`)
     let results = Array.isArray(data) ? data : (data.results || [])
-    
-    // Se não encontrou, tenta com category__name
+
     if (results.length === 0) {
       const data2 = await fetchWithRetry(`/products/?category__name=${slug}`)
       results = Array.isArray(data2) ? data2 : (data2.results || [])
     }
-    
-    // Se ainda não encontrou, tenta só com category
+
     if (results.length === 0) {
       const data3 = await fetchWithRetry(`/products/?category=${slug}`)
       results = Array.isArray(data3) ? data3 : (data3.results || [])
     }
-    
-    return results
+
+    return enrichProductsWithImages(results) // ✅ Adiciona imagens
   } catch (error) {
     console.error('Erro ao buscar produtos por categoria:', error)
     return []
@@ -50,20 +50,21 @@ export async function fetchProductsByCategory(slug) {
 // Buscar um produto específico por ID
 export async function fetchProductById(id) {
   const data = await fetchWithRetry(`/products/${id}/`)
-  return data
+  return enrichProductWithImage(data) // ✅ Adiciona imagem
 }
 
 // Buscar produtos em destaque
 export async function fetchFeaturedProducts() {
   try {
     const data = await fetchWithRetry('/products/?featured=true')
-    return Array.isArray(data) ? data : (data.results || [])
+    const products = Array.isArray(data) ? data : (data.results || [])
+    return enrichProductsWithImages(products) // ✅ Adiciona imagens
   } catch (error) {
     console.error('Erro ao buscar produtos em destaque:', error)
-    // Fallback: busca todos os produtos
     try {
       const data = await fetchWithRetry('/products/')
-      return Array.isArray(data) ? data : (data.results || [])
+      const products = Array.isArray(data) ? data : (data.results || [])
+      return enrichProductsWithImages(products) // ✅ Adiciona imagens
     } catch (fallbackError) {
       console.error('Erro no fallback:', fallbackError)
       return []
@@ -75,7 +76,8 @@ export async function fetchFeaturedProducts() {
 export async function fetchRelatedProducts(productId) {
   try {
     const data = await fetchWithRetry(`/products/${productId}/related/`)
-    return Array.isArray(data) ? data : (data.results || [])
+    const products = Array.isArray(data) ? data : (data.results || [])
+    return enrichProductsWithImages(products) // ✅ Adiciona imagens
   } catch (error) {
     console.error('Erro ao buscar produtos relacionados:', error)
     return []
@@ -85,7 +87,7 @@ export async function fetchRelatedProducts(productId) {
 // Buscar categorias
 export async function fetchCategories() {
   try {
-    const data = await fetchWithRetry('/category/') // ✅ Endpoint correto da API
+    const data = await fetchWithRetry('/category/')
     return Array.isArray(data) ? data : (data.results || [])
   } catch (error) {
     console.error('Erro ao buscar categorias:', error)

@@ -65,8 +65,7 @@ onMounted(async () => {
       <div class="gallery">
         <img :src="selectedImage || '/placeholder.png'" :alt="product.name" class="main-image" />
         <div class="thumbnails" v-if="productImages.length > 1">
-          <img v-for="(img, i) in productImages" :key="i" :src="img" @click="selectedImage = img" class="thumb"
-            :class="{ active: selectedImage === img }" />
+           <img v-if="product.image" :src="product.image" :alt="product.title" style="max-width: 500px; border-radius: 8px;" />
         </div>
       </div>
 
