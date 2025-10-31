@@ -23,13 +23,13 @@ export const useUserStore = defineStore('user', {
       localStorage.setItem('refresh_token', data.refresh)
 
       try {
-        const { data: userData } = await apiClient.get('/api/users/me/')
+        const { data: userData } = await apiClient.get('/users/me/')
         this.user = userData
       } catch {
         this.user = { email }
       }
     },
-    
+
     logout() {
       this.user = null
       this.accessToken = null
@@ -40,7 +40,7 @@ export const useUserStore = defineStore('user', {
     async loadUser() {
       if (this.accessToken) {
         try {
-          const { data } = await apiClient.get('/api/users/me/')
+          const { data } = await apiClient.get('/users/me/')
           this.user = data
         } catch (error) {
           console.error('Erro ao carregar usuário:', error)
