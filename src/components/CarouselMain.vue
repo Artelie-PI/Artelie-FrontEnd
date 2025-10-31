@@ -22,8 +22,6 @@ const props = defineProps({
   },
   autoplay: { type: Number, default: 4500 }
 })
-
-// Duplica os slides para garantir loop suave
 const duplicatedSlides = computed(() => {
   return [...props.slides, ...props.slides]
 })
@@ -37,27 +35,27 @@ const duplicatedSlides = computed(() => {
         :loop="true"
         :centeredSlides="true"
         :loopedSlides="4"
-        :slides-per-view="1.4"
-        :space-between="0"
+        :slides-per-view="1.3"
+        :space-between="12"
         :navigation="true"
         :pagination="{ clickable: true }"
         :autoplay="autoplay ? { delay: autoplay, disableOnInteraction: false, pauseOnMouseEnter: true } : false"
         :breakpoints="{
           640: { 
             slidesPerView: 1.35,
-            spaceBetween: 35
+            spaceBetween: 12
           },
           768: { 
             slidesPerView: 1.3,
-            spaceBetween: 40
+            spaceBetween: 12
           },
           1024: { 
             slidesPerView: 1.25,
-            spaceBetween: 50
+            spaceBetween: 12
           },
           1280: { 
             slidesPerView: 1.2,
-            spaceBetween: 60
+            spaceBetween: 12
           }
         }"
         class="swiper-hero"

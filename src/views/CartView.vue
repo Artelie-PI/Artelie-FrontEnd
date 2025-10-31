@@ -1,12 +1,33 @@
 <script setup>
 import { useCartStore } from "@/stores/cart.js";
 import { useRouter } from "vue-router";
-import { computed } from "vue";
+import { ref, computed } from "vue";
+import { fetchAddressByCep, calculateShipping } from "@/utils/shipping";
+import { formatCEP } from "@/utils/masks";
+
 const cartStore = useCartStore();
 const router = useRouter();
 
+const cepInput = ref('');
+const shipping = ref(null);
+const shippingError = ref('');
+const isCalculatingShipping = ref(false);
+
+const couponInput = ref('');
+const discount = ref(0);
+
 function goToHome() {
   router.push({ name: 'home' });
+}
+
+function goToCheckout() {
+  if (!shipping.value) {
+    alert('Por favor, calcule o frete antes de finalizar a compra');
+    return;
+  }
+  
+  cartStore.setShipping(shipping.value);
+  router.push({ name: 'checkout' });
 }
 
 const formatPrice = (value) => {
@@ -16,11 +37,64 @@ const formatPrice = (value) => {
 const subtotal = computed(() => {
   return cartStore.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 });
+
+const total = computed(() => {
+  return subtotal.value - discount.value + (shipping.value?.value || 0);
+});
+
+function handleCEPInput(event) {
+  cepInput.value = formatCEP(event.target.value);
+}
+
+async function handleCalculateShipping() {
+  shippingError.value = '';
+  
+  if (!cepInput.value) {
+    shippingError.value = 'Digite um CEP';
+    return;
+  }
+  
+  isCalculatingShipping.value = true;
+  
+  try {
+    const address = await fetchAddressByCep(cepInput.value);
+    const shippingData = calculateShipping(cepInput.value, subtotal.value);
+    
+    shipping.value = {
+      ...shippingData,
+      cep: address.cep,
+      city: address.city,
+      state: address.state
+    };
+  } catch (error) {
+    shippingError.value = error.message || 'Erro ao calcular frete';
+    shipping.value = null;
+  } finally {
+    isCalculatingShipping.value = false;
+  }
+}
+
+function handleApplyCoupon() {
+  const validCoupons = {
+    'DESCONTO10': 0.10,
+    'PRIMEIRACOMPRA': 0.15,
+    'ARTELIE20': 0.20
+  };
+  
+  const couponCode = couponInput.value.toUpperCase().trim();
+  
+  if (validCoupons[couponCode]) {
+    discount.value = subtotal.value * validCoupons[couponCode];
+    alert(`Cupom aplicado! Desconto de ${(validCoupons[couponCode] * 100).toFixed(0)}%`);
+  } else {
+    alert('Cupom inválido');
+    discount.value = 0;
+  }
+}
 </script>
 
 <template>
   <main class="cart-container">
-    <!-- Estado vazio -->
     <template v-if="cartStore.items.length === 0">
       <div class="empty-cart">
         <div class="empty-header">
@@ -45,15 +119,8 @@ const subtotal = computed(() => {
           Faça <RouterLink to="/login" class="login-link">LOGIN</RouterLink> para finalizar suas compras
         </p>
       </div>
-
-      <!-- Produtos interessantes -->
-      <section class="suggestions">
-        <h2 class="suggestions-title">Conheça alguns produtos interessantes</h2>
-        <div class="suggestions-line"></div>
-      </section>
     </template>
 
-    <!-- Com itens -->
     <template v-else>
       <div class="cart-header">
         <h1 class="cart-title">BEM-VINDO À SACOLA</h1>
@@ -61,7 +128,6 @@ const subtotal = computed(() => {
       </div>
 
       <div class="cart-content">
-        <!-- Lista de produtos -->
         <div class="cart-items">
           <div class="table-header">
             <span>PRODUTO</span>
@@ -93,24 +159,47 @@ const subtotal = computed(() => {
           </div>
         </div>
 
-        <!-- Resumo -->
         <aside class="cart-summary">
           <h2 class="summary-title">RESUMO DA COMPRA</h2>
 
           <div class="summary-field">
             <label>Cupom de Desconto</label>
             <div class="field-group">
-              <input type="text" placeholder="Digite o código de desconto" />
-              <button class="btn-apply">APLICAR</button>
+              <input 
+                type="text" 
+                placeholder="Digite o código de desconto" 
+                v-model="couponInput"
+                @keyup.enter="handleApplyCoupon"
+              />
+              <button class="btn-apply" @click="handleApplyCoupon">APLICAR</button>
             </div>
           </div>
 
           <div class="summary-field">
             <label>Frete</label>
             <div class="field-group">
-              <input type="text" placeholder="Digite o seu CEP" />
-              <button class="btn-apply">APLICAR</button>
+              <input 
+                type="text" 
+                placeholder="00000-000" 
+                :value="cepInput"
+                @input="handleCEPInput"
+                @keyup.enter="handleCalculateShipping"
+                maxlength="9"
+              />
+              <button 
+                class="btn-apply" 
+                @click="handleCalculateShipping"
+                :disabled="isCalculatingShipping"
+              >
+                {{ isCalculatingShipping ? '...' : 'CALCULAR' }}
+              </button>
             </div>
+            <p v-if="shippingError" class="error-text">{{ shippingError }}</p>
+            <p v-if="shipping" class="shipping-info">
+              {{ shipping.city }}/{{ shipping.state }} - 
+              <span v-if="shipping.isFree" class="free-shipping">FRETE GRÁTIS!</span>
+              <span v-else>{{ shipping.estimatedDays }} dias úteis</span>
+            </p>
           </div>
 
           <div class="summary-totals">
@@ -118,31 +207,37 @@ const subtotal = computed(() => {
               <span>Subtotal - {{ cartStore.items.length }} itens</span>
               <span>R$ {{ formatPrice(subtotal) }}</span>
             </div>
-            <div class="total-line">
+            <div class="total-line" v-if="discount > 0">
               <span>Desconto Cupom</span>
-              <span>R$ 0,00</span>
+              <span class="discount-value">- R$ {{ formatPrice(discount) }}</span>
             </div>
             <div class="total-line">
               <span>Frete</span>
-              <span>R$ 32,00</span>
+              <span v-if="shipping">
+                <span v-if="shipping.isFree" class="free-shipping">GRÁTIS</span>
+                <span v-else>R$ {{ formatPrice(shipping.value) }}</span>
+              </span>
+              <span v-else class="shipping-pending">Calcular</span>
             </div>
             <div class="total-line total-final">
               <span>TOTAL</span>
-              <span>R$ {{ formatPrice(subtotal + 32) }}</span>
+              <span>R$ {{ formatPrice(total) }}</span>
             </div>
+            <p v-if="total >= 140" class="installment-info">
+              ou 10x de R$ {{ formatPrice(total / 10) }} sem juros
+            </p>
           </div>
 
-          <button class="btn-checkout">FINALIZAR COMPRA</button>
+          <button 
+            class="btn-checkout" 
+            @click="goToCheckout"
+            :disabled="!shipping"
+          >
+            FINALIZAR COMPRA
+          </button>
           <button class="btn-continue" @click="goToHome">CONTINUAR COMPRANDO</button>
         </aside>
       </div>
-
-      <!-- Produtos interessantes -->
-      <section class="suggestions">
-        <h2 class="suggestions-title">Conheça alguns produtos interessantes</h2>
-        <div class="suggestions-line"></div>
-        <!-- Aqui você pode adicionar um componente de produtos relacionados -->
-      </section>
     </template>
   </main>
 </template>
@@ -154,7 +249,6 @@ const subtotal = computed(() => {
   padding: 40px 20px;
 }
 
-/* Estado vazio */
 .empty-cart {
   text-align: center;
   padding: 40px 20px;
@@ -232,7 +326,6 @@ const subtotal = computed(() => {
   text-decoration: underline;
 }
 
-/* Com itens */
 .cart-header {
   display: flex;
   align-items: center;
@@ -253,7 +346,6 @@ const subtotal = computed(() => {
   }
 }
 
-/* Lista de produtos */
 .cart-items {
   background: #fff;
   border: 1px solid #e5e5e5;
@@ -369,7 +461,6 @@ const subtotal = computed(() => {
   font-size: 1rem;
 }
 
-/* Resumo */
 .cart-summary {
   background: #f8f9fa;
   border: 1px solid #e5e5e5;
@@ -472,22 +563,42 @@ const subtotal = computed(() => {
   cursor: pointer;
 }
 
-/* Sugestões */
-.suggestions {
-  margin-top: 60px;
+.error-text {
+  color: #e74c3c;
+  font-size: 0.75rem;
+  margin-top: 4px;
 }
 
-.suggestions-title {
-  font-size: 1.3rem;
+.shipping-info {
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 6px;
+}
+
+.free-shipping {
+  color: #27ae60;
+  font-weight: 700;
+}
+
+.discount-value {
+  color: #27ae60;
   font-weight: 600;
-  color: #000;
-  margin: 0 0 8px 0;
 }
 
-.suggestions-line {
-  height: 1px;
-  background: #000;
-  opacity: 0.2;
-  margin-bottom: 30px;
+.shipping-pending {
+  color: #999;
+  font-size: 0.85rem;
+}
+
+.installment-info {
+  font-size: 0.8rem;
+  color: #666;
+  text-align: center;
+  margin-top: 8px;
+}
+
+.btn-checkout:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 </style>
