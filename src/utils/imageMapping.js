@@ -48,6 +48,10 @@ export const PRODUCT_IMAGE_MAP = {
   48: "media/images/745c6f64-73ee-47ad-be43-df2d24916bc5_isq8cr",
   49: "media/images/b6dff24b-55dc-4bcd-baf7-62d431df9a4f_vvaajd",
   50: "media/images/6b286fb6-a085-4d95-ac55-ce44c93706b8_zjptfl",
+  51: "media/images/c2cc1094-cea5-4582-9ae4-7fe716892c01_y8kki5",
+  52: "media/images/d0d0753b-a276-47a5-8ace-ff82ce80ce34_uqjtnq",
+  53:  "media/images/06a1fcf4-5217-4a92-9e50-f626b49da1c6_cqbazs",
+
 };
 
 const cld = new Cloudinary({

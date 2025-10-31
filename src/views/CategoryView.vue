@@ -1,8 +1,9 @@
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from "vue";
 import { useRoute } from "vue-router";
-import { fetchProductsByCategory, fetchCategories } from "@/api/category";
-import { formatProduct } from "@/utils/productHelper";
+import { fetchProductsByCategoryAll, fetchCategories } from "@/api/category";
+import { getBrandMap } from "@/api/brands";
+import { formatProduct, getProductImage } from "@/utils/productHelper";
 import CardProducts from "@/components/CardProducts.vue";
 import SidebarFilter from "@/components/SidebarFilter.vue";
 import LoadingSpinner from "@/components/LoadingSpinner.vue";
@@ -41,130 +42,96 @@ const facets = reactive({
 const chips = computed(() => {
   const list = [];
   if (filters.sort) {
-    const map = {
-      az: "A-Z",
-      za: "Z-A",
-      new: "Novidades",
-      price_desc: "Maior Preço",
-      price_asc: "Menor Preço",
-    };
+    const map = { az: "A-Z", za: "Z-A", new: "Novidades", price_desc: "Maior Preço", price_asc: "Menor Preço" };
     list.push({ key: "sort", label: map[filters.sort] || filters.sort, group: "sort" });
   }
-  filters.materials.forEach((m) =>
-    list.push({ key: `mat:${m}`, label: m, group: "materials", value: m })
-  );
+  filters.materials.forEach((m) => list.push({ key: `mat:${m}`, label: m, group: "materials", value: m }));
   filters.brands.forEach((b) => list.push({ key: `br:${b}`, label: b, group: "brands", value: b }));
-  if (filters.priceMin != null)
-    list.push({
-      key: "pmin",
-      label: `De R$ ${Number(filters.priceMin).toFixed(2)}`,
-      group: "priceMin",
-    });
-  if (filters.priceMax != null)
-    list.push({
-      key: "pmax",
-      label: `Até R$ ${Number(filters.priceMax).toFixed(2)}`,
-      group: "priceMax",
-    });
+  if (filters.priceMin != null) list.push({ key: "pmin", label: `De R$ ${Number(filters.priceMin).toFixed(2)}`, group: "priceMin" });
+  if (filters.priceMax != null) list.push({ key: "pmax", label: `Até R$ ${Number(filters.priceMax).toFixed(2)}`, group: "priceMax" });
   return list;
 });
 
 // Nome da categoria
-const categoryTitle = computed(() => {
-  return currentCategory.value?.name || "Categoria";
-});
+const categoryTitle = computed(() => currentCategory.value?.name || "Categoria");
 
 function findCategoryBySlug(slug) {
   const normalizedSlug = slug.toLowerCase().trim();
-  
-  console.log('🔍 Buscando categoria para slug:', normalizedSlug);
-  
-  // Mapeamento manual de slugs para IDs
   const slugToId = {
-    'papeis': 3,
-    'papéis': 3,
+    'papeis': 3, 'papéis': 3,
     'pintura': 5,
-    'lapis-canetas': 2,
-    'lápis-canetas': 2,
-    'lapis-e-canetas': 2,      // ✅ Adiciona com "e"
-    'lápis-e-canetas': 2,
-    'livros-gibis': 4,
-    'livros-e-gibis': 4,
-    'livros-gib is': 4
+    'lapis-canetas': 2, 'lápis-canetas': 2, 'lapis-e-canetas': 2, 'lápis-e-canetas': 2,
+    'livros-gibis': 4, 'livros-e-gibis': 4, 'livros-gib is': 4
   };
-  
-  // Tenta pelo mapeamento
   if (slugToId[normalizedSlug]) {
     const categoryId = slugToId[normalizedSlug];
-    const found = categories.value.find(c => c.id === categoryId);
-    console.log('✅ Categoria encontrada:', found);
-    return found;
+    return categories.value.find(c => c.id === categoryId);
   }
-  
-  // Fallback
-  const found = categories.value.find(c => {
+  return categories.value.find(c => {
     const categorySlug = c.name.toLowerCase()
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
       .replace(/\s+/g, '-');
-    
     return categorySlug.includes(normalizedSlug.replace(/-/g, ''));
   });
-  
-  console.log('🔍 Fallback encontrou:', found);
-  return found;
 }
 
-
-// Busca produtos da categoria
 async function loadProducts() {
   isLoading.value = true;
   errorMsg.value = "";
-  
   try {
-    // Carrega categorias se necessário
     if (categories.value.length === 0) {
-      console.log('📦 Carregando categorias...');
       categories.value = await fetchCategories();
-      console.log('✅ Categorias carregadas:', categories.value);
     }
-    
-    // Encontra a categoria pelo slug
     const slug = route.params.slug;
-    console.log('🔍 Buscando categoria com slug:', slug);
-    
     const category = findCategoryBySlug(slug);
-    
     if (!category) {
-      console.error('❌ Categoria não encontrada para slug:', slug);
       errorMsg.value = "Categoria não encontrada.";
       products.value = [];
       return;
     }
-    
-    console.log('✅ Categoria encontrada:', category);
     currentCategory.value = category;
-    
-    // Busca produtos da categoria usando o ID
-    const rawProducts = await fetchProductsByCategory(category.id);
-    console.log('📦 Produtos recebidos:', rawProducts.length);
-    
-    // Formata produtos usando o helper
-    products.value = rawProducts.map(formatProduct);
-    console.log('✅ Produtos formatados:', products.value.length);
-    
-    // Gera facetas
+
+    // Mapa de marcas id->nome
+    const brandMap = await getBrandMap();
+
+    // Produtos e formatação com nome de marca e imagem garantidos
+    const rawProducts = await fetchProductsByCategoryAll(category.id);
+    products.value = rawProducts.map(p => formatProduct(p, brandMap));
+
+    // Sanitize extra: se ainda faltar image, tenta achar no raw
+    products.value = products.value.map(p => {
+      if (!p.image) {
+        const raw = rawProducts.find(r => r.id === p.id);
+        const maybe = raw ? getProductImage(raw) : null;
+        return maybe ? { ...p, image: maybe } : p;
+      }
+      return p;
+    });
+
+    // Facetas por nome
     const setBrands = new Set();
     const setMaterials = new Set();
     for (const p of products.value) {
-      if (p.brand) setBrands.add(p.brand);
-      if (p.material) setMaterials.add(p.material);
+      if (p.brand) setBrands.add(String(p.brand));
+      if (p.material) setMaterials.add(String(p.material));
     }
     facets.brands = Array.from(setBrands).sort();
     facets.materials = Array.from(setMaterials).sort();
-    
+
+    // LOG opcional para inspecionar (remover em produção)
+    // console.table(rawProducts.slice(0, 10).map(r => ({
+    //   id: r.id,
+    //   image: !!r.image,
+    //   Images_len: Array.isArray(r.Images) ? r.Images.length : 0,
+    //   images_len: Array.isArray(r.images) ? r.images.length : 0,
+    //   photos_len: Array.isArray(r.photos) ? r.photos.length : 0,
+    //   image_url: !!r.image_url,
+    //   thumb_url: !!r?.thumbnail?.url,
+    // })));
+    // console.table(products.value.map(p => ({ id: p.id, hasImage: !!p.image, image: p.image })));
   } catch (e) {
-    console.error('❌ Erro ao carregar produtos:', e);
+    console.error('Erro ao carregar produtos:', e);
     errorMsg.value = "Erro ao carregar produtos da categoria.";
   } finally {
     isLoading.value = false;
@@ -174,12 +141,10 @@ async function loadProducts() {
 // Aplica filtros
 function onApplyFilters(payload) {
   filters.sort = payload.sort || null;
-  filters.materials = payload.materials || [];
-  filters.brands = payload.brands || [];
-  filters.priceMin =
-    payload.priceMin != null && payload.priceMin !== "" ? Number(payload.priceMin) : null;
-  filters.priceMax =
-    payload.priceMax != null && payload.priceMax !== "" ? Number(payload.priceMax) : null;
+  filters.materials = Array.isArray(payload.materials) ? payload.materials.map(String) : [];
+  filters.brands = Array.isArray(payload.brands) ? payload.brands.map(String) : [];
+  filters.priceMin = payload.priceMin != null && payload.priceMin !== "" ? Number(payload.priceMin) : null;
+  filters.priceMax = payload.priceMax != null && payload.priceMax !== "" ? Number(payload.priceMax) : null;
   isFilterOpen.value = false;
 }
 
@@ -195,8 +160,7 @@ function onClearFilters() {
 // Remove chip
 function removeChip(chip) {
   if (chip.group === "sort") filters.sort = null;
-  if (chip.group === "materials")
-    filters.materials = filters.materials.filter((m) => m !== chip.value);
+  if (chip.group === "materials") filters.materials = filters.materials.filter((m) => m !== chip.value);
   if (chip.group === "brands") filters.brands = filters.brands.filter((b) => b !== chip.value);
   if (chip.group === "priceMin") filters.priceMin = null;
   if (chip.group === "priceMax") filters.priceMax = null;
@@ -207,32 +171,17 @@ const filteredProducts = computed(() => {
   const q = search.value.trim().toLowerCase();
   let list = [...products.value];
 
-  if (q) {
-    list = list.filter((p) => p.title?.toLowerCase().includes(q));
-  }
-
-  if (filters.brands.length) {
-    list = list.filter((p) => p.brand && filters.brands.includes(p.brand));
-  }
-  if (filters.materials.length) {
-    list = list.filter((p) => p.material && filters.materials.includes(p.material));
-  }
+  if (q) list = list.filter((p) => p.title?.toLowerCase().includes(q));
+  if (filters.brands.length) list = list.filter((p) => p.brand && filters.brands.includes(String(p.brand)));
+  if (filters.materials.length) list = list.filter((p) => p.material && filters.materials.includes(String(p.material)));
   if (filters.priceMin != null) list = list.filter((p) => p.price >= Number(filters.priceMin));
   if (filters.priceMax != null) list = list.filter((p) => p.price <= Number(filters.priceMax));
 
   switch (filters.sort) {
-    case "az":
-      list.sort((a, b) => a.title.localeCompare(b.title));
-      break;
-    case "za":
-      list.sort((a, b) => b.title.localeCompare(a.title));
-      break;
-    case "price_desc":
-      list.sort((a, b) => b.price - a.price);
-      break;
-    case "price_asc":
-      list.sort((a, b) => a.price - b.price);
-      break;
+    case "az": list.sort((a, b) => a.title.localeCompare(b.title)); break;
+    case "za": list.sort((a, b) => b.title.localeCompare(a.title)); break;
+    case "price_desc": list.sort((a, b) => b.price - a.price); break;
+    case "price_asc": list.sort((a, b) => a.price - b.price); break;
   }
   return list;
 });
@@ -240,7 +189,7 @@ const filteredProducts = computed(() => {
 // Debounce
 watch(search, () => {
   if (searchDebounce) clearTimeout(searchDebounce);
-  searchDebounce = setTimeout(() => {}, 250);
+  searchDebounce = setTimeout(() => { }, 250);
 });
 
 watch(
@@ -270,24 +219,12 @@ onMounted(loadProducts);
 
       <div class="search-box">
         <span class="search-icon">🔎</span>
-        <input
-          type="text"
-          class="search-input"
-          placeholder="Pesquisar Produto"
-          v-model="search"
-          aria-label="Pesquisar Produto"
-        />
+        <input type="text" class="search-input" placeholder="Pesquisar Produto" v-model="search" aria-label="Pesquisar Produto" />
       </div>
     </div>
 
     <div v-if="chips.length" class="chips-row">
-      <button
-        v-for="c in chips"
-        :key="c.key"
-        class="chip"
-        @click="removeChip(c)"
-        :title="`Remover filtro ${c.label}`"
-      >
+      <button v-for="c in chips" :key="c.key" class="chip" @click="removeChip(c)" :title="`Remover filtro ${c.label}`">
         {{ c.label }}
         <span class="chip-x">×</span>
       </button>
@@ -312,161 +249,162 @@ onMounted(loadProducts);
       :open="isFilterOpen"
       :facets="facets"
       :selected="filters"
-      @close="isFilterOpen.value = false"
+      @close="isFilterOpen = false"
       @apply="onApplyFilters"
       @clear="onClearFilters"
     />
   </main>
 </template>
 
-<style scoped>
-.category-page {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 16px 24px 32px 24px;
-}
 
-.section-header {
-  max-width: 1120px;
-  margin: 24px auto 20px;
-  text-align: left;
-  padding: 0;
-}
+  <style scoped>
+  .category-page {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 16px 24px 32px 24px;
+  }
 
-.section-title {
-  font-family: "Poppins", sans-serif;
-  font-weight: 500;
-  font-size: 1.5rem;
-  line-height: 1.3;
-  padding-bottom: 3px;
-}
+  .section-header {
+    max-width: 1120px;
+    margin: 24px auto 20px;
+    text-align: left;
+    padding: 0;
+  }
 
-.section-rule {
-  height: 1px;
-  background: #000;
-  width: 100%;
-}
+  .section-title {
+    font-family: "Poppins", sans-serif;
+    font-weight: 500;
+    font-size: 1.5rem;
+    line-height: 1.3;
+    padding-bottom: 3px;
+  }
 
-.tools-row {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  flex-wrap: wrap;
-  margin-bottom: 16px;
-}
+  .section-rule {
+    height: 1px;
+    background: #000;
+    width: 100%;
+  }
 
-.filter-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: #111;
-  color: #fff;
-  border: 0;
-  border-radius: 6px;
-  height: 40px;
-  padding: 0 14px;
-  font-weight: 800;
-  cursor: pointer;
-  transition: background 0.2s;
-}
+  .tools-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
 
-.filter-btn:hover {
-  background: #333;
-}
+  .filter-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #111;
+    color: #fff;
+    border: 0;
+    border-radius: 6px;
+    height: 40px;
+    padding: 0 14px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
 
-.filter-btn .filter-icon {
-  opacity: 0.9;
-}
+  .filter-btn:hover {
+    background: #333;
+  }
 
-.search-box {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  height: 40px;
-  min-width: 260px;
-  flex: 1 1 280px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  padding: 0 12px 0 36px;
-  background: #fff;
-}
+  .filter-btn .filter-icon {
+    opacity: 0.9;
+  }
 
-.search-icon {
-  position: absolute;
-  left: 10px;
-  font-size: 14px;
-  opacity: 0.7;
-}
+  .search-box {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    height: 40px;
+    min-width: 260px;
+    flex: 1 1 280px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 0 12px 0 36px;
+    background: #fff;
+  }
 
-.search-input {
-  flex: 1;
-  border: 0;
-  outline: none;
-  font-size: 14px;
-  background: transparent;
-}
+  .search-icon {
+    position: absolute;
+    left: 10px;
+    font-size: 14px;
+    opacity: 0.7;
+  }
 
-.chips-row {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-bottom: 16px;
-}
+  .search-input {
+    flex: 1;
+    border: 0;
+    outline: none;
+    font-size: 14px;
+    background: transparent;
+  }
 
-.chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: #f1f1f1;
-  color: #111;
-  border: 1px solid #e5e5e5;
-  border-radius: 999px;
-  height: 30px;
-  padding: 0 10px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.2s;
-}
+  .chips-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
 
-.chip:hover {
-  background: #e5e5e5;
-}
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #f1f1f1;
+    color: #111;
+    border: 1px solid #e5e5e5;
+    border-radius: 999px;
+    height: 30px;
+    padding: 0 10px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
 
-.chip .chip-x {
-  opacity: 0.7;
-}
+  .chip:hover {
+    background: #e5e5e5;
+  }
 
-.chip-clear {
-  height: 30px;
-  padding: 0 12px;
-  border-radius: 999px;
-  border: 0;
-  background: #eee;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.2s;
-}
+  .chip .chip-x {
+    opacity: 0.7;
+  }
 
-.chip-clear:hover {
-  background: #ddd;
-}
+  .chip-clear {
+    height: 30px;
+    padding: 0 12px;
+    border-radius: 999px;
+    border: 0;
+    background: #eee;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
 
-.products-section {
-  margin-top: 8px;
-}
+  .chip-clear:hover {
+    background: #ddd;
+  }
 
-.loading-message,
-.empty-message {
-  text-align: center;
-  padding: 60px 20px;
-  color: #666;
-  font-size: 16px;
-}
+  .products-section {
+    margin-top: 8px;
+  }
 
-.error {
-  color: #d00;
-  font-weight: 700;
-  text-align: center;
-  padding: 20px;
-}
-</style>
+  .loading-message,
+  .empty-message {
+    text-align: center;
+    padding: 60px 20px;
+    color: #666;
+    font-size: 16px;
+  }
+
+  .error {
+    color: #d00;
+    font-weight: 700;
+    text-align: center;
+    padding: 20px;
+  }
+  </style>

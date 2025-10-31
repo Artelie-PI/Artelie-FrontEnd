@@ -1,5 +1,5 @@
 <script setup>
-import { computed, reactive, watch } from "vue";
+import { computed, reactive, watch, onBeforeUnmount } from "vue";
 
 const props = defineProps({
   open: { type: Boolean, default: false },
@@ -17,13 +17,23 @@ watch(
   () => props.selected,
   (v) => {
     local.sort = v?.sort || null;
-    local.materials = [...(v?.materials || [])];
-    local.brands = [...(v?.brands || [])];
+    local.materials = Array.isArray(v?.materials) ? [...v.materials].map(String) : [];
+    local.brands = Array.isArray(v?.brands) ? [...v.brands].map(String) : [];
     local.priceMin = v?.priceMin ?? "";
     local.priceMax = v?.priceMax ?? "";
   },
   { immediate: true, deep: true }
 );
+
+// trava/destrava scroll do body quando abrir
+watch(
+  () => props.open,
+  (isOpen) => {
+    document.body.style.overflow = isOpen ? "hidden" : "";
+  },
+  { immediate: true }
+);
+onBeforeUnmount(() => (document.body.style.overflow = ""));
 
 // Seções (true = aberta)
 const openSection = reactive({ order: true, material: true, price: true, brand: true });
@@ -60,7 +70,6 @@ const hasFilters = computed(
 </script>
 
 <template>
-  <!-- Mesmo padrão de transição -->
   <transition name="sidebar-filter">
     <div v-if="open" class="overlay" @click.self="emit('close')">
       <aside class="panel">
@@ -69,22 +78,20 @@ const hasFilters = computed(
           <h2 class="head-title">FILTRAR</h2>
         </header>
 
-        <!-- Conteúdo rolável -->
         <div class="content">
-          <!-- Ordenar -->
+          <!-- Ordenar: escolha única (radio) -->
           <section class="sec">
             <button class="sec-head" @click="toggle('order')">
               <span>Ordenar</span>
               <img src="/src/assets/images/Seta.png" alt="" class="arrow" :class="{ open: openSection.order }" />
             </button>
-            <div v-show="openSection.order" class="sec-body">
-              <label class="opt"><input type="checkbox" name="sort" value="az" v-model="local.sort" /> A-Z</label>
-              <label class="opt"><input type="checkbox" name="sort" value="za" v-model="local.sort" /> Z-A</label>
-              <label class="opt"><input type="checkbox" name="sort" value="new" v-model="local.sort" />
-                Novidades</label>
-              <label class="opt"><input type="checkbox" name="sort" value="price_desc" v-model="local.sort" /> Maior
+            <div v-show="openSection.order" class="sec-body sec-columns">
+              <label class="opt"><input type="radio" name="sort" value="az" v-model="local.sort" /> A-Z</label>
+              <label class="opt"><input type="radio" name="sort" value="za" v-model="local.sort" /> Z-A</label>
+              <label class="opt"><input type="radio" name="sort" value="new" v-model="local.sort" /> Novidades</label>
+              <label class="opt"><input type="radio" name="sort" value="price_desc" v-model="local.sort" /> Maior
                 Preço</label>
-              <label class="opt"><input type="checkbox" name="sort" value="price_asc" v-model="local.sort" /> Menor
+              <label class="opt"><input type="radio" name="sort" value="price_asc" v-model="local.sort" /> Menor
                 Preço</label>
             </div>
           </section>
@@ -95,9 +102,9 @@ const hasFilters = computed(
               <span>Linha do Material</span>
               <img src="/src/assets/images/Seta.png" alt="" class="arrow" :class="{ open: openSection.material }" />
             </button>
-            <div v-show="openSection.material" class="sec-body">
-              <label v-for="m in facets.materials" :key="m" class="opt">
-                <input type="checkbox" :value="m" v-model="local.materials" /> {{ m }}
+            <div v-show="openSection.material" class="sec-body sec-columns">
+              <label v-for="m in facets.materials" :key="String(m)" class="opt">
+                <input type="checkbox" :value="String(m)" v-model="local.materials" /> {{ m }}
               </label>
               <p v-if="!facets.materials?.length" class="muted">
                 Nenhum material disponível nesta categoria.
@@ -129,9 +136,9 @@ const hasFilters = computed(
               <span>Marca</span>
               <img src="/src/assets/images/Seta.png" alt="" class="arrow" :class="{ open: openSection.brand }" />
             </button>
-            <div v-show="openSection.brand" class="sec-body">
-              <label v-for="b in facets.brands" :key="b" class="opt">
-                <input type="checkbox" :value="b" v-model="local.brands" /> {{ b }}
+            <div v-show="openSection.brand" class="sec-body sec-columns">
+              <label v-for="b in facets.brands" :key="String(b)" class="opt">
+                <input type="checkbox" :value="String(b)" v-model="local.brands" /> {{ b }}
               </label>
               <p v-if="!facets.brands?.length" class="muted">
                 Nenhuma marca disponível nesta categoria.
@@ -150,7 +157,7 @@ const hasFilters = computed(
 </template>
 
 <style scoped>
-/* Transição no mesmo estilo da SidebarSacola */
+/* Transição */
 .sidebar-filter-enter-active,
 .sidebar-filter-leave-active {
   transition: opacity 0.25s ease;
@@ -181,7 +188,7 @@ const hasFilters = computed(
   justify-content: flex-end;
 }
 
-/* Painel lateral */
+/* Painel */
 .panel {
   width: 420px;
   max-width: 100vw;
@@ -195,7 +202,7 @@ const hasFilters = computed(
   --arrow-open: 180deg;
 }
 
-/* Header (mantido do seu CSS) */
+/* Header */
 .close-btn {
   width: 16px;
   position: absolute;
@@ -209,7 +216,6 @@ const hasFilters = computed(
   display: flex;
   border-bottom: 1px solid #D5D5D5;
   margin: 0 20px;
-
 }
 
 .head-title {
@@ -218,7 +224,7 @@ const hasFilters = computed(
   margin: 45px auto 40px auto;
 }
 
-/* Conteúdo rolável */
+/* Conteúdo */
 .content {
   min-height: 0;
   overflow: auto;
@@ -260,19 +266,29 @@ const hasFilters = computed(
 }
 
 .sec-body {
-  padding: 0 0 14px 0;
+  padding: 8px 0 16px 0;
   display: flex;
-  justify-content: flex-start;
-  align-items: center;
   flex-wrap: wrap;
+  gap: 10px 16px;
+  align-items: center;
   font-size: 0.9rem;
-  gap: 30px;
+}
+
+.sec-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px 16px;
 }
 
 .opt {
   display: inline-flex;
   gap: 8px;
   align-items: center;
+}
+
+.opt input[type="checkbox"],
+.opt input[type="radio"] {
+  accent-color: #000787;
 }
 
 .muted {
@@ -294,14 +310,15 @@ const hasFilters = computed(
   padding: 0 10px;
 }
 
-/* Footer (mantido) */
+/* Footer */
 .footer {
   padding: 50px 0;
   margin: 0 24px;
   position: sticky;
+  bottom: 0;
   display: grid;
   background: #fff;
-  border-top: 1px solid #D5D5D5 ;
+  border-top: 1px solid #D5D5D5;
   grid-template-columns: 1fr 1fr;
   gap: 20px;
 }
