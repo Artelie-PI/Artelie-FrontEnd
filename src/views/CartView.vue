@@ -1,528 +1,493 @@
 <script setup>
-import { ref, computed, nextTick } from "vue";
+import { useCartStore } from "@/stores/cart.js";
 import { useRouter } from "vue-router";
-import { useCartStore } from "@/stores/cart";
-
-const router = useRouter();
+import { computed } from "vue";
 const cartStore = useCartStore();
+const router = useRouter();
 
-const couponCode = ref("");
-const cep = ref("");
-const discount = ref(0);
-const shipping = ref(0);
-const canFinalize = ref(false); // controla se o usuário pode finalizar a compra
-
-const address = ref({
-  logradouro: "",
-  bairro: "",
-  localidade: "",
-  uf: "",
-});
-const addressFetched = ref(false);
-
-// Navegação
-function voltarLoja() {
-  router.push("/");
+function goToHome() {
+  router.push({ name: 'home' });
 }
 
-// Controle de quantidade
-function increase(item) {
-  item.quantity++;
-}
-function decrease(item) {
-  if (item.quantity > 1) item.quantity--;
-}
+const formatPrice = (value) => {
+  return value.toFixed(2).replace('.', ',');
+};
 
-// Cupom
-function applyCoupon() {
-  const code = couponCode.value.trim().toUpperCase();
-
-  if (code === "GBI15") {
-    discount.value = cartStore.totalPrice * 0.15;
-    alert("Cupom aplicado com sucesso! Desconto de 15%.");
-  } else if (code === "CAGE777") {
-    discount.value = cartStore.totalPrice * 0.9;
-    alert("Cupom aplicado com sucesso! Desconto de 90%.");
-  } else if (code === "MURILO10") {
-    discount.value = cartStore.totalPrice * 0.1;
-    alert("Cupom aplicado com sucesso! Desconto de 10%.");
-  } else if (code === "FRETEGRATIS") {
-    discount.value = shipping.value;
-    alert("Cupom aplicado com sucesso! Frete grátis.");
-  } else if (code === "") {
-    discount.value = 0;
-    alert("Por favor, insira um código de cupom.");
-  } else {
-    discount.value = 0;
-    alert("Cupom inválido.");
-  }
-}
-
-// Frete e endereço
-async function calculateShipping() {
-  const cepNumber = cep.value.replace(/\D/g, "");
-  if (cepNumber.length !== 8) {
-    alert("CEP inválido.");
-    return;
-  }
-
-  try {
-    const response = await fetch(`https://viacep.com.br/ws/${cepNumber}/json/`);
-    const data = await response.json();
-
-    if (data.erro) {
-      alert("CEP não encontrado.");
-      shipping.value = 0;
-      addressFetched.value = false;
-      canFinalize.value = false;
-      return;
-    }
-
-    // Preenche dados do endereço
-    address.value = {
-      logradouro: data.logradouro || "",
-      bairro: data.bairro || "",
-      localidade: data.localidade || "",
-      uf: data.uf || "",
-    };
-    addressFetched.value = true;
-
-    // Define frete com base no estado
-    shipping.value = data.uf === "SC" ? 0 : 32;
-
-    // Verifica se há campos faltando
-    const missingFields = [];
-    if (!address.value.logradouro) missingFields.push("Rua");
-    if (!address.value.bairro) missingFields.push("Bairro");
-    if (!address.value.localidade) missingFields.push("Cidade");
-    if (!address.value.uf) missingFields.push("Estado");
-
-    if (missingFields.length > 0) {
-      alert(
-        `O CEP não retornou todas as informações. Por favor, preencha manualmente: ${missingFields.join(
-          ", "
-        )}. Após preencher, pressione ENTER para confirmar.`
-      );
-
-      canFinalize.value = false;
-
-      // Espera o Vue renderizar os inputs antes de adicionar os eventos
-      await nextTick();
-
-      const addressInputs = document.querySelectorAll(
-        "input[name='logradouro'], input[name='bairro'], input[name='localidade'], input[name='uf']"
-      );
-
-      addressInputs.forEach((input) => {
-        input.addEventListener("keydown", (event) => {
-          if (event.key === "Enter") {
-            event.preventDefault();
-
-            const allFilled =
-              address.value.logradouro.trim().length > 2 &&
-              address.value.bairro.trim().length > 2 &&
-              address.value.localidade.trim().length > 2 &&
-              address.value.uf.trim().length > 1;
-
-            if (allFilled) {
-              canFinalize.value = true;
-              alert("Endereço completo! Agora você pode finalizar a compra.");
-            } else {
-              alert("Preencha todos os campos corretamente antes de confirmar.");
-            }
-          }
-        });
-      });
-    } else {
-      canFinalize.value = true;
-    }
-  } catch {
-    alert("Erro ao buscar informações do CEP.");
-  }
-}
-
-// Finalizar compra
-function finalizarCompra() {
-  if (!addressFetched.value) {
-    alert("Por favor, insira um CEP válido antes de finalizar a compra.");
-    return;
-  }
-
-  if (
-    !address.value.logradouro ||
-    !address.value.bairro ||
-    !address.value.localidade ||
-    !address.value.uf
-  ) {
-    alert("Preencha todos os campos de endereço antes de continuar.");
-    canFinalize.value = false;
-    return;
-  }
-
-  if (!canFinalize.value) {
-    alert("Pressione ENTER após preencher o endereço para continuar.");
-    return;
-  }
-
-  alert("Compra finalizada com sucesso!");
-}
-
-const totalWithDiscountAndShipping = computed(() => {
-  return cartStore.totalPrice - discount.value + shipping.value;
+const subtotal = computed(() => {
+  return cartStore.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 });
 </script>
 
 <template>
-  <div class="cart-page">
-    <div v-if="cartStore.items.length === 0" class="empty-wrap">
-      <h1 class="title">
-        BEM-VINDO À SACOLA
-        <img src="/src/assets/images/Shopping bag.png" alt="sacola" />
-      </h1>
+  <main class="cart-container">
+    <!-- Estado vazio -->
+    <template v-if="cartStore.items.length === 0">
+      <div class="empty-cart">
+        <div class="empty-header">
+          <h1 class="empty-title">BEM-VINDO À SACOLA</h1>
+          <img src="/src/assets/images/Shopping bag.png" alt="" class="title-bag" />
+        </div>
+        
+        <p class="empty-message">A Sacola está vazia!</p>
+        
+        <div class="empty-icon">
+          <img src="/src/assets/images/Empty set.png" alt="Sacola vazia" />
+        </div>
+        
+        <p class="empty-subtitle">
+          Que tal retornar à nossa página principal e<br>procurar pelos melhores produtos
+        </p>
+        
+        <button class="btn-primary" @click="goToHome">VOLTAR À LOJA</button>
+        
+        <p class="login-text">
+          Tem uma conta?<br>
+          Faça <RouterLink to="/login" class="login-link">LOGIN</RouterLink> para finalizar suas compras
+        </p>
+      </div>
 
-      <p class="subtitle">A Sacola está vazia!</p>
-      <img src="/src/assets/images/Empty set.png" alt="sacola vazia" class="empty-icon" />
-      <p class="lead">
-        Que tal retornar à nossa página principal e procurar pelos melhores produtos?
-      </p>
+      <!-- Produtos interessantes -->
+      <section class="suggestions">
+        <h2 class="suggestions-title">Conheça alguns produtos interessantes</h2>
+        <div class="suggestions-line"></div>
+      </section>
+    </template>
 
-      <button class="btn voltar" @click="voltarLoja">VOLTAR À LOJA</button>
-      <p class="login-text">
-        Tem uma conta? <span class="login-link">LOGIN</span> para finalizar suas compras
-      </p>
-    </div>
-
-    <div v-else class="cart-container">
-      <h1 class="title">
-        BEM-VINDO À SACOLA
-        <img src="@/assets/images/Shopping bag.png" alt="" />
-      </h1>
+    <!-- Com itens -->
+    <template v-else>
+      <div class="cart-header">
+        <h1 class="cart-title">BEM-VINDO À SACOLA</h1>
+        <img src="/src/assets/images/Shopping bag.png" alt="" class="title-bag" />
+      </div>
 
       <div class="cart-content">
         <!-- Lista de produtos -->
-        <table class="cart-table">
-          <thead>
-            <tr>
-              <th>PRODUTO</th>
-              <th>QUANTIDADE</th>
-              <th>TOTAL</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="item in cartStore.items" :key="item.id">
-              <td class="product-info">
-                <img :src="item.image" alt="Produto" />
-                <div>
-                  <p class="product-name">{{ item.name }}</p>
-                  <p class="product-price">R$ {{ item.price.toFixed(2) }}</p>
-                </div>
-              </td>
-              <td class="quantity-control">
-                <button @click="decrease(item)">−</button>
+        <div class="cart-items">
+          <div class="table-header">
+            <span>PRODUTO</span>
+            <span>QUANTIDADE</span>
+            <span>TOTAL</span>
+          </div>
+
+          <div class="cart-item" v-for="item in cartStore.items" :key="item.id">
+            <div class="item-product">
+              <img :src="item.image" :alt="item.title" class="item-image" />
+              <div class="item-info">
+                <p class="item-title">{{ item.title }}</p>
+                <p class="item-price">R$ {{ formatPrice(item.price) }}</p>
+              </div>
+            </div>
+
+            <div class="item-quantity">
+              <div class="quantity-controls">
+                <button @click="cartStore.addToCart(item, -1)" :disabled="item.quantity === 1">-</button>
                 <span>{{ item.quantity }}</span>
-                <button @click="increase(item)">+</button>
-              </td>
-              <td class="product-total">
-                R$ {{ (item.price * item.quantity).toFixed(2) }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                <button @click="cartStore.addToCart(item, 1)">+</button>
+              </div>
+              <button class="remove-btn" @click="cartStore.removeFromCart(item.id)">×</button>
+            </div>
+
+            <div class="item-total">
+              R$ {{ formatPrice(item.price * item.quantity) }}
+            </div>
+          </div>
+        </div>
 
         <!-- Resumo -->
-        <aside class="summary">
-          <h2>RESUMO DA COMPRA</h2>
+        <aside class="cart-summary">
+          <h2 class="summary-title">RESUMO DA COMPRA</h2>
 
-          <!-- Cupom -->
-          <div class="summary-section">
+          <div class="summary-field">
             <label>Cupom de Desconto</label>
-            <div class="input-row">
-              <input v-model="couponCode" type="text" placeholder="Digite o código" />
-              <button @click="applyCoupon">APLICAR</button>
+            <div class="field-group">
+              <input type="text" placeholder="Digite o código de desconto" />
+              <button class="btn-apply">APLICAR</button>
             </div>
           </div>
 
-          <!-- Frete -->
-          <div class="summary-section">
+          <div class="summary-field">
             <label>Frete</label>
-            <div class="input-row">
-              <input v-model="cep" type="text" placeholder="Digite o seu CEP" />
-              <button @click="calculateShipping">APLICAR</button>
-            </div>
-
-            <!-- Endereço -->
-            <div v-if="addressFetched" class="address-info">
-              <p><strong>Rua:</strong>
-                <input
-                  v-model="address.logradouro"
-                  name="logradouro"
-                  placeholder="Rua"
-                />
-              </p>
-              <p><strong>Bairro:</strong>
-                <input
-                  v-model="address.bairro"
-                  name="bairro"
-                  placeholder="Bairro"
-                />
-              </p>
-              <p><strong>Cidade:</strong>
-                <input
-                  v-model="address.localidade"
-                  name="localidade"
-                  placeholder="Cidade"
-                />
-              </p>
-              <p><strong>Estado:</strong>
-                <input
-                  v-model="address.uf"
-                  name="uf"
-                  placeholder="Estado"
-                />
-              </p>
+            <div class="field-group">
+              <input type="text" placeholder="Digite o seu CEP" />
+              <button class="btn-apply">APLICAR</button>
             </div>
           </div>
 
-          <!-- Totais -->
           <div class="summary-totals">
-            <p>
-              Subtotal - {{ cartStore.items.length }} itens
-              <span>R$ {{ cartStore.totalPrice.toFixed(2) }}</span>
-            </p>
-            <p>Desconto Cupom <span>- R$ {{ discount.toFixed(2) }}</span></p>
-            <p>Frete <span>R$ {{ shipping.toFixed(2) }}</span></p>
-            <hr />
-            <p class="total">
-              TOTAL <span>R$ {{ totalWithDiscountAndShipping.toFixed(2) }}</span>
-            </p>
+            <div class="total-line">
+              <span>Subtotal - {{ cartStore.items.length }} itens</span>
+              <span>R$ {{ formatPrice(subtotal) }}</span>
+            </div>
+            <div class="total-line">
+              <span>Desconto Cupom</span>
+              <span>R$ 0,00</span>
+            </div>
+            <div class="total-line">
+              <span>Frete</span>
+              <span>R$ 32,00</span>
+            </div>
+            <div class="total-line total-final">
+              <span>TOTAL</span>
+              <span>R$ {{ formatPrice(subtotal + 32) }}</span>
+            </div>
           </div>
 
-          <button
-            class="btn-finalizar"
-            :disabled="!canFinalize"
-            @click="finalizarCompra"
-          >
-            FINALIZAR COMPRA
-          </button>
-          <button class="btn-continuar" @click="voltarLoja">
-            CONTINUAR COMPRANDO
-          </button>
+          <button class="btn-checkout">FINALIZAR COMPRA</button>
+          <button class="btn-continue" @click="goToHome">CONTINUAR COMPRANDO</button>
         </aside>
       </div>
-    </div>
-  </div>
+
+      <!-- Produtos interessantes -->
+      <section class="suggestions">
+        <h2 class="suggestions-title">Conheça alguns produtos interessantes</h2>
+        <div class="suggestions-line"></div>
+        <!-- Aqui você pode adicionar um componente de produtos relacionados -->
+      </section>
+    </template>
+  </main>
 </template>
 
 <style scoped>
-/* ===== SACOLA VAZIA ===== */
-.empty-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+.cart-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+/* Estado vazio */
+.empty-cart {
   text-align: center;
-  justify-content: center;
-  padding: 3rem 1rem;
-  font-family: "Inter", sans-serif;
+  padding: 40px 20px;
+  max-width: 600px;
+  margin: 0 auto;
 }
-.empty-wrap .title {
-  font-size: 1.8rem;
-  font-weight: 700;
+
+.empty-header {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.6rem;
-  margin-bottom: 1rem;
+  gap: 12px;
+  margin-bottom: 20px;
 }
-.empty-wrap .subtitle {
+
+.empty-title, .cart-title {
+  font-size: 1.8rem;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, .5);
+  font-weight: 700;
+  color: #000;
+  letter-spacing: 0.02em;
+  margin: 0;
+}
+
+.title-bag {
+  width: 32px;
+  height: 32px;
+}
+
+.empty-message {
   font-size: 1.1rem;
-  margin-bottom: 2rem;
+  font-weight: 600;
+  color: #000;
+  margin: 20px 0;
 }
-.empty-wrap .empty-icon {
-  width: 150px;
-  margin-bottom: 2rem;
+
+.empty-icon {
+  margin: 30px 0;
 }
-.empty-wrap .lead {
+
+.empty-icon img {
+  width: 120px;
+  opacity: 0.6;
+}
+
+.empty-subtitle {
   font-size: 1rem;
   color: #333;
-  max-width: 480px;
-  margin-bottom: 1.5rem;
+  margin: 20px 0 30px;
+  line-height: 1.6;
 }
-.empty-wrap .btn.voltar {
-  background-color: #0a0a9f;
+
+.btn-primary {
+  background: #0B1E9F;
   color: #fff;
   border: none;
-  padding: 0.8rem 2rem;
+  border-radius: 12px;
+  padding: 12px 40px;
+  font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
-  border-radius: 8px;
-  transition: background 0.3s ease;
+  margin-bottom: 20px;
 }
-.empty-wrap .btn.voltar:hover {
-  background-color: #05056d;
-}
-.empty-wrap .login-text {
-  margin-top: 2rem;
+
+.login-text {
   font-size: 0.95rem;
+  color: #333;
+  margin-top: 20px;
+  line-height: 1.6;
 }
-.empty-wrap .login-link {
-  font-weight: bold;
+
+.login-link {
   color: #000;
+  font-weight: 600;
   text-decoration: underline;
+}
+
+/* Com itens */
+.cart-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 30px;
+}
+
+.cart-content {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 30px;
+  margin-bottom: 50px;
+}
+
+@media (max-width: 1024px) {
+  .cart-content {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Lista de produtos */
+.cart-items {
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table-header {
+  display: grid;
+  grid-template-columns: 1fr 200px 140px;
+  gap: 20px;
+  padding: 16px 20px;
+  background: #f8f8f8;
+  border-bottom: 1px solid #e5e5e5;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #000;
+}
+
+.cart-item {
+  display: grid;
+  grid-template-columns: 1fr 200px 140px;
+  gap: 20px;
+  padding: 20px;
+  border-bottom: 1px solid #f0f0f0;
+  align-items: center;
+}
+
+.cart-item:last-child {
+  border-bottom: none;
+}
+
+.item-product {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.item-image {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.item-info {
+  flex: 1;
+}
+
+.item-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #000;
+  margin: 0 0 8px 0;
+  line-height: 1.3;
+}
+
+.item-price {
+  font-size: 0.85rem;
+  color: #666;
+  margin: 0;
+}
+
+.item-quantity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.quantity-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 4px 8px;
+}
+
+.quantity-controls button {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  color: #000;
+}
+
+.quantity-controls span {
+  min-width: 24px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.remove-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #999;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.remove-btn:hover {
+  color: #f00;
+}
+
+.item-total {
+  text-align: right;
+  font-weight: 700;
+  color: #000;
+  font-size: 1rem;
+}
+
+/* Resumo */
+.cart-summary {
+  background: #f8f9fa;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  padding: 24px;
+  align-self: flex-start;
+  position: sticky;
+  top: 20px;
+}
+
+.summary-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #000;
+  margin: 0 0 20px 0;
+}
+
+.summary-field {
+  margin-bottom: 16px;
+}
+
+.summary-field label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #000;
+  margin-bottom: 8px;
+}
+
+.field-group {
+  display: flex;
+  gap: 8px;
+}
+
+.field-group input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.btn-apply {
+  background: #0B1E9F;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.summary-totals {
+  margin: 20px 0;
+  padding-top: 16px;
+  border-top: 1px solid #ddd;
+}
+
+.total-line {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.total-final {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #000;
+  padding-top: 12px;
+  border-top: 1px solid #ddd;
+  margin-top: 12px;
+}
+
+.btn-checkout {
+  width: 100%;
+  background: #000;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 14px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  margin-bottom: 12px;
+}
+
+.btn-continue {
+  width: 100%;
+  background: #fff;
+  color: #0B1E9F;
+  border: 2px solid #0B1E9F;
+  border-radius: 8px;
+  padding: 14px;
+  font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
 }
 
-/* ===== SACOLA COM ITENS ===== */
-.cart-container {
-  display: flex;
-  flex-direction: column;
-  font-family: "Inter", sans-serif;
-  align-items: center;
-  margin: 2rem;
+/* Sugestões */
+.suggestions {
+  margin-top: 60px;
 }
-.title {
-  font-size: 1.8rem;
-  font-weight: bold;
-  margin-bottom: 1.5rem;
-  text-align: left;
-  width: 100%;
-}
-.title > img {
-  width: 40px;
-  height: 40px;
-  margin-left: 0.5rem;
-}
-.cart-content {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-  gap: 2rem;
-}
-.cart-table {
-  width: 70%;
-  border-collapse: collapse;
-}
-.cart-table th {
-  text-align: left;
-  font-weight: bold;
-  border-bottom: 2px solid #000;
-  padding: 0.8rem 0;
-}
-.cart-table td {
-  padding: 1rem 0;
-  border-bottom: 1px solid #ddd;
-}
-.product-info {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-.product-info img {
-  width: 100px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-.quantity-control {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-.quantity-control button {
-  border: 1px solid #ccc;
-  background: none;
-  width: 25px;
-  height: 25px;
-  cursor: pointer;
-  font-weight: bold;
-}
-.summary {
-  width: 30%;
-  border: 1px solid #e5e5e5;
-  padding: 1.5rem;
-  background-color: #fff;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-.input-row {
-  display: flex;
-  margin-top: 0.4rem;
-}
-.input-row input {
-  flex: 1;
-  padding: 0.5rem;
-  border: none;
-  border-bottom: 1px solid #000;
-  font-size: 0.9rem;
-}
-.input-row button {
-  background: #0a0a0a;
-  color: white;
-  border: none;
-  padding: 0.4rem 0.8rem;
-  cursor: pointer;
-  font-size: 0.8rem;
-  margin-left: 0.4rem;
-}
-.address-info {
-  margin-top: 1rem;
-  background: #f8f8f8;
-  padding: 0.8rem;
-  border-radius: 6px;
-  font-size: 0.9rem;
-}
-.address-info p {
-  margin: 0.3rem 0;
-}
-.address-info input {
-  width: 100%;
-  border: none;
-  border-bottom: 1px solid #aaa;
-  background: transparent;
-  font-size: 0.9rem;
-  margin-top: 6px;
-}
-.btn-confirm {
-  background: #0a0a0a;
-  color: #fff;
-  border: none;
-  padding: 0.4rem 0.8rem;
-  cursor: pointer;
-  font-size: 0.85rem;
-  border-radius: 6px;
-}
-.summary-totals {
-  font-size: 0.9rem;
-  color: #333;
-}
-.summary-totals p {
-  display: flex;
-  justify-content: space-between;
-  margin: 0.3rem 0;
-}
-.summary-totals .total {
-  font-weight: bold;
-  margin-top: 0.6rem;
-}
-.btn-finalizar {
-  background: #000;
-  color: white;
-  padding: 0.8rem;
-  border: none;
-  font-weight: bold;
-  cursor: pointer;
-  margin-top: 1rem;
-  transition: 0.3s;
-}
-.btn-finalizar:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-.btn-continuar {
-  background: white;
+
+.suggestions-title {
+  font-size: 1.3rem;
+  font-weight: 600;
   color: #000;
-  padding: 0.7rem;
-  border: 1px solid #000;
-  cursor: pointer;
-  font-weight: bold;
+  margin: 0 0 8px 0;
+}
+
+.suggestions-line {
+  height: 1px;
+  background: #000;
+  opacity: 0.2;
+  margin-bottom: 30px;
 }
 </style>

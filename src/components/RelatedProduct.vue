@@ -1,31 +1,80 @@
+<script setup>
+import { ref, onMounted } from "vue";
+import { useRoute } from "vue-router";
+import { useCartStore } from "@/stores/cart";
+import { fetchRelatedProducts } from "@/api/products";
+import LoadingSpinner from "@/components/LoadingSpinner.vue";
+
+const route = useRoute();
+const cartStore = useCartStore();
+const relatedProducts = ref([]);
+const loading = ref(true);
+const error = ref(null);
+
+function addToCart(product) {
+  cartStore.addToCart({
+    id: product.id,
+    title: product.name,
+    price: Number(product.price), // garantir number no store
+    image: product.image,
+  });
+}
+
+onMounted(async () => {
+  try {
+    loading.value = true;
+    const productId = route.params.id;
+    let products = await fetchRelatedProducts(productId);
+
+    // fallback – por enquanto vazio (implementar por categoria depois)
+    if (!Array.isArray(products) || products.length === 0) {
+      products = [];
+    }
+
+    relatedProducts.value = products.map(product => ({
+      id: product.id,
+      name: product.name,
+      price: Number(product.price),
+      image: product.image || product.images?.[0]?.image,
+    }));
+  } catch (err) {
+    console.error('Erro ao carregar produtos relacionados:', err);
+    error.value = null; // não exibir erro, só não mostra cards
+  } finally {
+    loading.value = false;
+  }
+});
+</script>
+
 <template>
   <div class="related-wrapper">
     <div class="related">
       <h2>Explorar outros itens semelhantes</h2>
-      <div class="related-grid">
-        <div
-          v-for="(related, i) in productStore.relatedProducts"
-          :key="i"
-          class="related-card"
-        >
-          <img :src="related.image" class="related-img" />
 
+      <LoadingSpinner v-if="loading" size="medium" message="Carregando produtos relacionados..." />
+
+      <div v-else-if="error" class="error-state">
+        <p>{{ error }}</p>
+      </div>
+
+      <div v-else-if="relatedProducts.length === 0" class="empty-state">
+        <p>Nenhum produto relacionado encontrado.</p>
+      </div>
+
+      <div v-else class="related-grid">
+        <div v-for="related in relatedProducts" :key="related.id" class="related-card">
+          <img :src="related.image || '/placeholder.png'" :alt="related.name" class="related-img" />
           <h3 class="related-name">{{ related.name }}</h3>
-
-          <p class="related-price">{{ related.price }}</p>
-          <p class="related-installments">Até 4x de R$ 152,84 sem juros</p>
-
-          <button class="add-btn">Adicionar à Sacola</button>
+          <p class="related-price">R$ {{ related.price.toFixed(2).replace('.', ',') }}</p>
+          <p class="related-installments">
+            Até 4x de R$ {{ (related.price / 4).toFixed(2).replace('.', ',') }} sem juros
+          </p>
+          <button class="add-btn" @click="addToCart(related)">Adicionar à Sacola</button>
         </div>
       </div>
     </div>
   </div>
 </template>
-
-<script setup>
-import { useProductStore } from "@/stores/relatedProduct";
-const productStore = useProductStore();
-</script>
 
 <style scoped>
 .related-wrapper {
@@ -40,6 +89,17 @@ const productStore = useProductStore();
   margin-bottom: 1.2rem;
   border-bottom: 1px solid #ddd;
   padding-bottom: 0.4rem;
+}
+
+.error-state,
+.empty-state {
+  padding: 2rem;
+  text-align: center;
+  color: #666;
+}
+
+.error-state {
+  color: #dc2626;
 }
 
 .related-grid {
@@ -58,6 +118,7 @@ const productStore = useProductStore();
   justify-content: space-between;
   transition: border 0.2s ease, transform 0.2s ease;
 }
+
 .related-card:hover {
   transform: translateY(-3px);
   border: 1px solid #999;
@@ -65,8 +126,9 @@ const productStore = useProductStore();
 
 .related-img {
   width: 100%;
-  height: auto;
+  aspect-ratio: 4/5;
   object-fit: contain;
+  background: #fff;
   margin-bottom: 0.8rem;
 }
 
@@ -92,8 +154,8 @@ const productStore = useProductStore();
 }
 
 .add-btn {
-  background: black;
-  color: white;
+  background: #000;
+  color: #fff;
   font-size: 0.9rem;
   font-weight: 500;
   padding: 0.7rem;
@@ -103,6 +165,7 @@ const productStore = useProductStore();
   cursor: pointer;
   transition: background 0.2s ease;
 }
+
 .add-btn:hover {
   background: #333;
 }

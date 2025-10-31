@@ -1,94 +1,108 @@
 <script setup>
-import { ref } from "vue";
-import { useProductStore } from "@/stores/relatedProduct";
-import { useCartStore } from "@/stores/cart"; // <-- novo
+import { ref, onMounted, computed } from "vue";
+import { useRoute } from "vue-router";
+import { useCartStore } from "@/stores/cart";
+import { fetchProductById } from "@/api/products";
+import LoadingSpinner from "@/components/LoadingSpinner.vue";
 
-const productStore = useProductStore();
+const route = useRoute();
 const cartStore = useCartStore();
 const rating = ref(0);
+const quantity = ref(1);
+const product = ref(null);
+const loading = ref(true);
+const error = ref(null);
+const selectedImage = ref(null);
 
-function setRating(value) {
-  rating.value = value;
-}
+function setRating(value) { rating.value = value; }
+function increaseQuantity() { quantity.value++; }
+function decreaseQuantity() { if (quantity.value > 1) quantity.value--; }
 
-const currentProduct = {
-  id: 1,
-  name: "Estojo Lápis de Cor Studio Collection Winsor & Newton 50 Peças",
-  price: 598,
-  image: productStore.selectedImage,
-};
+const productImages = computed(() => {
+  if (!product.value) return [];
+  const images = [];
+  if (product.value.image) images.push(product.value.image);
+  if (product.value.images) {
+    product.value.images.forEach(img => { if (img.image) images.push(img.image); });
+  }
+  return images;
+});
+
+const currentProduct = computed(() => {
+  if (!product.value) return null;
+  return {
+    id: product.value.id,
+    title: product.value.name,
+    price: Number(product.value.price),
+    image: selectedImage.value || product.value.image || '',
+  };
+});
+
+onMounted(async () => {
+  try {
+    loading.value = true;
+    const productId = route.params.id;
+    product.value = await fetchProductById(productId);
+    selectedImage.value = productImages.value[0] ?? product.value.image ?? '';
+  } catch (err) {
+    console.error('Erro ao carregar produto:', err);
+    error.value = 'Erro ao carregar produto';
+  } finally {
+    loading.value = false;
+  }
+});
 </script>
 
 <template>
   <div class="product-page">
-    <div class="product-container">
+    <LoadingSpinner v-if="loading" size="large" message="Carregando produto..." />
+
+    <div v-else-if="error" class="error-state">
+      <p>{{ error }}</p>
+    </div>
+
+    <div v-else-if="product" class="product-container">
       <div class="gallery">
-        <img :src="productStore.selectedImage" alt="Produto" class="main-image" />
-        <div class="thumbnails">
-          <img
-            v-for="(img, i) in productStore.images"
-            :key="i"
-            :src="img"
-            @click="productStore.selectedImage = img"
-            class="thumb"
-            :class="{ active: productStore.selectedImage === img }"
-          />
+        <img :src="selectedImage || '/placeholder.png'" :alt="product.name" class="main-image" />
+        <div class="thumbnails" v-if="productImages.length > 1">
+           <img v-if="product.image" :src="product.image" :alt="product.title" style="max-width: 500px; border-radius: 8px;" />
         </div>
       </div>
 
       <div class="details">
-        <h1 class="title">Estojo Lápis de Cor Studio Collection Winsor & Newton 50 Peças</h1>
+        <h1 class="title">{{ product.name }}</h1>
         <p class="brand">
-          <span class="category">LÁPIS/CANETAS</span> ·
-          <span class="brand-name">Winsor & Newton</span>
+          <span class="category">{{ product.category?.name || 'PRODUTOS' }}</span> ·
+          <span class="brand-name">{{ product.brand || 'Artelie' }}</span>
         </p>
 
         <div class="rating">
-          <span
-            v-for="n in 5"
-            :key="n"
-            class="star"
-            :class="{ full: n <= rating }"
-            @click="setRating(n)"
-          >
-            ★
-          </span>
+          <span v-for="n in 5" :key="n" class="star" :class="{ full: n <= rating }" @click="setRating(n)">★</span>
           <span class="count">({{ rating }} de 5)</span>
         </div>
 
-        <div class="colors">
-          <div class="color-circle"></div>
-          <div class="color-circle"></div>
-          <div class="color-circle"></div>
-        </div>
-
-        <p class="price">R$ 598,00</p>
-        <p class="installments">Até 4x de R$ 152,84 sem juros</p>
+        <p class="price">R$ {{ Number(product.price).toFixed(2).replace('.', ',') }}</p>
+        <p class="installments">Até 4x de R$ {{ (Number(product.price) / 4).toFixed(2).replace('.', ',') }} sem juros
+        </p>
 
         <div class="quantity">
           <label class="quantity-label">Quantidade</label>
           <div class="quantity-box">
-            <button class="quantity-btn" @click="productStore.decreaseQuantity">-</button>
-            <span class="quantity-value">{{ productStore.quantity }}</span>
-            <button class="quantity-btn" @click="productStore.increaseQuantity">+</button>
+            <button class="quantity-btn" @click="decreaseQuantity">-</button>
+            <span class="quantity-value">{{ quantity }}</span>
+            <button class="quantity-btn" @click="increaseQuantity">+</button>
           </div>
         </div>
 
-        <button
-        class="add-btn"
-        @click="cartStore.addToCart(currentProduct, productStore.quantity)"
-      >
-        Adicionar a Sacola
-      </button>
+        <button class="add-btn" @click="cartStore.addToCart(currentProduct, quantity)">
+          Adicionar a Sacola
+        </button>
       </div>
     </div>
 
-    <div class="info">
+    <div v-if="product" class="info">
       <h2>Informações do Produto</h2>
-      <p>
-        Os lápis de cor da Studio Collection têm uma textura macia que se mistura facilmente. Os
-        núcleos de alta qualidade significam que eles são extremamente lisos e responsivos ao uso...
-      </p>
+      <p>{{ product.description || 'Descrição não disponível.' }}</p>
     </div>
   </div>
 </template>
@@ -101,28 +115,36 @@ const currentProduct = {
   margin: auto;
 }
 
+.error-state {
+  padding: 3rem;
+  text-align: center;
+  color: #dc2626;
+}
+
 .product-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 2.5rem;
 }
 
-/* Galeria */
 .gallery {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
+
 .main-image {
   width: 100%;
   border-radius: 0.5rem;
   border: 1px solid #ddd;
 }
+
 .thumbnails {
   display: flex;
   gap: 0.5rem;
   margin-top: 1rem;
 }
+
 .thumb {
   width: 70px;
   height: 70px;
@@ -131,22 +153,26 @@ const currentProduct = {
   cursor: pointer;
   object-fit: cover;
 }
+
 .thumb.active {
   border: 2px solid black;
 }
 
-.title {
+.details .title {
   font-size: 1.6rem;
   font-weight: 600;
   line-height: 1.3;
 }
+
 .brand {
   margin: 0.3rem 0 0.8rem;
 }
+
 .category {
   color: #666;
   font-size: 0.9rem;
 }
+
 .brand-name {
   color: #2563eb;
   font-weight: 500;
@@ -157,36 +183,26 @@ const currentProduct = {
   align-items: center;
   margin: 0.5rem 0;
 }
+
 .star {
   color: #ccc;
   font-size: 1.4rem;
   cursor: pointer;
   transition: color 0.2s;
 }
+
 .star.full {
-  color: #f5c518; /* amarelo */
+  color: #f5c518;
 }
+
 .star:hover {
   color: #f5c518;
 }
+
 .count {
   font-size: 0.85rem;
   color: #666;
   margin-left: 0.4rem;
-}
-
-/* Cores */
-.colors {
-  display: flex;
-  gap: 0.5rem;
-  margin: 0.8rem 0;
-}
-.color-circle {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: #2563eb;
-  cursor: pointer;
 }
 
 .price {
@@ -194,6 +210,7 @@ const currentProduct = {
   font-weight: bold;
   margin-top: 1rem;
 }
+
 .installments {
   font-size: 0.85rem;
   color: #666;
@@ -254,6 +271,7 @@ const currentProduct = {
   cursor: pointer;
   transition: background 0.2s;
 }
+
 .add-btn:hover {
   background: #333;
 }
@@ -265,10 +283,12 @@ const currentProduct = {
   padding: 2rem;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
+
 .info h2 {
   font-size: 1.3rem;
   margin-bottom: 0.75rem;
 }
+
 @media (max-width: 768px) {
   .product-container {
     grid-template-columns: 1fr;

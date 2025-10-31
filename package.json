@@ -14,9 +14,12 @@
     "lint": "run-s lint:*"
   },
   "dependencies": {
+    "@cloudinary/url-gen": "^1.22.0",
+    "@cloudinary/vue": "^1.13.3",
     "axios": "^1.11.0",
     "lucide-vue-next": "^0.545.0",
     "pinia": "^3.0.1",
+    "swiper": "^12.0.3",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0"
   },
