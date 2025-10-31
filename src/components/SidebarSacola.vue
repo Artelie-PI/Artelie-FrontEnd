@@ -85,7 +85,7 @@ function goToCheckout() {
               }}
             </div>
 
-            <button class="buttonFinalizar" @click="goToCheckout">FINALIZAR COMPRA</button>
+            <button class="buttonFinalizar" @click="goToCheckout">IR PARA O CARRINHO</button>
             <button class="buttonKeepingBuy" @click="close">CONTINUAR COMPRANDO</button>
           </div>
         </template>
