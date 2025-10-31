@@ -1,39 +1,30 @@
-import apiClient from '@/axios'
-import { enrichProductsWithImages } from '@/utils/imageMapping'
-
-let categoriesCache = null;
+import apiClient from '@/axios';
+import { fetchAllPages } from '@/api/paginate';
 
 export async function fetchCategories() {
-  if (categoriesCache) return categoriesCache;
-  
-  try {
-    const { data } = await apiClient.get('/category/')
-    categoriesCache = Array.isArray(data) ? data : (data.results || [])
-    return categoriesCache
-  } catch (error) {
-    console.error('Erro ao buscar categorias:', error)
-    return []
-  }
+  const { data } = await apiClient.get('/category/');
+  return Array.isArray(data) ? data : (data.results || []);
 }
 
+// Mantém a versão antiga, caso precise
+export async function fetchProductsByCategory(categoryId, page = 1, pageSize = 20) {
+  const { data } = await apiClient.get('/products/', { params: { page, page_size: pageSize } });
+  const all = Array.isArray(data) ? data : (data.results || []);
+  return all.filter(p => {
+    const pid = p.category?.id ?? p.category_id ?? p.category;
+    return Number(pid) === Number(categoryId);
+  });
+}
+
+// NOVA: busca TODAS as páginas e filtra por categoria
+export async function fetchProductsByCategoryAll(categoryId) {
+  const all = await fetchAllPages('/products/');
+  return all.filter(p => {
+    const pid = p.category?.id ?? p.category_id ?? p.category;
+    return Number(pid) === Number(categoryId);
+  });
+}
 export async function findCategoryById(id) {
-  const categories = await fetchCategories();
-  return categories.find(c => c.id === Number(id)) || null;
-}
-
-export async function fetchProductsByCategory(categoryId) {
-  try {
-    const { data } = await apiClient.get('/products/')
-    const allProducts = Array.isArray(data) ? data : (data.results || [])
-    
-    const filtered = allProducts.filter(product => {
-      const productCategoryId = product.category?.id || product.category_id || product.category;
-      return productCategoryId === Number(categoryId);
-    });
-    
-    return enrichProductsWithImages(filtered)
-  } catch (error) {
-    console.error(`Erro ao buscar produtos da categoria ${categoryId}:`, error)
-    return []
-  }
+  const cats = await fetchCategories();
+  return cats.find(c => Number(c.id) === Number(id)) || null;
 }

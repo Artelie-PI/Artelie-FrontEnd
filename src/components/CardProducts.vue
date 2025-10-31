@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { RouterLink } from 'vue-router';
 import { useCartStore } from "@/stores/cart";
-import { useSidebarCart } from "@/stores/useSidebarCart"
+import { useSidebarCart } from "@/stores/useSidebarCart";
 
 const cartStore = useCartStore();
 const { open } = useSidebarCart();
@@ -12,10 +12,14 @@ const props = defineProps({
   toName: { type: String, default: 'product' },
 });
 
-const list = computed(() => props.products || []);
+const list = computed(() =>
+  (props.products || []).map(p => ({
+    ...p,
+    image: p.image || p.Image || p.image_url || null,
+  }))
+);
 
-const formatPrice = (v) =>
-  typeof v === 'number' ? v.toFixed(2).replace('.', ',') : v;
+const formatPrice = (v) => typeof v === 'number' ? v.toFixed(2).replace('.', ',') : v;
 
 function addProduct(product) {
   cartStore.addToCart({
@@ -23,8 +27,8 @@ function addProduct(product) {
     title: product.title,
     price: product.price,
     image: product.image,
-  })
-  open()
+  });
+  open();
 }
 </script>
 
@@ -40,14 +44,12 @@ function addProduct(product) {
           <div class="pc-image-wrap">
             <div aria-hidden="true" class="pc-image-shadow"></div>
             <div class="pc-image-box">
-              <img v-if="p.image" :src="p.image" :alt="p.title" class="pc-image" />
+              <img v-if="p.image" :src="p.image" :alt="p.title" class="pc-image" loading="lazy" />
               <div v-else class="pc-no-image">Sem imagem</div>
             </div>
           </div>
 
-          <h3 class="pc-title">
-            {{ p.title }}
-          </h3>
+          <h3 class="pc-title">{{ p.title }}</h3>
 
           <div class="pc-price-area">
             <div class="pc-price">R$ {{ formatPrice(p.price) }}</div>
@@ -56,9 +58,7 @@ function addProduct(product) {
             </div>
           </div>
         </RouterLink>
-        <button class="pc-button" @click="addProduct(p)">
-          ADICIONAR À SACOLA
-        </button>
+        <button class="pc-button" @click="addProduct(p)">ADICIONAR À SACOLA</button>
       </article>
     </div>
   </section>
