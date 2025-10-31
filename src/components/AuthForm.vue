@@ -12,9 +12,13 @@ function onRegister() { emit('do-register') }
 </script>
 
 <template>
-  <form class="form-inner" @submit.prevent="props.mode === 'login' ? onLogin() : onRegister()">
-    <!-- Login -->
-    <div v-if="props.mode === 'login'" class="form-block"> 
+  <!-- Login Form -->
+  <form
+    v-if="props.mode === 'login'"
+    class="form-inner"
+    @submit.prevent="onLogin"
+  >
+    <div class="form-block">
       <div class="input-group">
         <label for="loginEmail">Email</label>
         <div class="inputWrapper">
@@ -28,7 +32,6 @@ function onRegister() { emit('do-register') }
           />
         </div>
       </div>
-
       <div class="input-group">
         <label for="loginPassword">Senha</label>
         <div class="inputWrapper">
@@ -42,12 +45,21 @@ function onRegister() { emit('do-register') }
           />
         </div>
       </div>
-      <button type="submit">Login</button>
-      <p class="register">Não tem uma conta?<a href="#" @click.prevent="onRequestRegister">Cadastre-se</a></p>
+      <button type="submit">Entrar</button>
+      <p class="register">
+        Não tem uma conta?
+        <a href="#" @click.prevent="onRequestRegister">Cadastre-se</a>
+      </p>
     </div>
+  </form>
 
-    <!-- Register -->
-    <div v-if="props.mode === 'register'" class="form-block">
+  <!-- Register Form -->
+  <form
+    v-if="props.mode === 'register'"
+    class="form-inner"
+    @submit.prevent="onRegister"
+  >
+    <div class="form-block">
       <div class="input-group">
         <label for="username">Nome de Usuário</label>
         <div class="inputWrapper">
@@ -60,7 +72,17 @@ function onRegister() { emit('do-register') }
           />
         </div>
       </div>
-
+      <div class="input-group">
+        <label for="full_name">Nome Completo</label>
+        <div class="inputWrapper">
+          <input
+            id="full_name"
+            v-model="props.form.full_name"
+            placeholder="Seu nome completo"
+            required
+          />
+        </div>
+      </div>
       <div class="input-group">
         <label for="email">Email</label>
         <div class="inputWrapper">
@@ -73,19 +95,6 @@ function onRegister() { emit('do-register') }
           />
         </div>
       </div>
-
-      <div class="input-group">
-        <label for="full_name">Nome Completo</label>
-        <div class="inputWrapper">
-          <input
-            id="full_name"
-            v-model="props.form.full_name"
-            placeholder="Seu nome completo"
-            required
-          />
-        </div>
-      </div>
-
       <div class="input-group">
         <label for="password">Senha (min. 8 caracteres)</label>
         <div class="inputWrapper">
@@ -99,7 +108,6 @@ function onRegister() { emit('do-register') }
           />
         </div>
       </div>
-
       <div class="input-group">
         <label for="confirmPassword">Confirme sua Senha</label>
         <div class="inputWrapper">
@@ -113,20 +121,93 @@ function onRegister() { emit('do-register') }
           />
         </div>
       </div>
-
       <button type="submit">Cadastrar</button>
-      <p class="register">Já tem uma conta?<a href="#" @click.prevent="onRequestLogin">Faça login</a></p>
+      <p class="register">
+        Já tem uma conta?
+        <a href="#" @click.prevent="onRequestLogin">Faça login</a>
+      </p>
     </div>
   </form>
 </template>
 
 <style scoped>
-.form-block { width:100%; display:flex; flex-direction:column; align-items:center; transition: opacity .4s ease; }
-.input-group { margin-bottom:1rem; width:75%; }
-.inputWrapper { display:flex; align-items:center; border-bottom:1px solid #ccc; padding-bottom:.5rem; }
-.inputWrapper input { flex:1; height:5vh; padding:.5rem 1rem; border:none; background:transparent; }
-.userIcon { height:2.2rem; margin-right:.5rem; }
-.register { margin-top:1rem; font-size:1.2rem; }
-button { margin-top:1vh; width:50%; padding:.75rem; background-color:#192EB1; color:#fff; border:none; border-radius:2rem; font-weight:600; cursor:pointer; transition: background-color 0.3s; }
-button:hover { background:#3a8dde; }
+.form-block {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: opacity 0.4s ease;
+}
+
+.input-group {
+  margin-bottom: 1rem;
+  width: 75%;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.inputWrapper {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 0.5rem;
+}
+
+.inputWrapper input {
+  flex: 1;
+  height: 5vh;
+  padding: 0.5rem 1rem;
+  border: none;
+  background: transparent;
+  font-size: 1rem;
+}
+
+.inputWrapper input:focus {
+  outline: none;
+}
+
+.userIcon {
+  height: 2.2rem;
+  margin-right: 0.5rem;
+}
+
+button {
+  margin-top: 1vh;
+  width: 50%;
+  padding: 0.75rem;
+  background-color: #192EB1;
+  color: #fff;
+  border: none;
+  border-radius: 2rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  font-size: 1rem;
+}
+
+button:hover {
+  background-color: #3a8dde;
+}
+
+.register {
+  margin-top: 1rem;
+  font-size: 1rem;
+  color: #666;
+}
+
+.register a {
+  color: #192EB1;
+  text-decoration: none;
+  font-weight: 600;
+  margin-left: 0.3rem;
+}
+
+.register a:hover {
+  text-decoration: underline;
+}
 </style>
