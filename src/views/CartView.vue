@@ -16,58 +16,42 @@ const isCalculatingShipping = ref(false);
 const couponInput = ref('');
 const discount = ref(0);
 
-function goToHome() {
-  router.push({ name: 'home' });
-}
+function goToHome() { router.push({ name: 'home' }); }
 
 function goToCheckout() {
   if (!shipping.value) {
     alert('Por favor, calcule o frete antes de finalizar a compra');
     return;
   }
-
   cartStore.setShipping(shipping.value);
   router.push({ name: 'checkout' });
 }
 
-const formatPrice = (value) => {
-  return value.toFixed(2).replace('.', ',');
-};
+const formatPrice = (v) => v.toFixed(2).replace('.', ',');
 
-const subtotal = computed(() => {
-  return cartStore.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-});
+const subtotal = computed(() =>
+  cartStore.items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+);
 
-const total = computed(() => {
-  return subtotal.value - discount.value + (shipping.value?.value || 0);
-});
+const total = computed(() =>
+  subtotal.value - discount.value + (shipping.value?.value || 0)
+);
 
-function handleCEPInput(event) {
-  cepInput.value = formatCEP(event.target.value);
-}
+function handleCEPInput(e) { cepInput.value = formatCEP(e.target.value); }
 
 async function handleCalculateShipping() {
   shippingError.value = '';
-
   if (!cepInput.value) {
     shippingError.value = 'Digite um CEP';
     return;
   }
-
   isCalculatingShipping.value = true;
-
   try {
     const address = await fetchAddressByCep(cepInput.value);
     const shippingData = calculateShipping(cepInput.value, subtotal.value);
-
-    shipping.value = {
-      ...shippingData,
-      cep: address.cep,
-      city: address.city,
-      state: address.state
-    };
-  } catch (error) {
-    shippingError.value = error.message || 'Erro ao calcular frete';
+    shipping.value = { ...shippingData, cep: address.cep, city: address.city, state: address.state };
+  } catch (err) {
+    shippingError.value = err.message || 'Erro ao calcular frete';
     shipping.value = null;
   } finally {
     isCalculatingShipping.value = false;
@@ -75,17 +59,11 @@ async function handleCalculateShipping() {
 }
 
 function handleApplyCoupon() {
-  const validCoupons = {
-    'DESCONTO10': 0.10,
-    'PRIMEIRACOMPRA': 0.15,
-    'ARTELIE20': 0.20
-  };
-
-  const couponCode = couponInput.value.toUpperCase().trim();
-
-  if (validCoupons[couponCode]) {
-    discount.value = subtotal.value * validCoupons[couponCode];
-    alert(`Cupom aplicado! Desconto de ${(validCoupons[couponCode] * 100).toFixed(0)}%`);
+  const valid = { DESCONTO10: 0.1, PRIMEIRACOMPRA: 0.15, ARTELIE20: 0.2 };
+  const code = couponInput.value.toUpperCase().trim();
+  if (valid[code]) {
+    discount.value = subtotal.value * valid[code];
+    alert(`Cupom aplicado! Desconto de ${(valid[code] * 100).toFixed(0)}%`);
   } else {
     alert('Cupom inválido');
     discount.value = 0;
@@ -98,22 +76,17 @@ function handleApplyCoupon() {
     <template v-if="cartStore.items.length === 0">
       <div class="empty-cart">
         <div class="empty-header">
-          <h1 class="empty-title">BEM-VINDO À SACOLA</h1>
+          <h1 class="page-title">BEM-VINDO À SACOLA</h1>
           <img src="/src/assets/images/Shopping bag.png" alt="" class="title-bag" />
         </div>
-
         <p class="empty-message">A Sacola está vazia!</p>
-
         <div class="empty-icon">
           <img src="/src/assets/images/Empty set.png" alt="Sacola vazia" />
         </div>
-
         <p class="empty-subtitle">
           Que tal retornar à nossa página principal e<br>procurar pelos melhores produtos
         </p>
-
         <button class="btn-primary" @click="goToHome">VOLTAR À LOJA</button>
-
         <p class="login-text">
           Tem uma conta?<br>
           Faça <RouterLink to="/login" class="login-link">LOGIN</RouterLink> para finalizar suas compras
@@ -122,64 +95,63 @@ function handleApplyCoupon() {
     </template>
 
     <template v-else>
-      <div class="cart-header">
-        <h1 class="cart-title">BEM-VINDO À SACOLA</h1>
-        <img src="/src/assets/images/Shopping bag.png" alt="iconSacola" class="title-bag" />
-      </div>
+      <div class="cart-layout">
+        <section class="cart-left">
+          <header class="cart-left-header">
+            <h1 class="page-title">BEM-VINDO À SACOLA</h1>
+            <img src="/src/assets/images/Shopping bag.png" alt="iconSacola" class="title-bag" />
+          </header>
 
-      <div class="cart-content">
-        <div class="cart-items">
-          <div class="table-header">
-            <span>PRODUTO</span>
-            <span>QUANTIDADE</span>
-            <span>TOTAL</span>
-          </div>
+          <div class="cart-table">
+            <div class="table-header">
+              <span>PRODUTO</span>
+              <span>QUANTIDADE</span>
+              <span>TOTAL</span>
+            </div>
 
-          <div class="cart-item" v-for="item in cartStore.items" :key="item.id">
-            <div class="item-product">
-              <img :src="item.image" :alt="item.title" class="item-image" />
-              <div class="item-info">
-                <p class="item-title">{{ item.title }}</p>
-                <p class="item-price">R$ {{ formatPrice(item.price) }}</p>
+            <div class="cart-item" v-for="item in cartStore.items" :key="item.id">
+              <div class="item-product">
+                <img :src="item.image" :alt="item.title" class="item-image" />
+                <div class="item-info">
+                  <p class="item-title">{{ item.title }}</p>
+                  <p class="item-price">R$ {{ formatPrice(item.price) }}</p>
+                </div>
               </div>
-            </div>
 
-            <div class="item-quantity">
-              <div class="quantity-controls">
-                <button @click="cartStore.addToCart(item, -1)" :disabled="item.quantity === 1">-</button>
-                <span>{{ item.quantity }}</span>
-                <button @click="cartStore.addToCart(item, 1)">+</button>
+              <div class="item-quantity">
+                <div class="quantity-controls">
+                  <button @click="cartStore.addToCart(item, -1)" :disabled="item.quantity === 1">-</button>
+                  <span>{{ item.quantity }}</span>
+                  <button @click="cartStore.addToCart(item, 1)">+</button>
+                </div>
+                <button class="remove-btn" @click="cartStore.removeFromCart(item.id)">×</button>
               </div>
-              <button class="remove-btn" @click="cartStore.removeFromCart(item.id)">×</button>
-            </div>
 
-            <div class="item-total">
-              R$ {{ formatPrice(item.price * item.quantity) }}
+              <div class="item-total">R$ {{ formatPrice(item.price * item.quantity) }}</div>
             </div>
           </div>
-        </div>
+        </section>
 
         <aside class="cart-summary">
-          <div class="title-field">
-          <h2 class="summary-title">RESUMO DA COMPRA</h2>  
-          </div>
+          <h2 class="summary-title">RESUMO DA COMPRA</h2>
 
+          <!-- Labels acima, sem overflow no aside -->
           <div class="summary-field">
-            <label>Cupom de Desconto</label>
+            <label for="coupon">Cupom de Desconto</label>
             <div class="field-group">
-              <input type="text" placeholder="Digite o código de desconto" v-model="couponInput"
+              <input id="coupon" type="text" placeholder="Digite o código de desconto" v-model="couponInput"
                 @keyup.enter="handleApplyCoupon" />
               <button class="btn-apply" @click="handleApplyCoupon">APLICAR</button>
             </div>
           </div>
 
           <div class="summary-field">
-            <label>Frete</label>
+            <label for="cep">Frete</label>
             <div class="field-group">
-              <input type="text" placeholder="00000-000" :value="cepInput" @input="handleCEPInput"
+              <input id="cep" type="text" placeholder="Digite o seu CEP" :value="cepInput" @input="handleCEPInput"
                 @keyup.enter="handleCalculateShipping" maxlength="9" />
               <button class="btn-apply" @click="handleCalculateShipping" :disabled="isCalculatingShipping">
-                {{ isCalculatingShipping ? '...' : 'CALCULAR' }}
+                {{ isCalculatingShipping ? '...' : 'APLICAR' }}
               </button>
             </div>
             <p v-if="shippingError" class="error-text">{{ shippingError }}</p>
@@ -197,7 +169,7 @@ function handleApplyCoupon() {
             </div>
             <div class="total-line" v-if="discount > 0">
               <span>Desconto Cupom</span>
-              <span class="discount-value">- R$ {{ formatPrice(discount) }}</span>
+              <span class="discount-value">R$ {{ formatPrice(discount) }}</span>
             </div>
             <div class="total-line">
               <span>Frete</span>
@@ -227,16 +199,32 @@ function handleApplyCoupon() {
 </template>
 
 <style scoped>
+/* Container geral */
 .cart-container {
   max-width: 1400px;
   margin: 0 auto;
   padding: 40px 20px;
 }
 
+/* Layout: duas colunas, aside não rola, apenas gruda (sticky) */
+.cart-layout {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 30px;
+  align-items: start;
+}
+
+@media (max-width: 1024px) {
+  .cart-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===== ESTADO: SACOLA VAZIA ===== */
 .empty-cart {
   text-align: center;
   padding: 40px 20px;
-  max-width: 600px;
+  max-width: 680px;
   margin: 0 auto;
 }
 
@@ -245,11 +233,11 @@ function handleApplyCoupon() {
   align-items: center;
   justify-content: center;
   gap: 12px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
-.empty-title,
-.cart-title {
+.page-title {
+  /* mantém o mesmo título já usado quando há produtos */
   font-size: 1.8rem;
   text-shadow: 0 3px 2px rgba(0, 0, 0, .3);
   font-weight: 600;
@@ -263,14 +251,14 @@ function handleApplyCoupon() {
 }
 
 .empty-message {
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 600;
   color: #000;
-  margin: 20px 0;
+  margin: 14px 0 18px;
 }
 
 .empty-icon {
-  margin: 30px 0;
+  margin: 18px 0 10px;
 }
 
 .empty-icon img {
@@ -281,7 +269,7 @@ function handleApplyCoupon() {
 .empty-subtitle {
   font-size: 1rem;
   color: #333;
-  margin: 20px 0 30px;
+  margin: 18px 0 22px;
   line-height: 1.6;
 }
 
@@ -294,13 +282,18 @@ function handleApplyCoupon() {
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
-  margin-bottom: 20px;
+  margin: 6px 0 18px;
+  transition: background .2s;
+}
+
+.btn-primary:hover {
+  background: #000565;
 }
 
 .login-text {
   font-size: 0.95rem;
   color: #333;
-  margin-top: 20px;
+  margin-top: 12px;
   line-height: 1.6;
 }
 
@@ -310,27 +303,44 @@ function handleApplyCoupon() {
   text-decoration: underline;
 }
 
-.cart-header {
+/* seção de “produtos interessantes” já existente abaixo do estado vazio */
+.suggestions-section {
+  max-width: 1120px;
+  margin: 36px auto 0;
+  padding: 0 16px;
+}
+
+.suggestions-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+  color: #000;
+  text-align: left;
+}
+
+
+/* Coluna esquerda */
+.cart-left-header {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
-.cart-content {
-  display: grid;
-  grid-template-columns: 1fr 380px;
-  gap: 30px;
-  margin-bottom: 50px;
+.page-title {
+  font-size: 1.8rem;
+  text-shadow: 0 3px 2px rgba(0, 0, 0, .3);
+  font-weight: 600;
+  color: #000;
+  margin: 0;
 }
 
-@media (max-width: 1024px) {
-  .cart-content {
-    grid-template-columns: 1fr;
-  }
+.title-bag {
+  width: 32px;
+  height: 32px;
 }
 
-.cart-items {
+.cart-table {
   background: #fff;
   border: 1px solid #e5e5e5;
   border-radius: 8px;
@@ -344,7 +354,7 @@ function handleApplyCoupon() {
   padding: 16px 20px;
   background: #f8f8f8;
   border-bottom: 1px solid #e5e5e5;
-  font-size: 1rem;  
+  font-size: 1rem;
   font-weight: 600;
 }
 
@@ -381,7 +391,7 @@ function handleApplyCoupon() {
 }
 
 .item-title {
-  font-size: 0.9rem;
+  font-size: .9rem;
   font-weight: 600;
   color: #000;
   margin: 0 0 8px 0;
@@ -389,7 +399,7 @@ function handleApplyCoupon() {
 }
 
 .item-price {
-  font-size: 0.85rem;
+  font-size: .85rem;
   color: #666;
   margin: 0;
 }
@@ -418,6 +428,11 @@ function handleApplyCoupon() {
   color: #000;
 }
 
+.quantity-controls button:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
+
 .quantity-controls span {
   min-width: 24px;
   text-align: center;
@@ -444,34 +459,34 @@ function handleApplyCoupon() {
   font-size: 1rem;
 }
 
+/* Aside: sem overflow/scroll, sticky simples */
 .cart-summary {
-  background: #f0f0f0;
-  border: 1px solid #e5e5e5;
-  border-radius: 12px;
+  position: sticky;
+  top: 24px;
+  /* gruda na viewport ao rolar */
+  background: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
   padding: 24px;
-  align-self: flex-start;
-  margin: auto;
-}
-
-.title-field {
-  text-align: center;
-  padding: 30px;
+  /* altura será natural do conteúdo */
 }
 
 .summary-title {
-  font-size: 1.6rem;
-  font-weight: 600;
+  font-size: 1.4rem;
+  font-weight: 700;
+  text-align: center;
   color: #000;
   margin: 0 0 20px 0;
 }
 
+/* Labels acima, botões sempre visíveis */
 .summary-field {
   margin-bottom: 16px;
 }
 
 .summary-field label {
   display: block;
-  font-size: 0.85rem;
+  font-size: .9rem;
   font-weight: 600;
   color: #000;
   margin-bottom: 8px;
@@ -484,81 +499,45 @@ function handleApplyCoupon() {
 
 .field-group input {
   flex: 1;
+  min-width: 0;
+  /* evita quebra e “estouro” horizontal */
   padding: 10px 12px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 0.9rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: .85rem;
+  color: #333;
+}
+
+.field-group input::placeholder {
+  color: #999;
 }
 
 .btn-apply {
   background: #000787;
   color: #fff;
   border: none;
-  border-radius: 8px;
-  padding: 5px 10px;
-  font-size: 0.85rem;
-  font-weight: 500;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-size: .85rem;
+  font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
 }
 
-.summary-totals {
-  margin: 20px 0;
-  padding-top: 16px;
-  border-top: 1px solid #ddd;
-}
-
-.total-line {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 12px;
-  font-size: 0.9rem;
-  color: #333;
-}
-
-.total-final {
-  font-size: 1.05rem;
-  font-weight: 600;
-  color: #000;
-  padding-top: 12px;
-  border-top: 1px solid #ddd;
-  margin-top: 12px;
-}
-
-.btn-checkout {
-  width: 100%;
-  background: #000;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  padding: 14px;
-  font-size: 1rem;
-  font-weight: 700;
-  cursor: pointer;
-  margin-bottom: 12px;
-}
-
-.btn-continue {
-  width: 100%;
-  background: #fff;
-  color: #000787;
-  border: 2px solid #000787;
-  border-radius: 8px;
-  padding: 14px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
+.btn-apply:disabled {
+  opacity: .6;
+  cursor: not-allowed;
 }
 
 .error-text {
   color: #e74c3c;
-  font-size: 0.75rem;
+  font-size: .75rem;
   margin-top: 4px;
 }
 
 .shipping-info {
-  font-size: 0.8rem;
-  color: #666;
+  font-size: .8rem;
+  color: #555;
   margin-top: 6px;
 }
 
@@ -567,25 +546,80 @@ function handleApplyCoupon() {
   font-weight: 700;
 }
 
+.shipping-pending {
+  color: #999;
+  font-size: .85rem;
+}
+
+/* Totais e ações */
+.summary-totals {
+  margin: 20px 0;
+  padding: 16px 0;
+  border-top: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+}
+
+.total-line {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: .9rem;
+  color: #333;
+}
+
+.total-final {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #000;
+  padding-top: 12px;
+  border-top: 1px solid #333;
+  margin-top: 12px;
+}
+
 .discount-value {
   color: #27ae60;
   font-weight: 600;
 }
 
-.shipping-pending {
-  color: #999;
-  font-size: 0.85rem;
-}
-
 .installment-info {
-  font-size: 0.8rem;
+  font-size: .8rem;
   color: #666;
   text-align: center;
   margin-top: 8px;
 }
 
+.btn-checkout,
+.btn-continue {
+  width: 100%;
+  border-radius: 6px;
+  padding: 14px;
+  font-size: 1rem;
+}
+
+.btn-checkout {
+  background: #000;
+  color: #fff;
+  border: none;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
 .btn-checkout:disabled {
-  opacity: 0.5;
+  opacity: .5;
   cursor: not-allowed;
+}
+
+.btn-continue {
+  background: #fff;
+  color: #000787;
+  border: 2px solid #000787;
+  font-weight: 600;
+}
+
+/* Responsivo */
+@media (max-width: 1024px) {
+  .cart-summary {
+    position: static;
+  }
 }
 </style>
