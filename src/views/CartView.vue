@@ -8,50 +8,57 @@ import { formatCEP } from "@/utils/masks";
 const cartStore = useCartStore();
 const router = useRouter();
 
-const cepInput = ref('');
+const cepInput = ref("");
 const shipping = ref(null);
-const shippingError = ref('');
+const shippingError = ref("");
 const isCalculatingShipping = ref(false);
 
-const couponInput = ref('');
+const couponInput = ref("");
 const discount = ref(0);
 
-function goToHome() { router.push({ name: 'home' }); }
+function goToHome() {
+  router.push({ name: "home" });
+}
 
 function goToCheckout() {
   if (!shipping.value) {
-    alert('Por favor, calcule o frete antes de finalizar a compra');
+    alert("Por favor, calcule o frete antes de finalizar a compra");
     return;
   }
   cartStore.setShipping(shipping.value);
-  router.push({ name: 'checkout' });
+  router.push({ name: "checkout" });
 }
 
-const formatPrice = (v) => v.toFixed(2).replace('.', ',');
+const formatPrice = (v) => v.toFixed(2).replace(".", ",");
 
 const subtotal = computed(() =>
   cartStore.items.reduce((sum, item) => sum + item.price * item.quantity, 0)
 );
 
-const total = computed(() =>
-  subtotal.value - discount.value + (shipping.value?.value || 0)
-);
+const total = computed(() => subtotal.value - discount.value + (shipping.value?.value || 0));
 
-function handleCEPInput(e) { cepInput.value = formatCEP(e.target.value); }
+function handleCEPInput(e) {
+  cepInput.value = formatCEP(e.target.value);
+}
 
 async function handleCalculateShipping() {
-  shippingError.value = '';
+  shippingError.value = "";
   if (!cepInput.value) {
-    shippingError.value = 'Digite um CEP';
+    shippingError.value = "Digite um CEP";
     return;
   }
   isCalculatingShipping.value = true;
   try {
     const address = await fetchAddressByCep(cepInput.value);
     const shippingData = calculateShipping(cepInput.value, subtotal.value);
-    shipping.value = { ...shippingData, cep: address.cep, city: address.city, state: address.state };
+    shipping.value = {
+      ...shippingData,
+      cep: address.cep,
+      city: address.city,
+      state: address.state,
+    };
   } catch (err) {
-    shippingError.value = err.message || 'Erro ao calcular frete';
+    shippingError.value = err.message || "Erro ao calcular frete";
     shipping.value = null;
   } finally {
     isCalculatingShipping.value = false;
@@ -65,7 +72,7 @@ function handleApplyCoupon() {
     discount.value = subtotal.value * valid[code];
     alert(`Cupom aplicado! Desconto de ${(valid[code] * 100).toFixed(0)}%`);
   } else {
-    alert('Cupom inválido');
+    alert("Cupom inválido");
     discount.value = 0;
   }
 }
@@ -84,12 +91,12 @@ function handleApplyCoupon() {
           <img src="/src/assets/images/Empty set.png" alt="Sacola vazia" />
         </div>
         <p class="empty-subtitle">
-          Que tal retornar à nossa página principal e<br>procurar pelos melhores produtos
+          Que tal retornar à nossa página principal e<br />procurar pelos melhores produtos
         </p>
         <button class="btn-primary" @click="goToHome">VOLTAR À LOJA</button>
-        <p class="login-text">
-          Tem uma conta?<br>
-          Faça <RouterLink to="/login" class="login-link">LOGIN</RouterLink> para finalizar suas compras
+        <p class="login-text">Tem uma conta?</p>
+        <p class="login-link">
+          Faça <RouterLink to="/login">LOGIN</RouterLink> para finalizar suas compras
         </p>
       </div>
     </template>
@@ -120,7 +127,9 @@ function handleApplyCoupon() {
 
               <div class="item-quantity">
                 <div class="quantity-controls">
-                  <button @click="cartStore.addToCart(item, -1)" :disabled="item.quantity === 1">-</button>
+                  <button @click="cartStore.addToCart(item, -1)" :disabled="item.quantity === 1">
+                    -
+                  </button>
                   <span>{{ item.quantity }}</span>
                   <button @click="cartStore.addToCart(item, 1)">+</button>
                 </div>
@@ -134,8 +143,6 @@ function handleApplyCoupon() {
 
         <aside class="cart-summary">
           <h2 class="summary-title">RESUMO DA COMPRA</h2>
-
-          <!-- Labels acima, sem overflow no aside -->
           <div class="summary-field">
             <label for="coupon">Cupom de Desconto</label>
             <div class="field-group">
@@ -151,7 +158,7 @@ function handleApplyCoupon() {
               <input id="cep" type="text" placeholder="Digite o seu CEP" :value="cepInput" @input="handleCEPInput"
                 @keyup.enter="handleCalculateShipping" maxlength="9" />
               <button class="btn-apply" @click="handleCalculateShipping" :disabled="isCalculatingShipping">
-                {{ isCalculatingShipping ? '...' : 'APLICAR' }}
+                {{ isCalculatingShipping ? "..." : "APLICAR" }}
               </button>
             </div>
             <p v-if="shippingError" class="error-text">{{ shippingError }}</p>
@@ -210,7 +217,7 @@ function handleApplyCoupon() {
 .cart-layout {
   display: grid;
   grid-template-columns: 1fr 420px;
-  gap: 30px;
+  gap: 10px;
   align-items: start;
 }
 
@@ -233,28 +240,26 @@ function handleApplyCoupon() {
   align-items: center;
   justify-content: center;
   gap: 12px;
-  margin-bottom: 16px;
 }
 
 .page-title {
-  /* mantém o mesmo título já usado quando há produtos */
-  font-size: 1.8rem;
-  text-shadow: 0 3px 2px rgba(0, 0, 0, .3);
+  font-size: 2.2rem;
+  text-shadow: 0 3px 2px rgba(0, 0, 0, 0.3);
   font-weight: 600;
   color: #000;
-  margin: 0;
 }
 
 .title-bag {
-  width: 32px;
-  height: 32px;
+  width: 38px;
+  height: 38px;
+  margin-bottom: 6px;
 }
 
 .empty-message {
-  font-size: 1.05rem;
-  font-weight: 600;
+  font-size: 1.1rem;
+  font-weight: 500;
   color: #000;
-  margin: 14px 0 18px;
+  margin: 30px 0 18px;
 }
 
 .empty-icon {
@@ -263,27 +268,26 @@ function handleApplyCoupon() {
 
 .empty-icon img {
   width: 120px;
-  opacity: 0.6;
+  opacity: 0.7;
 }
 
 .empty-subtitle {
-  font-size: 1rem;
-  color: #333;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #000000;
   margin: 18px 0 22px;
-  line-height: 1.6;
 }
 
 .btn-primary {
   background: #000787;
   color: #fff;
   border: none;
-  border-radius: 12px;
-  padding: 12px 40px;
-  font-size: 1rem;
-  font-weight: 700;
+  border-radius: 15px;
+  padding: 6px 100px;
+  font-size: 1.1rem;
+  font-weight: 600;
   cursor: pointer;
-  margin: 6px 0 18px;
-  transition: background .2s;
+  transition: background 0.2s;
 }
 
 .btn-primary:hover {
@@ -291,35 +295,24 @@ function handleApplyCoupon() {
 }
 
 .login-text {
-  font-size: 0.95rem;
-  color: #333;
-  margin-top: 12px;
-  line-height: 1.6;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #000000;
+  margin-top: 30px;
 }
 
 .login-link {
+  font-size: 1rem;
+  font-weight: 500;
   color: #000;
-  font-weight: 600;
+}
+
+.login-link a {
+  color: #000;
   text-decoration: underline;
 }
 
-/* seção de “produtos interessantes” já existente abaixo do estado vazio */
-.suggestions-section {
-  max-width: 1120px;
-  margin: 36px auto 0;
-  padding: 0 16px;
-}
-
-.suggestions-title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin: 0 0 16px 0;
-  color: #000;
-  text-align: left;
-}
-
-
-/* Coluna esquerda */
+/* ===== ESTADO: ITENS NA SACOLA ===== */
 .cart-left-header {
   display: flex;
   align-items: center;
@@ -327,42 +320,27 @@ function handleApplyCoupon() {
   margin-bottom: 16px;
 }
 
-.page-title {
-  font-size: 1.8rem;
-  text-shadow: 0 3px 2px rgba(0, 0, 0, .3);
-  font-weight: 600;
-  color: #000;
-  margin: 0;
-}
-
-.title-bag {
-  width: 32px;
-  height: 32px;
-}
-
 .cart-table {
   background: #fff;
   border: 1px solid #e5e5e5;
-  border-radius: 8px;
   overflow: hidden;
 }
 
 .table-header {
   display: grid;
-  grid-template-columns: 1fr 200px 140px;
+  grid-template-columns: 1fr 250px 80px;
   gap: 20px;
   padding: 16px 20px;
-  background: #f8f8f8;
   border-bottom: 1px solid #e5e5e5;
-  font-size: 1rem;
+  font-size: 1.2rem;
   font-weight: 600;
 }
 
 .cart-item {
   display: grid;
-  grid-template-columns: 1fr 200px 140px;
+  grid-template-columns: 1fr 170px 140px;
   gap: 20px;
-  padding: 20px;
+  padding: 40px;
   border-bottom: 1px solid #f0f0f0;
   align-items: center;
 }
@@ -381,26 +359,24 @@ function handleApplyCoupon() {
   width: 80px;
   height: 80px;
   object-fit: contain;
-  border: 1px solid #e5e5e5;
-  border-radius: 6px;
   background: #fff;
 }
 
 .item-info {
   flex: 1;
+  max-width: 300px;
 }
 
 .item-title {
-  font-size: .9rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 500;
   color: #000;
   margin: 0 0 8px 0;
-  line-height: 1.3;
 }
 
 .item-price {
-  font-size: .85rem;
-  color: #666;
+  font-size: 0.85rem;
+  color: #000000;
   margin: 0;
 }
 
@@ -413,30 +389,31 @@ function handleApplyCoupon() {
 .quantity-controls {
   display: flex;
   align-items: center;
-  gap: 8px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 4px 8px;
+  gap: 10px;
+  border: 1px solid #000000;
+  border-radius: 10px;
+  padding: 2px 8px;
 }
 
 .quantity-controls button {
+  width: 35px;
+  height: 30px;
   background: none;
   border: none;
-  font-size: 1.1rem;
+  font-size: 1rem;
   cursor: pointer;
   padding: 4px 8px;
   color: #000;
 }
 
 .quantity-controls button:disabled {
-  opacity: .4;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
 .quantity-controls span {
-  min-width: 24px;
   text-align: center;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .remove-btn {
@@ -449,34 +426,30 @@ function handleApplyCoupon() {
 }
 
 .remove-btn:hover {
-  color: #f00;
+  color: #000;
 }
 
 .item-total {
   text-align: right;
-  font-weight: 700;
-  color: #000;
   font-size: 1rem;
+  font-weight: 600;
+  color: #000;
 }
 
 /* Aside: sem overflow/scroll, sticky simples */
 .cart-summary {
   position: sticky;
   top: 24px;
-  /* gruda na viewport ao rolar */
   background: #f9f9f9;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
   padding: 24px;
-  /* altura será natural do conteúdo */
 }
 
 .summary-title {
-  font-size: 1.4rem;
-  font-weight: 700;
+  font-size: 1.6rem;
+  font-weight: 600;
   text-align: center;
   color: #000;
-  margin: 0 0 20px 0;
+  margin: 20px auto 40px;
 }
 
 /* Labels acima, botões sempre visíveis */
@@ -486,8 +459,8 @@ function handleApplyCoupon() {
 
 .summary-field label {
   display: block;
-  font-size: .9rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 500;
   color: #000;
   margin-bottom: 8px;
 }
@@ -500,43 +473,45 @@ function handleApplyCoupon() {
 .field-group input {
   flex: 1;
   min-width: 0;
-  /* evita quebra e “estouro” horizontal */
+  border: none;
+  background: none;
+  border-bottom: 1px solid #000;
+  font-size: 0.8rem;
+  font-weight: 300;
+  color: #000000;
   padding: 10px 12px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: .85rem;
-  color: #333;
+
 }
 
 .field-group input::placeholder {
-  color: #999;
+  color: #181818;
 }
 
 .btn-apply {
   background: #000787;
   color: #fff;
   border: none;
-  border-radius: 6px;
+  border-radius: 15px;
   padding: 10px 16px;
-  font-size: .85rem;
+  font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
 }
 
 .btn-apply:disabled {
-  opacity: .6;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
 .error-text {
-  color: #e74c3c;
-  font-size: .75rem;
+  color: #eb3b28;
+  font-size: 0.75rem;
   margin-top: 4px;
 }
 
 .shipping-info {
-  font-size: .8rem;
+  font-size: 0.8rem;
   color: #555;
   margin-top: 6px;
 }
@@ -548,7 +523,7 @@ function handleApplyCoupon() {
 
 .shipping-pending {
   color: #999;
-  font-size: .85rem;
+  font-size: 0.85rem;
 }
 
 /* Totais e ações */
@@ -563,16 +538,16 @@ function handleApplyCoupon() {
   display: flex;
   justify-content: space-between;
   margin-bottom: 10px;
-  font-size: .9rem;
+  font-size: 0.9rem;
   color: #333;
 }
 
 .total-final {
   font-size: 1.1rem;
-  font-weight: 700;
+  font-weight: 600;
   color: #000;
   padding-top: 12px;
-  border-top: 1px solid #333;
+  border-top: 1px solid #ddd;
   margin-top: 12px;
 }
 
@@ -582,7 +557,7 @@ function handleApplyCoupon() {
 }
 
 .installment-info {
-  font-size: .8rem;
+  font-size: 0.8rem;
   color: #666;
   text-align: center;
   margin-top: 8px;
@@ -605,7 +580,7 @@ function handleApplyCoupon() {
 }
 
 .btn-checkout:disabled {
-  opacity: .5;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
