@@ -127,13 +127,11 @@ function handleApplyCoupon() {
 
               <div class="item-quantity">
                 <div class="quantity-controls">
-                  <button @click="cartStore.addToCart(item, -1)" :disabled="item.quantity === 1">
-                    -
-                  </button>
+                  <button @click="cartStore.addToCart(item, -1)" :disabled="item.quantity === 1">-</button>
                   <span>{{ item.quantity }}</span>
                   <button @click="cartStore.addToCart(item, 1)">+</button>
                 </div>
-                <button class="remove-btn" @click="cartStore.removeFromCart(item.id)">×</button>
+                <img src="/src/assets/images/Cancel.png" class="remove-btn" @click="cartStore.removeFromCart(item.id)" />
               </div>
 
               <div class="item-total">R$ {{ formatPrice(item.price * item.quantity) }}</div>
@@ -417,16 +415,16 @@ function handleApplyCoupon() {
 }
 
 .remove-btn {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  color: #999;
+  width: 12px;
+  height: 12px;
+  margin-left: 2px;
   cursor: pointer;
-  padding: 4px 8px;
+  filter: grayscale(100%);
+  opacity: .75;
 }
 
 .remove-btn:hover {
-  color: #000;
+  opacity: 1;
 }
 
 .item-total {

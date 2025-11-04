@@ -2,7 +2,6 @@ import { Cloudinary } from "@cloudinary/url-gen";
 import { fill } from "@cloudinary/url-gen/actions/resize";
 
 export const PRODUCT_IMAGE_MAP = {
-  5: "media/images/f4cede01-3de5-44e8-b7e8-24972a04a6eb_x4wxny",
   6: "media/images/9c528cb9-366b-41e6-ac0e-8000549f49e8_xrimtg",
   7: "media/images/194e2962-bde3-4b6b-b897-988fff9a0997_kdlvg9",
   8: "media/images/bb9732ca-9d41-48ec-b35a-13f2cf4a673a_y9him3",
