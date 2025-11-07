@@ -19,10 +19,9 @@ const router = createRouter({
       component: DefaultLayout,
       children: [
         { path: "", name: "home", component: HomeView },
-        { path: "category/:slug", name: "category", component: CategoryView },
+  { path: "category/:slug", name: "category", component: CategoryView },
         { path: "contact", name: "contact", component: ContactView },
-        { path: "cart", name: "cart", component: CartView }, // Mudou de /shop para /cart
-        // Redirect antigo /shop para /cart
+        { path: "cart", name: "cart", component: CartView },
         { path: "shop", redirect: "/cart" },
       ],
     },
@@ -30,41 +29,14 @@ const router = createRouter({
       path: "/produto",
       component: ProductLayout,
       children: [
-        {
-          path: ":id",
-          name: "product",
-          component: ProductView,
-          props: true,
-        },
-        {
-          path: ":id/relacionados",
-          name: "related-products",
-          component: RelatedProduct,
-          props: true,
-        },
+        { path: ":id", name: "product", component: ProductView, props: true },
+        { path: ":id/relacionados", name: "related-products", component: RelatedProduct, props: true },
       ],
     },
-    {
-      path: "/login",
-      name: "login",
-      component: LoginView,
-    },
-    {
-      path: "/verify-email/:token",
-      name: "verify-email",
-      component: VerifyEmailView,
-    },
-    // Redirect para home se rota não encontrada
-    {
-      path: "/:pathMatch(.*)*",
-      redirect: "/",
-    },
-    {
-      path: "/checkout",
-      name: "checkout",
-      component: () => import("@/views/CheckoutView.vue"),
-      meta: { requiresCart: true },
-    },
+    { path: "/login", name: "login", component: LoginView },
+    { path: "/verify-email/:token", name: "verify-email", component: VerifyEmailView },
+    { path: "/:pathMatch(.*)*", redirect: "/" },
+    { path: "/checkout", name: "checkout", component: () => import("@/views/CheckoutView.vue"), meta: { requiresCart: true } },
   ],
 });
 

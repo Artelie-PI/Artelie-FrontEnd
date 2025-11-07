@@ -2,7 +2,6 @@
 import { computed } from 'vue'
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import { Autoplay, Navigation, Pagination } from 'swiper/modules'
-
 import 'swiper/css/bundle'
 
 import banner1 from '@/assets/images/FaberCastellBanner.jpg'
@@ -22,53 +21,41 @@ const props = defineProps({
   },
   autoplay: { type: Number, default: 4500 }
 })
-const duplicatedSlides = computed(() => {
-  return [...props.slides, ...props.slides]
-})
+
+const duplicatedSlides = computed(() => [...props.slides, ...props.slides])
 </script>
 
 <template>
-  <section class="carousel-main">
-    <div class="carousel-wrapper">
+  <section class="hero-bleed">
+    <div class="hero-inner">
       <Swiper
+        class="swiper-hero"
         :modules="[Autoplay, Navigation, Pagination]"
         :loop="true"
-        :centeredSlides="true"
-        :loopedSlides="4"
-        :slides-per-view="1.3"
-        :space-between="12"
+        :centered-slides="true"
+        :looped-slides="8"
+        :slides-per-view="1.4"
+        :space-between="20"
         :navigation="true"
         :pagination="{ clickable: true }"
         :autoplay="autoplay ? { delay: autoplay, disableOnInteraction: false, pauseOnMouseEnter: true } : false"
         :breakpoints="{
-          640: { 
-            slidesPerView: 1.35,
-            spaceBetween: 12
-          },
-          768: { 
-            slidesPerView: 1.3,
-            spaceBetween: 12
-          },
-          1024: { 
-            slidesPerView: 1.25,
-            spaceBetween: 12
-          },
-          1280: { 
-            slidesPerView: 1.2,
-            spaceBetween: 12
-          }
+          640:  { slidesPerView: 1.5,  spaceBetween: 20 },
+          768:  { slidesPerView: 1.6,  spaceBetween: 20 },
+          1024: { slidesPerView: 1.7,  spaceBetween: 20 },
+          1280: { slidesPerView: 1.8,  spaceBetween: 20 }
         }"
-        class="swiper-hero"
       >
         <SwiperSlide v-for="(item, index) in duplicatedSlides" :key="`slide-${item.id}-${index}`">
-          <article class="slide-card">
-            <img :src="item.image" :alt="item.title" class="slide-img" />
-            <div class="slide-mask"></div>
-            <div class="slide-content">
-              <h3 class="slide-title">{{ item.title }}</h3>
-              <p class="slide-sub">{{ item.subtitle }}</p>
+          <div class="hero-slide">
+            <img :src="item.image" :alt="item.title" class="hero-img" />
+            <div class="hero-mask"></div>
+
+            <div class="hero-content">
+              <h3 class="hero-title">{{ item.title }}</h3>
+              <p class="hero-sub">{{ item.subtitle }}</p>
             </div>
-          </article>
+          </div>
         </SwiperSlide>
       </Swiper>
     </div>
@@ -76,176 +63,124 @@ const duplicatedSlides = computed(() => {
 </template>
 
 <style scoped>
-.carousel-main {
-  max-width: 1320px;
-  margin: 0 auto 18px auto;
-  padding: 0 20px;
+.hero-bleed {
+  width: 100vw;
+  margin-left: 50%;
+  transform: translateX(-50%);
   position: relative;
+  overflow-x: hidden;
 }
 
-/* Wrapper para permitir setas fora do container */
-.carousel-wrapper {
-  position: relative;
-  padding: 0 75px;
-}
-
-@media (max-width: 768px) {
-  .carousel-wrapper {
-    padding: 0 35px;
-  }
-}
-
+/* Altura do herói; ajuste conforme seu layout */
 .swiper-hero {
-  padding: 35px 0 60px 0;
-  overflow: visible;
+  padding: 0 0 54px 0;
+  height: clamp(260px, 45vw, 560px);
 }
 
-.slide-card {
+/* Cada slide recebe padding lateral para o raio não “colar” no vizinho */
+.swiper-hero :global(.swiper-slide) { padding: 0 8px; }
+@media (min-width: 1024px) {
+  .swiper-hero :global(.swiper-slide) { padding: 0 10px; }
+}
+
+/* Slide com canto arredondado e overflow hidden */
+.hero-slide {
   position: relative;
+  width: 100%;
+  height: 100%;
   border-radius: 18px;
   overflow: hidden;
-  height: clamp(250px, 45vw, 480px);
-  box-shadow: 0 15px 45px rgba(0, 0, 0, .25);
-  background: #0f0f0f;
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: none;
 }
 
-/* Slide ativo (centralizado) */
-.swiper-slide-active .slide-card {
-  box-shadow: 0 20px 60px rgba(0, 0, 0, .4);
-  transform: scale(1.12);
-  z-index: 5;
+/* Sombra suave apenas na base do slide (pode mover para apenas o ativo se preferir) */
+.hero-slide::after {
+  content: '';
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: -6px;
+  height: 22px;
+  border-radius: 50%;
+  filter: blur(10px);
+  background: rgba(0, 0, 0, 0.25);
+  pointer-events: none;
 }
 
-/* Slides laterais */
-.swiper-slide:not(.swiper-slide-active) .slide-card {
-  opacity: 0.45;
-  filter: brightness(0.6) saturate(0.8);
-  transform: scale(0.88);
-}
-
-.slide-img {
+/* Imagem preenchendo o slide */
+.hero-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
   display: block;
 }
 
-.slide-mask {
+/* Máscara para legibilidade do texto */
+.hero-mask {
   position: absolute;
   inset: 0;
   background: linear-gradient(
-    180deg, 
-    transparent 0%, 
-    rgba(0, 0, 0, .1) 35%, 
-    rgba(0, 0, 0, .45) 65%, 
-    rgba(0, 0, 0, .75) 100%
+    180deg,
+    rgba(0,0,0,0) 0%,
+    rgba(0,0,0,0.10) 35%,
+    rgba(0,0,0,0.45) 65%,
+    rgba(0,0,0,0.75) 100%
   );
 }
 
-.slide-content {
+/* Conteúdo (título/sub) */
+.hero-content {
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 28px;
-  color: #fff;
-  text-align: center;
-  padding: 0 36px;
-  text-shadow: 0 4px 12px rgba(0, 0, 0, .8);
+  left: 0; right: 0; bottom: 28px;
+  color: #fff; text-align: center;
+  padding: 0 24px;
+  text-shadow: 0 4px 12px rgba(0,0,0,.8);
+}
+.hero-title { font-size: clamp(22px, 3.2vw, 40px); font-weight: 800; margin: 0 0 10px; letter-spacing: -0.03em; }
+.hero-sub   { font-size: clamp(14px, 1.6vw, 18px); opacity: .98; margin: 0 auto; max-width: 80%; line-height: 1.55; }
+
+/* Destaque do slide ativo e vizinhos colados */
+.swiper-slide-active .hero-slide { transform: scale(1.03); transition: transform .45s ease; z-index: 2; }
+.swiper-slide-prev .hero-slide,
+.swiper-slide-next .hero-slide   { transform: scale(0.995); filter: brightness(.96); }
+.swiper-slide:not(.swiper-slide-active):not(.swiper-slide-prev):not(.swiper-slide-next) .hero-slide {
+  transform: scale(0.98); filter: brightness(.9);
 }
 
-.slide-title {
-  font-size: clamp(24px, 3vw, 36px);
-  font-weight: 800;
-  margin: 0 0 12px 0;
-  letter-spacing: -0.04em;
-  line-height: 1.15;
-}
-
-.slide-sub {
-  font-size: clamp(14px, 1.7vw, 17px);
-  opacity: .98;
-  margin: 0 auto;
-  max-width: 75%;
-  line-height: 1.55;
-}
-
-/* Navegação (setas) */
+/* Setas nativas do Swiper, próximas da imagem principal (sem sair da viewport) */
 :deep(.swiper-button-prev),
 :deep(.swiper-button-next) {
   color: #fff;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  transition: all 0.35s ease;
+  width: 64px;
+  height: 64px;
+  transition: transform .3s ease, background .3s ease;
   z-index: 10;
 }
 
-/* Posicionamento FORA do container */
-:deep(.swiper-button-prev) {
-  left: -28px;
-}
-
-:deep(.swiper-button-next) {
-  right: -28px;
-}
-
-/* Mobile - setas menores */
-@media (max-width: 768px) {
-  :deep(.swiper-button-prev),
-  :deep(.swiper-button-next) {
-    width: 48px;
-    height: 48px;
-  }
-  
-  :deep(.swiper-button-prev) {
-    left: -16px;
-  }
-  
-  :deep(.swiper-button-next) {
-    right: -16px;
-  }
-}
+:deep(.swiper-button-prev) { left: 250px; }
+:deep(.swiper-button-next) { right: 250px; }
 
 :deep(.swiper-button-prev:hover),
-:deep(.swiper-button-next:hover) {
-  transform: scale(1.12);
+:deep(.swiper-button-next:hover) { transform: scale(1.2); }
+
+@media (max-width: 768px) {
+  :deep(.swiper-button-prev),
+  :deep(.swiper-button-next) { width: 46px; height: 46px; }
+  :deep(.swiper-button-prev) { left: 8px; }
+  :deep(.swiper-button-next) { right: 8px; }
 }
 
-:deep(.swiper-button-prev:active),
-:deep(.swiper-button-next:active) {
-  transform: scale(1.05);
-}
-
-:deep(.swiper-button-prev::after),
-:deep(.swiper-button-next::after) {
-  font-size: 26px;
-  font-weight: 900;
-}
-
-/* Paginação (bolinhas) */
-:deep(.swiper-pagination) {
-  bottom: 1px !important;
-}
-
+/* Paginação */
+:deep(.swiper-pagination) { bottom: 8px !important; }
 :deep(.swiper-pagination-bullet) {
-  background: rgba(255, 255, 255, .85);
+  background: rgba(255,255,255,.85);
   opacity: .45;
   width: 10px;
   height: 10px;
   margin: 0 8px !important;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all .4s cubic-bezier(0.4,0,0.2,1);
 }
+:deep(.swiper-pagination-bullet-active) { background: #fff; opacity: 1; width: 40px; border-radius: 7px; }
 
-:deep(.swiper-pagination-bullet-active) {
-  background: #fff;
-  opacity: 1;
-  width: 40px;
-  border-radius: 7px;
-}
-
-:deep(.swiper-pagination-bullet:hover) {
-  opacity: 0.8;
-  transform: scale(1.3);
-}
 </style>
