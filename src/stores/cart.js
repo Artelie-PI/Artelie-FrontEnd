@@ -1,21 +1,14 @@
-// src/stores/cart.js
 import { defineStore } from 'pinia'
 
 export const useCartStore = defineStore('cart', {
   state: () => ({
     items: [],
-    shipping: null // Adiciona informações de frete
+    shipping: null
   }),
 
   getters: {
-    itemCount: (state) => {
-      return state.items.reduce((total, item) => total + item.quantity, 0)
-    },
-    
-    subtotal: (state) => {
-      return state.items.reduce((total, item) => total + (item.price * item.quantity), 0)
-    },
-
+    itemCount: (state) => state.items.reduce((total, item) => total + item.quantity, 0),
+    subtotal: (state) => state.items.reduce((total, item) => total + (item.price * item.quantity), 0),
     total: (state) => {
       const subtotal = state.items.reduce((total, item) => total + (item.price * item.quantity), 0)
       const shippingCost = state.shipping?.value || 0
@@ -25,25 +18,31 @@ export const useCartStore = defineStore('cart', {
 
   actions: {
     addToCart(product, quantity = 1) {
-      const existingItem = this.items.find(item => item.id === product.id)
-      
+      const name = product.name || product.title || 'Produto'
+      const normalized = {
+        id: product.id,
+        name,
+        title: name,
+        price: Number(product.price) || 0,
+        image: product.image?.url || product.image || '',
+      }
+
+      const existingItem = this.items.find(item => item.id === normalized.id)
+
       if (existingItem) {
         existingItem.quantity += quantity
-        
-        // Remove se quantidade <= 0
         if (existingItem.quantity <= 0) {
-          this.removeFromCart(product.id)
+          this.removeFromCart(normalized.id)
         }
       } else {
         if (quantity > 0) {
           this.items.push({
-            ...product,
+            ...normalized,
             quantity: quantity
           })
         }
       }
-      
-      // Persiste no localStorage
+
       this.saveToStorage()
     },
 
@@ -54,15 +53,12 @@ export const useCartStore = defineStore('cart', {
 
     updateQuantity(productId, quantity) {
       const item = this.items.find(item => item.id === productId)
-      
       if (item) {
-        item.quantity = quantity
-        
+        item.quantity = Number(quantity) || 1
         if (item.quantity <= 0) {
           this.removeFromCart(productId)
         }
       }
-      
       this.saveToStorage()
     },
 
@@ -72,13 +68,11 @@ export const useCartStore = defineStore('cart', {
       this.saveToStorage()
     },
 
-    // ✅ Novo método para salvar informações de frete
     setShipping(shippingData) {
       this.shipping = shippingData
       this.saveToStorage()
     },
 
-    // Salva no localStorage
     saveToStorage() {
       localStorage.setItem('cart', JSON.stringify({
         items: this.items,
@@ -86,14 +80,22 @@ export const useCartStore = defineStore('cart', {
       }))
     },
 
-    // Carrega do localStorage
     loadFromStorage() {
       const stored = localStorage.getItem('cart')
-      
       if (stored) {
         try {
           const data = JSON.parse(stored)
-          this.items = data.items || []
+          this.items = (data.items || []).map(it => {
+            const name = it.name || it.title || 'Produto'
+            return {
+              id: it.id,
+              name,
+              title: name,
+              price: Number(it.price) || 0,
+              image: it.image?.url || it.image || '',
+              quantity: Number(it.quantity) || 1,
+            }
+          })
           this.shipping = data.shipping || null
         } catch (e) {
           console.error('Erro ao carregar carrinho:', e)

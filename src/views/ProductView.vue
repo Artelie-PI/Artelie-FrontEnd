@@ -20,30 +20,46 @@ const loading = ref(true);
 const error = ref(null);
 const selectedImageIndex = ref(0);
 
-function setRating(value) { rating.value = value; }
-function increaseQuantity() { quantity.value++; }
-function decreaseQuantity() { if (quantity.value > 1) quantity.value--; }
+function setRating(value) {
+  rating.value = value;
+}
+function increaseQuantity() {
+  quantity.value++;
+}
+function decreaseQuantity() {
+  if (quantity.value > 1) quantity.value--;
+}
 
 const productImages = computed(() => {
-  if (!product.value) return [];
-  const images = [];
-  if (product.value.image) images.push(product.value.image);
-  if (product.value.Images && Array.isArray(product.value.Images)) {
-    product.value.Images.forEach(img => { 
-      if (img.image) images.push(img.image); 
-    });
+  if (!product.value) return []
+  const images = []
+
+  if (product.value.image?.url) images.push(product.value.image.url)
+
+  if (Array.isArray(product.value.Images)) {
+    product.value.Images.forEach(img => {
+      const u = img?.url || img?.image?.url || img?.image
+      if (u) images.push(u)
+    })
   }
-  return images;
-});
+  if (Array.isArray(product.value.images)) {
+    product.value.images.forEach(img => {
+      const u = img?.url || img?.image?.url || img?.image
+      if (u) images.push(u)
+    })
+  }
+  return images
+})
+
 
 const selectedImage = computed(() => {
-  return productImages.value[selectedImageIndex.value] || product.value?.image || '';
+  return productImages.value[selectedImageIndex.value] || product.value?.image || "";
 });
 
 const hasMultipleImages = computed(() => productImages.value.length > 1);
 
-const brandName = computed(() => brand.value?.name || 'Artelie');
-const categoryName = computed(() => category.value?.name?.toUpperCase() || 'PRODUTOS');
+const brandName = computed(() => brand.value?.name || "Artelie");
+const categoryName = computed(() => category.value?.name?.toUpperCase() || "PRODUTOS");
 
 const currentProduct = computed(() => {
   if (!product.value) return null;
@@ -56,9 +72,7 @@ const currentProduct = computed(() => {
 });
 
 const similarProducts = computed(() => {
-  return relatedProducts.value
-    .filter(p => p.id !== product.value?.id)
-    .slice(0, 4);
+  return relatedProducts.value.filter((p) => p.id !== product.value?.id).slice(0, 4);
 });
 
 function prevImage() {
@@ -74,11 +88,11 @@ function nextImage() {
 }
 
 function goToProduct(productId) {
-  router.push({ name: 'product', params: { id: productId } });
+  router.push({ name: "product", params: { id: productId } });
   nextTick(() => {
     window.scrollTo({
       top: 0,
-      behavior: 'instant'
+      behavior: "instant",
     });
   });
 }
@@ -88,52 +102,55 @@ function addSimilarToCart(similarProduct) {
     id: similarProduct.id,
     title: similarProduct.name,
     price: Number(similarProduct.price),
-    image: similarProduct.image
-  }, 1);
+    image: similarProduct.image?.url || similarProduct.image || ''
+  }, 1)
 }
+
 
 async function loadProduct() {
   try {
     loading.value = true;
     error.value = null;
     const productId = route.params.id;
-    
+
     product.value = await fetchProductById(productId);
-    
+
     if (product.value.brand) {
       brand.value = await findBrandById(product.value.brand);
     }
-    
+
     if (product.value.category) {
       category.value = await findCategoryById(product.value.category);
       relatedProducts.value = await fetchProductsByCategory(product.value.category);
     }
-    
+
     selectedImageIndex.value = 0;
     rating.value = 0;
     quantity.value = 1;
-    
+
     // Scroll após carregar tudo
     await nextTick();
     window.scrollTo({
       top: 0,
-      behavior: 'instant'
+      behavior: "instant",
     });
   } catch (err) {
-    console.error('Erro ao carregar produto:', err);
-    error.value = 'Erro ao carregar produto';
+    console.error("Erro ao carregar produto:", err);
+    error.value = "Erro ao carregar produto";
   } finally {
     loading.value = false;
   }
 }
 
-watch(() => route.params.id, async (newId, oldId) => {
-  if (newId && newId !== oldId) {
-    window.scrollTo(0, 0); // Scroll imediato
-    await loadProduct();
+watch(
+  () => route.params.id,
+  async (newId, oldId) => {
+    if (newId && newId !== oldId) {
+      window.scrollTo(0, 0); // Scroll imediato
+      await loadProduct();
+    }
   }
-});
-
+);
 
 onMounted(() => {
   loadProduct();
@@ -154,55 +171,68 @@ onMounted(() => {
           <button class="nav-arrow" @click="prevImage" :disabled="selectedImageIndex === 0">
             <span>&#8249;</span>
           </button>
-          
+
           <div class="thumbnails">
-            <img 
-              v-for="(img, idx) in productImages" 
-              :key="idx" 
-              :src="img" 
+            <img
+              v-for="(img, idx) in productImages"
+              :key="idx"
+              :src="img"
               :alt="`Imagem ${idx + 1}`"
               class="thumb"
               :class="{ active: idx === selectedImageIndex }"
               @click="selectedImageIndex = idx"
             />
           </div>
-          
-          <button class="nav-arrow" @click="nextImage" :disabled="selectedImageIndex === productImages.length - 1">
+
+          <button
+            class="nav-arrow"
+            @click="nextImage"
+            :disabled="selectedImageIndex === productImages.length - 1"
+          >
             <span>&#8250;</span>
           </button>
         </div>
-        
+
         <div class="main-image-container">
           <img :src="selectedImage" :alt="product.name" class="main-image" />
         </div>
       </div>
 
       <div class="product-details">
-        <h1 class="product-name">{{ product.name }}</h1>
-        
+        <h1 class="product-name">{{ product?.name || product?.title || 'Produto sem nome' }}</h1>
+
         <p class="product-category">
-          {{ categoryName }}<br>
+          {{ categoryName }}<br />
           <span class="product-brand">{{ brandName }}</span>
         </p>
 
         <div class="product-rating">
           <div class="stars">
-            <span v-for="n in 5" :key="n" class="star" :class="{ filled: n <= rating }" @click="setRating(n)">★</span>
+            <span
+              v-for="n in 5"
+              :key="n"
+              class="star"
+              :class="{ filled: n <= rating }"
+              @click="setRating(n)"
+              >★</span
+            >
           </div>
         </div>
 
         <div class="color-options" v-if="false">
           <p class="options-label">Outras Cores</p>
           <div class="color-swatches">
-            <span class="color-swatch" style="background: #1e40af;"></span>
-            <span class="color-swatch" style="background: #3b82f6;"></span>
-            <span class="color-swatch" style="background: #60a5fa;"></span>
-            <span class="color-swatch" style="background: #93c5fd;"></span>
+            <span class="color-swatch" style="background: #1e40af"></span>
+            <span class="color-swatch" style="background: #3b82f6"></span>
+            <span class="color-swatch" style="background: #60a5fa"></span>
+            <span class="color-swatch" style="background: #93c5fd"></span>
           </div>
         </div>
 
-        <p class="product-price">R$ {{ Number(product.price).toFixed(2).replace('.', ',') }}</p>
-        <p class="product-installments">Até 4x de R$ {{ (Number(product.price) / 4).toFixed(2).replace('.', ',') }} sem juros</p>
+        <p class="product-price">R$ {{ Number(product.price).toFixed(2).replace(".", ",") }}</p>
+        <p class="product-installments">
+          Até 4x de R$ {{ (Number(product.price) / 4).toFixed(2).replace(".", ",") }} sem juros
+        </p>
 
         <div class="quantity-selector">
           <label class="quantity-label">Quantidade</label>
@@ -221,31 +251,29 @@ onMounted(() => {
 
     <section v-if="product" class="product-info-section">
       <div class="info-header">
-        <img src="/src/assets/images/Contract.png" alt="" class="info-icon">
+        <img src="/src/assets/images/Contract.png" alt="" class="info-icon" />
         <h2>Informações do Produto</h2>
       </div>
       <div class="info-content">
-        <p>{{ product.description || 'Descrição não disponível.' }}</p>
+        <p>{{ product.description || "Descrição não disponível." }}</p>
       </div>
     </section>
 
     <section class="similar-products" v-if="similarProducts.length > 0">
       <h2 class="section-title">Explorar outros itens semelhantes</h2>
       <div class="products-grid">
-        <div 
-          class="product-card" 
-          v-for="item in similarProducts" 
-          :key="item.id"
-        >
-          <img 
-            :src="item.image" 
-            :alt="item.name" 
+        <div class="product-card" v-for="item in similarProducts" :key="item.id">
+          <img
+            :src="item.image?.url ? item.image.url : item.image"
+            :alt="item.name"
             class="card-image"
             @click="goToProduct(item.id)"
           />
           <h3 class="card-title" @click="goToProduct(item.id)">{{ item.name }}</h3>
-          <p class="card-price">R$ {{ Number(item.price).toFixed(2).replace('.', ',') }}</p>
-          <p class="card-installments">Até 4x de R$ {{ (Number(item.price) / 4).toFixed(2).replace('.', ',') }} sem juros</p>
+          <p class="card-price">R$ {{ Number(item.price).toFixed(2).replace(".", ",") }}</p>
+          <p class="card-installments">
+            Até 4x de R$ {{ (Number(item.price) / 4).toFixed(2).replace(".", ",") }} sem juros
+          </p>
           <button class="btn-add-small" @click="addSimilarToCart(item)">Adicionar a Sacola</button>
         </div>
       </div>
@@ -258,7 +286,7 @@ onMounted(() => {
   max-width: 1400px;
   margin: 0 auto;
   padding: 40px 20px;
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
 }
 
 .error-state {
@@ -370,13 +398,13 @@ onMounted(() => {
 
 .product-category {
   font-size: 0.95rem;
-  color: #00117E;
+  color: #00117e;
   margin: 0;
   line-height: 1.6;
 }
 
 .product-brand {
-  color: #00117E;
+  color: #00117e;
   font-weight: 600;
 }
 
@@ -636,12 +664,11 @@ onMounted(() => {
   background: #333;
 }
 
-
 @media (max-width: 1024px) {
   .product-container {
     grid-template-columns: 1fr;
   }
-  
+
   .products-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -651,17 +678,17 @@ onMounted(() => {
   .product-gallery {
     flex-direction: column;
   }
-  
+
   .thumbnail-nav {
     flex-direction: row;
   }
-  
+
   .thumbnails {
     flex-direction: row;
     max-height: none;
     overflow-x: auto;
   }
-  
+
   .products-grid {
     grid-template-columns: 1fr;
   }

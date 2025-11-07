@@ -1,9 +1,8 @@
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from "vue";
 import { useRoute } from "vue-router";
-import { fetchProductsByCategoryAll, fetchCategories } from "@/api/category";
-import { getBrandMap } from "@/api/brands";
-import { formatProduct, getProductImage } from "@/utils/productHelper";
+import { fetchCategories, findCategoryById } from "@/api/category";
+import { formatProduct } from "@/utils/productHelper";
 import CardProducts from "@/components/CardProducts.vue";
 import SidebarFilter from "@/components/SidebarFilter.vue";
 import LoadingSpinner from "@/components/LoadingSpinner.vue";
@@ -56,60 +55,57 @@ const chips = computed(() => {
 const categoryTitle = computed(() => currentCategory.value?.name || "Categoria");
 
 function findCategoryBySlug(slug) {
-  const normalizedSlug = slug.toLowerCase().trim();
-  const slugToId = {
-    'papeis': 3, 'papéis': 3,
-    'pintura': 5,
-    'lapis-canetas': 2, 'lápis-canetas': 2, 'lapis-e-canetas': 2, 'lápis-e-canetas': 2,
-    'livros-gibis': 4, 'livros-e-gibis': 4, 'livros-gib is': 4
-  };
-  if (slugToId[normalizedSlug]) {
-    const categoryId = slugToId[normalizedSlug];
-    return categories.value.find(c => c.id === categoryId);
-  }
+  const s = String(slug || '').toLowerCase().normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-')
+
   return categories.value.find(c => {
-    const categorySlug = c.name.toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/\s+/g, '-');
-    return categorySlug.includes(normalizedSlug.replace(/-/g, ''));
-  });
+    const cslug = (c.slug || c.name || '').toLowerCase().normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-')
+    return cslug === s
+  }) || null
+}
+
+// Resolve um parâmetro de rota que pode ser `id` (numérico) ou `slug`.
+// Prioriza buscar por ID via API; se não encontrar, tenta casar por slug
+// entre as `categories` já carregadas.
+async function resolveCategoryParam(param) {
+  if (param == null) return null
+  return findCategoryBySlug(param)
 }
 
 async function loadProducts() {
   isLoading.value = true;
   errorMsg.value = "";
+
   try {
     if (categories.value.length === 0) {
       categories.value = await fetchCategories();
     }
-    const slug = route.params.slug;
-    const category = findCategoryBySlug(slug);
+
+    // Resolve parâmetro da rota (prefere id, aceita slug)
+  const param = route.params.slug;
+    console.log('🔍 Buscando categoria com param:', param);
+
+    const category = await resolveCategoryParam(param);
+
     if (!category) {
+      console.error('❌ Categoria não encontrada para param:', param);
       errorMsg.value = "Categoria não encontrada.";
       products.value = [];
       return;
     }
+
+    console.log('✅ Categoria encontrada:', category);
     currentCategory.value = category;
 
-    // Mapa de marcas id->nome
-    const brandMap = await getBrandMap();
+    // Busca categoria completa (inclui array de produtos via serializer)
+    const fullCategory = await findCategoryById(category.id)
+    const rawProducts = Array.isArray(fullCategory?.products) ? fullCategory.products : []
+    console.log('📦 Produtos recebidos (embedded):', rawProducts.length)
+    products.value = rawProducts.map(formatProduct)
+    console.log('✅ Produtos formatados:', products.value.length)
 
-    // Produtos e formatação com nome de marca e imagem garantidos
-    const rawProducts = await fetchProductsByCategoryAll(category.id);
-    products.value = rawProducts.map(p => formatProduct(p, brandMap));
-
-    // Sanitize extra: se ainda faltar image, tenta achar no raw
-    products.value = products.value.map(p => {
-      if (!p.image) {
-        const raw = rawProducts.find(r => r.id === p.id);
-        const maybe = raw ? getProductImage(raw) : null;
-        return maybe ? { ...p, image: maybe } : p;
-      }
-      return p;
-    });
-
-    // Facetas por nome
+    // Gera facetas
     const setBrands = new Set();
     const setMaterials = new Set();
     for (const p of products.value) {
@@ -119,17 +115,6 @@ async function loadProducts() {
     facets.brands = Array.from(setBrands).sort();
     facets.materials = Array.from(setMaterials).sort();
 
-    // LOG opcional para inspecionar (remover em produção)
-    // console.table(rawProducts.slice(0, 10).map(r => ({
-    //   id: r.id,
-    //   image: !!r.image,
-    //   Images_len: Array.isArray(r.Images) ? r.Images.length : 0,
-    //   images_len: Array.isArray(r.images) ? r.images.length : 0,
-    //   photos_len: Array.isArray(r.photos) ? r.photos.length : 0,
-    //   image_url: !!r.image_url,
-    //   thumb_url: !!r?.thumbnail?.url,
-    // })));
-    // console.table(products.value.map(p => ({ id: p.id, hasImage: !!p.image, image: p.image })));
   } catch (e) {
     console.error('Erro ao carregar produtos:', e);
     errorMsg.value = "Erro ao carregar produtos da categoria.";
@@ -256,42 +241,57 @@ onMounted(loadProducts);
   </main>
 </template>
 
+<style scoped>
+.category-page {
+  max-width: 80vw;
+  margin: 0 auto;
+  padding: 1rem 2vw 2rem 2vw;
+}
 
-  <style scoped>
-  .category-page {
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 16px 24px 32px 24px;
-  }
+.section-header {
+  max-width: 70vw;
+  margin: 1.5rem auto 1.25rem;
+  text-align: left;
+  padding: 0;
+}
 
-  .section-header {
-    max-width: 1120px;
-    margin: 24px auto 20px;
-    text-align: left;
-    padding: 0;
-  }
+.section-title {
+  font-family: "Poppins", sans-serif;
+  font-weight: 500;
+  font-size: 1.5rem;
+  line-height: 1.3;
+  padding-bottom: 0.2rem;
+}
 
-  .section-title {
-    font-family: "Poppins", sans-serif;
-    font-weight: 500;
-    font-size: 1.5rem;
-    line-height: 1.3;
-    padding-bottom: 3px;
-  }
+.section-rule {
+  height: 0.07rem;
+  background: #000;
+  width: 100%;
+}
 
-  .section-rule {
-    height: 1px;
-    background: #000;
-    width: 100%;
-  }
+.tools-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
 
-  .tools-row {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    flex-wrap: wrap;
-    margin-bottom: 16px;
-  }
+.filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #111;
+  color: #fff;
+  border: 0;
+  border-radius: 0.375rem;
+  height: 2.5rem;
+  padding: 0 0.9rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
 
   .filter-btn {
     display: inline-flex;
@@ -312,44 +312,57 @@ onMounted(loadProducts);
     background: #333;
   }
 
-  .filter-btn .filter-icon {
-    opacity: 0.9;
-  }
+.search-box {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  height: 2.5rem;
+  min-width: 12rem;
+  flex: 1 1 17.5rem;
+  border: 0.07rem solid #ddd;
+  border-radius: 0.375rem;
+  padding: 0 0.75rem 0 2.25rem;
+  background: #fff;
+  max-width: 25vw;
+}
 
-  .search-box {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    height: 40px;
-    min-width: 260px;
-    flex: 1 1 280px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    padding: 0 12px 0 36px;
-    background: #fff;
-  }
+.search-icon {
+  position: absolute;
+  left: 0.6rem;
+  font-size: 0.9rem;
+  opacity: 0.7;
+}
 
-  .search-icon {
-    position: absolute;
-    left: 10px;
-    font-size: 14px;
-    opacity: 0.7;
-  }
+.search-input {
+  flex: 1;
+  border: 0;
+  outline: none;
+  font-size: 0.9rem;
+  background: transparent;
+  min-width: 0;
+}
 
-  .search-input {
-    flex: 1;
-    border: 0;
-    outline: none;
-    font-size: 14px;
-    background: transparent;
-  }
+.chips-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
 
-  .chips-row {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-bottom: 16px;
-  }
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #f1f1f1;
+  color: #111;
+  border: 0.07rem solid #e5e5e5;
+  border-radius: 999rem;
+  height: 1.9rem;
+  padding: 0 0.65rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
 
   .chip {
     display: inline-flex;
@@ -370,9 +383,16 @@ onMounted(loadProducts);
     background: #e5e5e5;
   }
 
-  .chip .chip-x {
-    opacity: 0.7;
-  }
+.chip-clear {
+  height: 1.9rem;
+  padding: 0 0.75rem;
+  border-radius: 999rem;
+  border: 0;
+  background: #eee;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
 
   .chip-clear {
     height: 30px;
@@ -385,26 +405,68 @@ onMounted(loadProducts);
     transition: background 0.2s;
   }
 
-  .chip-clear:hover {
-    background: #ddd;
-  }
+.products-section {
+  margin-top: 0.5rem;
+  justify-content: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
 
+.loading-message,
+.empty-message {
+  text-align: center;
+  padding: 6vh 2vw;
+  color: #666;
+  font-size: 1rem;
+}
+
+.error {
+  color: #d00;
+  font-weight: 700;
+  text-align: center;
+  padding: 1.25rem;
+}
+
+/* Responsivo */
+@media (max-width: 900px) {
+  .category-page {
+    max-width: 98vw;
+    padding: 1rem 2vw 2rem 2vw;
+  }
+  .section-header {
+    max-width: 96vw;
+  }
+  .search-box {
+    max-width: 60vw;
+    min-width: 8rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .category-page {
+    padding: 0.5rem 1vw 1rem 1vw;
+  }
+  .section-header {
+    margin: 1rem auto 0.7rem;
+  }
+  .tools-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+  .search-box {
+    width: 100%;
+    max-width: 100vw;
+    min-width: 0;
+    padding-left: 2rem;
+  }
+  .chips-row {
+    gap: 0.3rem;
+    margin-bottom: 0.7rem;
+  }
   .products-section {
-    margin-top: 8px;
+    margin-top: 0.3rem;
   }
-
-  .loading-message,
-  .empty-message {
-    text-align: center;
-    padding: 60px 20px;
-    color: #666;
-    font-size: 16px;
-  }
-
-  .error {
-    color: #d00;
-    font-weight: 700;
-    text-align: center;
-    padding: 20px;
-  }
-  </style>
+}
+</style>

@@ -1,42 +1,35 @@
 <script setup>
 import { RouterLink } from "vue-router";
-
 import { ref } from 'vue';
-const showHeader = ref(true);
-
 import { useSidebarCart } from "/src/stores/useSidebarCart.js";
+const showHeader = ref(true);
 const { open } = useSidebarCart();
 </script>
 
 <template>
   <transition name="slide-down">
     <header v-if="showHeader">
-      <!-- Topo do header -->
       <div class="header-top">
-        <!-- Logo -->
         <div class="logo slide-item">
           <RouterLink to="/">
             <img class="logoImg" src="@/assets/images/ArtelieLogo.png" alt="Artelie Logo" />
           </RouterLink>
         </div>
 
-        <!-- Menu de páginas (desktop) -->
         <nav class="pages slide-item" style="transition-delay: 0.1s">
           <RouterLink to="/">HOME</RouterLink>
           <RouterLink to="/contact">CONTATO</RouterLink>
           <RouterLink to="/brands">MARCAS</RouterLink>
         </nav>
 
-        <!-- Perfil / Login + Carrinho (desktop) -->
         <div class="perfilShop slide-item" style="transition-delay: 0.2s">
-            <RouterLink to="/login">
-              <img src="@/assets/images/Login.png" alt="login" />
-            </RouterLink>
-            <img src="@/assets/images/Cart.png" @click="open" class="sacolaIcon" alt="Sacola" />
+          <RouterLink to="/login">
+            <img src="@/assets/images/Login.png" alt="login" />
+          </RouterLink>
+          <img src="@/assets/images/Cart.png" @click="open" class="sacolaIcon" alt="Sacola" />
         </div>
       </div>
 
-      <!-- Barra de categorias -->
       <nav class="category-icons">
         <RouterLink :to="{ name: 'category', params: { slug: 'papeis' } }" title="Papéis">
           <img src="@/assets/images/Papel.svg" alt="Papéis" />
@@ -46,17 +39,11 @@ const { open } = useSidebarCart();
           <img src="@/assets/images/Tinta.svg" alt="Pintura" />
           <span>PINTURA</span>
         </RouterLink>
-        <RouterLink
-          :to="{ name: 'category', params: { slug: 'lapis-canetas' } }"
-          title="Lápis & Canetas"
-        >
+        <RouterLink :to="{ name: 'category', params: { slug: 'lapis-e-canetas' } }" title="Lápis & Canetas">
           <img src="@/assets/images/Lápis.svg" alt="Lápis & Canetas" />
           <span>LÁPIS & CANETAS</span>
         </RouterLink>
-        <RouterLink
-          :to="{ name: 'category', params: { slug: 'livros-gibis' } }"
-          title="Livros & Gibis"
-        >
+        <RouterLink :to="{ name: 'category', params: { slug: 'livros-e-gibis' } }" title="Livros & Gibis">
           <img src="@/assets/images/Book.svg" alt="Livros & Gibis" />
           <span>LIVROS & GIBIS</span>
         </RouterLink>
@@ -166,7 +153,9 @@ header {
   text-decoration: none;
 }
 
-.category-icons a:hover { transform: translateY(-3px) scale(1.05); }
+.category-icons a:hover {
+  transform: translateY(-3px) scale(1.05);
+}
 
 .category-icons a img {
   width: 1.3rem;
@@ -196,5 +185,4 @@ header {
   border-radius: 2px;
   transition: 0.3s;
 }
-
 </style>
