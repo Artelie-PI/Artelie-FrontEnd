@@ -66,7 +66,7 @@ function addProduct(product) {
 
 <style scoped>
 .pc-container {
-  max-width: 1120px;
+  max-width: 1320px;
   margin: 0 auto;
 }
 

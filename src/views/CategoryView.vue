@@ -208,25 +208,26 @@ onMounted(loadProducts);
   <main class="category-page">
     <div class="section-header">
       <h2 class="section-title">{{ categoryTitle }}</h2>
-      <div class="section-rule" aria-hidden="true"></div>
     </div>
+
 
     <div class="tools-row">
       <button class="filter-btn" @click="isFilterOpen = true">
         FILTRAR PRODUTOS
-        <span class="filter-icon">☰</span>
+        <img src="/src/assets/images/ConfigIcon.png" class="filter-icon">
       </button>
 
       <div class="search-box">
-        <span class="search-icon">🔎</span>
-        <input type="text" class="search-input" placeholder="Pesquisar Produto" v-model="search" aria-label="Pesquisar Produto" />
+        <img src="/src/assets/images/lupa.png" class="search-icon">
+        <input type="text" class="search-input" placeholder="Pesquisar Produto" v-model="search"
+          aria-label="Pesquisar Produto" />
       </div>
     </div>
 
     <div v-if="chips.length" class="chips-row">
       <button v-for="c in chips" :key="c.key" class="chip" @click="removeChip(c)" :title="`Remover filtro ${c.label}`">
         {{ c.label }}
-        <span class="chip-x">×</span>
+        <img src="/src/assets/images/Cancel.png" class="chip-x">
       </button>
       <button class="chip-clear" @click="onClearFilters">Limpar filtros</button>
     </div>
@@ -245,166 +246,157 @@ onMounted(loadProducts);
       <CardProducts v-else :products="filteredProducts" />
     </section>
 
-    <SidebarFilter
-      :open="isFilterOpen"
-      :facets="facets"
-      :selected="filters"
-      @close="isFilterOpen = false"
-      @apply="onApplyFilters"
-      @clear="onClearFilters"
-    />
+    <SidebarFilter :open="isFilterOpen" :facets="facets" :selected="filters" @close="isFilterOpen = false"
+      @apply="onApplyFilters" @clear="onClearFilters" />
   </main>
 </template>
 
 
-  <style scoped>
-  .category-page {
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 16px 24px 32px 24px;
-  }
+<style scoped>
+.category-page {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 16px 24px 32px 24px;
+}
 
-  .section-header {
-    max-width: 1120px;
-    margin: 24px auto 20px;
-    text-align: left;
-    padding: 0;
-  }
+.section-header {
+  max-width: 1320px;
+  margin: 30px auto 20px;
+  text-align: left;
+  border-bottom: 1px solid black;
+}
 
-  .section-title {
-    font-family: "Poppins", sans-serif;
-    font-weight: 500;
-    font-size: 1.5rem;
-    line-height: 1.3;
-    padding-bottom: 3px;
-  }
+.section-title {
+  font-weight: 600;
+  font-size: 2rem;
+  text-transform: uppercase;
+}
 
-  .section-rule {
-    height: 1px;
-    background: #000;
-    width: 100%;
-  }
+.tools-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
 
-  .tools-row {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    flex-wrap: wrap;
-    margin-bottom: 16px;
-  }
+.filter-btn {
+  display: flex;
+  align-items: center;
+  background: #000;
+  color: #fff;
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 8px 20px;
+  gap: 10px;
+  cursor: pointer;
+}
 
-  .filter-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: #111;
-    color: #fff;
-    border: 0;
-    border-radius: 6px;
-    height: 40px;
-    padding: 0 14px;
-    font-weight: 800;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
 
-  .filter-btn:hover {
-    background: #333;
-  }
+.filter-btn:hover {
+  background: #333;
+  transition: 0.3s;
+}
 
-  .filter-btn .filter-icon {
-    opacity: 0.9;
-  }
+.filter-icon {
+  width: 20px;
+}
 
-  .search-box {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    height: 40px;
-    min-width: 260px;
-    flex: 1 1 280px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    padding: 0 12px 0 36px;
-    background: #fff;
-  }
+.search-box {
+  min-width: 50%;
+  position: relative;
+  margin-left: auto;
+  display: inline-flex;
+  border: 1px solid #000;
+  font-size: 1rem;
+  border-radius: 8px;
+  padding: 8px 10px;
+  gap: 8px;
+  background: #fff;
+}
 
-  .search-icon {
-    position: absolute;
-    left: 10px;
-    font-size: 14px;
-    opacity: 0.7;
-  }
+.search-icon {
+  width: 22px;
+}
 
-  .search-input {
-    flex: 1;
-    border: 0;
-    outline: none;
-    font-size: 14px;
-    background: transparent;
-  }
+.search-input {
+  font-weight: 500;
+  border: none;
+  background: transparent;
 
-  .chips-row {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-bottom: 16px;
-  }
+}
+.search-input::placeholder{
+  font-size: 1rem;
+  font-weight: 600;
+  opacity: 0.25;
+}
 
-  .chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: #f1f1f1;
-    color: #111;
-    border: 1px solid #e5e5e5;
-    border-radius: 999px;
-    height: 30px;
-    padding: 0 10px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all 0.2s;
-  }
+.chips-row {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
 
-  .chip:hover {
-    background: #e5e5e5;
-  }
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  color: #000787;
+  border: 1px solid #000787;
+  border-radius: 9px;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-weight: 500;
+  text-transform: uppercase;
+  transition: all 0.2s;
+}
 
-  .chip .chip-x {
-    opacity: 0.7;
-  }
+.chip:hover {
+  color: #000be0;
+  border-color: #000be0;
+}
 
-  .chip-clear {
-    height: 30px;
-    padding: 0 12px;
-    border-radius: 999px;
-    border: 0;
-    background: #eee;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
+.chip .chip-x {
+  width: 8px;
+}
 
-  .chip-clear:hover {
-    background: #ddd;
-  }
+.chip-clear {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  color: #000787;
+  border: 1px solid #000787;
+  border-radius: 9px;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-weight: 500;
+  text-transform: uppercase;
+  transition: all 0.2s;
+}
 
-  .products-section {
-    margin-top: 8px;
-  }
+.chip-clear:hover {
+  color: #000be0;
+  border-color: #000be0;
+}
 
-  .loading-message,
-  .empty-message {
-    text-align: center;
-    padding: 60px 20px;
-    color: #666;
-    font-size: 16px;
-  }
 
-  .error {
-    color: #d00;
-    font-weight: 700;
-    text-align: center;
-    padding: 20px;
-  }
-  </style>
+.loading-message,
+.empty-message {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+  font-size: 16px;
+}
+
+.error {
+  color: #d00;
+  font-weight: 700;
+  text-align: center;
+  padding: 20px;
+}
+</style>

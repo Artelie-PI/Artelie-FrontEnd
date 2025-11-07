@@ -1,9 +1,12 @@
 <script setup>
 import { useCartStore } from "@/stores/cart.js";
 import { useRouter } from "vue-router";
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { fetchAddressByCep, calculateShipping } from "@/utils/shipping";
 import { formatCEP } from "@/utils/masks";
+
+import CardProducts from '@/components/CardProducts.vue';
+import LoadingSpinner from '@/components/LoadingSpinner.vue';
 
 const cartStore = useCartStore();
 const router = useRouter();
@@ -76,6 +79,32 @@ function handleApplyCoupon() {
     discount.value = 0;
   }
 }
+
+
+const featured = ref([]);
+const loading = ref(true);
+const error = ref(null);
+
+async function loadProducts() {
+  try {
+    loading.value = true;
+    error.value = null;
+    const response = await fetchFeaturedProducts();
+    const products = Array.isArray(response) ? response : (response?.results || []);
+    featured.value = products.map(formatProduct);
+  } catch (err) {
+    console.error('Erro ao carregar produtos em destaque:', err);
+    if (err.message?.includes('MaxClients') || err.response?.status === 500) {
+      error.value = '⚠️ Servidor temporariamente indisponível. Tente novamente em alguns segundos.';
+    } else {
+      error.value = 'Erro ao carregar produtos. Verifique sua conexão.';
+    }
+  } finally {
+    loading.value = false;
+  }
+}
+
+onMounted(loadProducts);
 </script>
 
 <template>
@@ -131,7 +160,8 @@ function handleApplyCoupon() {
                   <span>{{ item.quantity }}</span>
                   <button @click="cartStore.addToCart(item, 1)">+</button>
                 </div>
-                <img src="/src/assets/images/Cancel.png" class="remove-btn" @click="cartStore.removeFromCart(item.id)" />
+                <img src="/src/assets/images/Cancel.png" class="remove-btn"
+                  @click="cartStore.removeFromCart(item.id)" />
               </div>
 
               <div class="item-total">R$ {{ formatPrice(item.price * item.quantity) }}</div>
@@ -199,6 +229,13 @@ function handleApplyCoupon() {
           <button class="btn-continue" @click="goToHome">CONTINUAR COMPRANDO</button>
         </aside>
       </div>
+
+      <LoadingSpinner v-if="loading" size="large" />
+      <div v-else-if="error" class="error-state">
+        <p>{{ error }}</p>
+        <button @click="loadProducts" class="retry-button">🔄 Tentar Novamente</button>
+      </div>
+      <CardProducts v-else :products="featured.slice(0, 4)" />
     </template>
   </main>
 </template>
@@ -587,6 +624,19 @@ function handleApplyCoupon() {
   color: #000787;
   border: 2px solid #000787;
   font-weight: 600;
+}
+
+
+.section-header {
+  max-width: 1320px;
+  margin: auto auto 50px;
+  text-align: left;
+  border-bottom: 1px solid black;
+}
+
+.section-title {
+  font-weight: 500;
+  font-size: 2rem;
 }
 
 /* Responsivo */

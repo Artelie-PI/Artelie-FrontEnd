@@ -78,7 +78,7 @@ const duplicatedSlides = computed(() => {
 <style scoped>
 .carousel-main {
   max-width: 1320px;
-  margin: 0 auto 18px auto;
+  margin: 50px auto;
   padding: 0 20px;
   position: relative;
 }

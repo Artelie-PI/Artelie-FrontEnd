@@ -45,7 +45,6 @@ onMounted(loadProducts);
 
     <div class="section-header">
       <h2 class="section-title">Produtos em Destaque</h2>
-      <div class="section-rule" aria-hidden="true"></div>
     </div>
 
     <LoadingSpinner v-if="loading" size="large" />
@@ -76,30 +75,21 @@ onMounted(loadProducts);
 }
 
 .home-subtitle {
-  margin: 8px 16px 8px;
+  margin: 60px;
   color: #4b5563;
   font-size: 0.95rem;
 }
 
 .section-header {
-  max-width: 1120px;
-  margin: 24px auto 20px;
+  max-width: 1320px;
+  margin: auto auto 50px;
   text-align: left;
-  padding: 0 16px;
+  border-bottom: 1px solid black;
 }
 
 .section-title {
-  font-family: "Poppins", sans-serif;
   font-weight: 500;
-  font-size: 1.5rem;
-  line-height: 1.3;
-  padding-bottom: 3px;
-}
-
-.section-rule {
-  height: 1px;
-  background: #000;
-  width: 100%;
+  font-size: 2rem;
 }
 
 .error-state {
