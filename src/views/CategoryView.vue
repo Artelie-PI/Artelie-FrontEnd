@@ -41,38 +41,18 @@ const facets = reactive({
 const chips = computed(() => {
   const list = [];
   if (filters.sort) {
-    const map = {
-      az: "A-Z",
-      za: "Z-A",
-      new: "Novidades",
-      price_desc: "Maior Preço",
-      price_asc: "Menor Preço",
-    };
+    const map = { az: "A-Z", za: "Z-A", new: "Novidades", price_desc: "Maior Preço", price_asc: "Menor Preço" };
     list.push({ key: "sort", label: map[filters.sort] || filters.sort, group: "sort" });
   }
-  filters.materials.forEach((m) =>
-    list.push({ key: `mat:${m}`, label: m, group: "materials", value: m })
-  );
+  filters.materials.forEach((m) => list.push({ key: `mat:${m}`, label: m, group: "materials", value: m }));
   filters.brands.forEach((b) => list.push({ key: `br:${b}`, label: b, group: "brands", value: b }));
-  if (filters.priceMin != null)
-    list.push({
-      key: "pmin",
-      label: `De R$ ${Number(filters.priceMin).toFixed(2)}`,
-      group: "priceMin",
-    });
-  if (filters.priceMax != null)
-    list.push({
-      key: "pmax",
-      label: `Até R$ ${Number(filters.priceMax).toFixed(2)}`,
-      group: "priceMax",
-    });
+  if (filters.priceMin != null) list.push({ key: "pmin", label: `De R$ ${Number(filters.priceMin).toFixed(2)}`, group: "priceMin" });
+  if (filters.priceMax != null) list.push({ key: "pmax", label: `Até R$ ${Number(filters.priceMax).toFixed(2)}`, group: "priceMax" });
   return list;
 });
 
 // Nome da categoria
-const categoryTitle = computed(() => {
-  return currentCategory.value?.name || "Categoria";
-});
+const categoryTitle = computed(() => currentCategory.value?.name || "Categoria");
 
 function findCategoryBySlug(slug) {
   const s = String(slug || '').toLowerCase().normalize('NFD')
@@ -93,18 +73,13 @@ async function resolveCategoryParam(param) {
   return findCategoryBySlug(param)
 }
 
-
-// Busca produtos da categoria
 async function loadProducts() {
   isLoading.value = true;
   errorMsg.value = "";
 
   try {
-    // Carrega categorias se necessário
     if (categories.value.length === 0) {
-      console.log('📦 Carregando categorias...');
       categories.value = await fetchCategories();
-      console.log('✅ Categorias carregadas:', categories.value);
     }
 
     // Resolve parâmetro da rota (prefere id, aceita slug)
@@ -134,14 +109,14 @@ async function loadProducts() {
     const setBrands = new Set();
     const setMaterials = new Set();
     for (const p of products.value) {
-      if (p.brand) setBrands.add(p.brand);
-      if (p.material) setMaterials.add(p.material);
+      if (p.brand) setBrands.add(String(p.brand));
+      if (p.material) setMaterials.add(String(p.material));
     }
     facets.brands = Array.from(setBrands).sort();
     facets.materials = Array.from(setMaterials).sort();
 
   } catch (e) {
-    console.error('❌ Erro ao carregar produtos:', e);
+    console.error('Erro ao carregar produtos:', e);
     errorMsg.value = "Erro ao carregar produtos da categoria.";
   } finally {
     isLoading.value = false;
@@ -151,12 +126,10 @@ async function loadProducts() {
 // Aplica filtros
 function onApplyFilters(payload) {
   filters.sort = payload.sort || null;
-  filters.materials = payload.materials || [];
-  filters.brands = payload.brands || [];
-  filters.priceMin =
-    payload.priceMin != null && payload.priceMin !== "" ? Number(payload.priceMin) : null;
-  filters.priceMax =
-    payload.priceMax != null && payload.priceMax !== "" ? Number(payload.priceMax) : null;
+  filters.materials = Array.isArray(payload.materials) ? payload.materials.map(String) : [];
+  filters.brands = Array.isArray(payload.brands) ? payload.brands.map(String) : [];
+  filters.priceMin = payload.priceMin != null && payload.priceMin !== "" ? Number(payload.priceMin) : null;
+  filters.priceMax = payload.priceMax != null && payload.priceMax !== "" ? Number(payload.priceMax) : null;
   isFilterOpen.value = false;
 }
 
@@ -172,8 +145,7 @@ function onClearFilters() {
 // Remove chip
 function removeChip(chip) {
   if (chip.group === "sort") filters.sort = null;
-  if (chip.group === "materials")
-    filters.materials = filters.materials.filter((m) => m !== chip.value);
+  if (chip.group === "materials") filters.materials = filters.materials.filter((m) => m !== chip.value);
   if (chip.group === "brands") filters.brands = filters.brands.filter((b) => b !== chip.value);
   if (chip.group === "priceMin") filters.priceMin = null;
   if (chip.group === "priceMax") filters.priceMax = null;
@@ -184,32 +156,17 @@ const filteredProducts = computed(() => {
   const q = search.value.trim().toLowerCase();
   let list = [...products.value];
 
-  if (q) {
-    list = list.filter((p) => p.title?.toLowerCase().includes(q));
-  }
-
-  if (filters.brands.length) {
-    list = list.filter((p) => p.brand && filters.brands.includes(p.brand));
-  }
-  if (filters.materials.length) {
-    list = list.filter((p) => p.material && filters.materials.includes(p.material));
-  }
+  if (q) list = list.filter((p) => p.title?.toLowerCase().includes(q));
+  if (filters.brands.length) list = list.filter((p) => p.brand && filters.brands.includes(String(p.brand)));
+  if (filters.materials.length) list = list.filter((p) => p.material && filters.materials.includes(String(p.material)));
   if (filters.priceMin != null) list = list.filter((p) => p.price >= Number(filters.priceMin));
   if (filters.priceMax != null) list = list.filter((p) => p.price <= Number(filters.priceMax));
 
   switch (filters.sort) {
-    case "az":
-      list.sort((a, b) => a.title.localeCompare(b.title));
-      break;
-    case "za":
-      list.sort((a, b) => b.title.localeCompare(a.title));
-      break;
-    case "price_desc":
-      list.sort((a, b) => b.price - a.price);
-      break;
-    case "price_asc":
-      list.sort((a, b) => a.price - b.price);
-      break;
+    case "az": list.sort((a, b) => a.title.localeCompare(b.title)); break;
+    case "za": list.sort((a, b) => b.title.localeCompare(a.title)); break;
+    case "price_desc": list.sort((a, b) => b.price - a.price); break;
+    case "price_asc": list.sort((a, b) => a.price - b.price); break;
   }
   return list;
 });
@@ -217,7 +174,7 @@ const filteredProducts = computed(() => {
 // Debounce
 watch(search, () => {
   if (searchDebounce) clearTimeout(searchDebounce);
-  searchDebounce = setTimeout(() => {}, 250);
+  searchDebounce = setTimeout(() => { }, 250);
 });
 
 watch(
@@ -247,24 +204,12 @@ onMounted(loadProducts);
 
       <div class="search-box">
         <span class="search-icon">🔎</span>
-        <input
-          type="text"
-          class="search-input"
-          placeholder="Pesquisar Produto"
-          v-model="search"
-          aria-label="Pesquisar Produto"
-        />
+        <input type="text" class="search-input" placeholder="Pesquisar Produto" v-model="search" aria-label="Pesquisar Produto" />
       </div>
     </div>
 
     <div v-if="chips.length" class="chips-row">
-      <button
-        v-for="c in chips"
-        :key="c.key"
-        class="chip"
-        @click="removeChip(c)"
-        :title="`Remover filtro ${c.label}`"
-      >
+      <button v-for="c in chips" :key="c.key" class="chip" @click="removeChip(c)" :title="`Remover filtro ${c.label}`">
         {{ c.label }}
         <span class="chip-x">×</span>
       </button>
@@ -289,7 +234,7 @@ onMounted(loadProducts);
       :open="isFilterOpen"
       :facets="facets"
       :selected="filters"
-      @close="isFilterOpen.value = false"
+      @close="isFilterOpen = false"
       @apply="onApplyFilters"
       @clear="onClearFilters"
     />
@@ -348,13 +293,24 @@ onMounted(loadProducts);
   white-space: nowrap;
 }
 
-.filter-btn:hover {
-  background: #333;
-}
+  .filter-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #111;
+    color: #fff;
+    border: 0;
+    border-radius: 6px;
+    height: 40px;
+    padding: 0 14px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
 
-.filter-btn .filter-icon {
-  opacity: 0.9;
-}
+  .filter-btn:hover {
+    background: #333;
+  }
 
 .search-box {
   position: relative;
@@ -408,13 +364,24 @@ onMounted(loadProducts);
   transition: all 0.2s;
 }
 
-.chip:hover {
-  background: #e5e5e5;
-}
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #f1f1f1;
+    color: #111;
+    border: 1px solid #e5e5e5;
+    border-radius: 999px;
+    height: 30px;
+    padding: 0 10px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
 
-.chip .chip-x {
-  opacity: 0.7;
-}
+  .chip:hover {
+    background: #e5e5e5;
+  }
 
 .chip-clear {
   height: 1.9rem;
@@ -427,9 +394,16 @@ onMounted(loadProducts);
   transition: background 0.2s;
 }
 
-.chip-clear:hover {
-  background: #ddd;
-}
+  .chip-clear {
+    height: 30px;
+    padding: 0 12px;
+    border-radius: 999px;
+    border: 0;
+    background: #eee;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
 
 .products-section {
   margin-top: 0.5rem;

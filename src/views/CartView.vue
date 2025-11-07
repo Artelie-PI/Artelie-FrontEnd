@@ -25,7 +25,7 @@ function goToCheckout() {
     alert('Por favor, calcule o frete antes de finalizar a compra');
     return;
   }
-  
+
   cartStore.setShipping(shipping.value);
   router.push({ name: 'checkout' });
 }
@@ -48,18 +48,18 @@ function handleCEPInput(event) {
 
 async function handleCalculateShipping() {
   shippingError.value = '';
-  
+
   if (!cepInput.value) {
     shippingError.value = 'Digite um CEP';
     return;
   }
-  
+
   isCalculatingShipping.value = true;
-  
+
   try {
     const address = await fetchAddressByCep(cepInput.value);
     const shippingData = calculateShipping(cepInput.value, subtotal.value);
-    
+
     shipping.value = {
       ...shippingData,
       cep: address.cep,
@@ -80,9 +80,9 @@ function handleApplyCoupon() {
     'PRIMEIRACOMPRA': 0.15,
     'ARTELIE20': 0.20
   };
-  
+
   const couponCode = couponInput.value.toUpperCase().trim();
-  
+
   if (validCoupons[couponCode]) {
     discount.value = subtotal.value * validCoupons[couponCode];
     alert(`Cupom aplicado! Desconto de ${(validCoupons[couponCode] * 100).toFixed(0)}%`);
@@ -101,19 +101,19 @@ function handleApplyCoupon() {
           <h1 class="empty-title">BEM-VINDO À SACOLA</h1>
           <img src="/src/assets/images/Shopping bag.png" alt="" class="title-bag" />
         </div>
-        
+
         <p class="empty-message">A Sacola está vazia!</p>
-        
+
         <div class="empty-icon">
           <img src="/src/assets/images/Empty set.png" alt="Sacola vazia" />
         </div>
-        
+
         <p class="empty-subtitle">
           Que tal retornar à nossa página principal e<br>procurar pelos melhores produtos
         </p>
-        
+
         <button class="btn-primary" @click="goToHome">VOLTAR À LOJA</button>
-        
+
         <p class="login-text">
           Tem uma conta?<br>
           Faça <RouterLink to="/login" class="login-link">LOGIN</RouterLink> para finalizar suas compras
@@ -124,7 +124,7 @@ function handleApplyCoupon() {
     <template v-else>
       <div class="cart-header">
         <h1 class="cart-title">BEM-VINDO À SACOLA</h1>
-        <img src="/src/assets/images/Shopping bag.png" alt="" class="title-bag" />
+        <img src="/src/assets/images/Shopping bag.png" alt="iconSacola" class="title-bag" />
       </div>
 
       <div class="cart-content">
@@ -160,17 +160,15 @@ function handleApplyCoupon() {
         </div>
 
         <aside class="cart-summary">
-          <h2 class="summary-title">RESUMO DA COMPRA</h2>
+          <div class="title-field">
+          <h2 class="summary-title">RESUMO DA COMPRA</h2>  
+          </div>
 
           <div class="summary-field">
             <label>Cupom de Desconto</label>
             <div class="field-group">
-              <input 
-                type="text" 
-                placeholder="Digite o código de desconto" 
-                v-model="couponInput"
-                @keyup.enter="handleApplyCoupon"
-              />
+              <input type="text" placeholder="Digite o código de desconto" v-model="couponInput"
+                @keyup.enter="handleApplyCoupon" />
               <button class="btn-apply" @click="handleApplyCoupon">APLICAR</button>
             </div>
           </div>
@@ -178,25 +176,15 @@ function handleApplyCoupon() {
           <div class="summary-field">
             <label>Frete</label>
             <div class="field-group">
-              <input 
-                type="text" 
-                placeholder="00000-000" 
-                :value="cepInput"
-                @input="handleCEPInput"
-                @keyup.enter="handleCalculateShipping"
-                maxlength="9"
-              />
-              <button 
-                class="btn-apply" 
-                @click="handleCalculateShipping"
-                :disabled="isCalculatingShipping"
-              >
+              <input type="text" placeholder="00000-000" :value="cepInput" @input="handleCEPInput"
+                @keyup.enter="handleCalculateShipping" maxlength="9" />
+              <button class="btn-apply" @click="handleCalculateShipping" :disabled="isCalculatingShipping">
                 {{ isCalculatingShipping ? '...' : 'CALCULAR' }}
               </button>
             </div>
             <p v-if="shippingError" class="error-text">{{ shippingError }}</p>
             <p v-if="shipping" class="shipping-info">
-              {{ shipping.city }}/{{ shipping.state }} - 
+              {{ shipping.city }}/{{ shipping.state }} -
               <span v-if="shipping.isFree" class="free-shipping">FRETE GRÁTIS!</span>
               <span v-else>{{ shipping.estimatedDays }} dias úteis</span>
             </p>
@@ -228,11 +216,7 @@ function handleApplyCoupon() {
             </p>
           </div>
 
-          <button 
-            class="btn-checkout" 
-            @click="goToCheckout"
-            :disabled="!shipping"
-          >
+          <button class="btn-checkout" @click="goToCheckout" :disabled="!shipping">
             FINALIZAR COMPRA
           </button>
           <button class="btn-continue" @click="goToHome">CONTINUAR COMPRANDO</button>
@@ -264,12 +248,12 @@ function handleApplyCoupon() {
   margin-bottom: 20px;
 }
 
-.empty-title, .cart-title {
+.empty-title,
+.cart-title {
   font-size: 1.8rem;
-  text-shadow: 0 2px 6px rgba(0, 0, 0, .5);
-  font-weight: 700;
+  text-shadow: 0 3px 2px rgba(0, 0, 0, .3);
+  font-weight: 600;
   color: #000;
-  letter-spacing: 0.02em;
   margin: 0;
 }
 
@@ -302,7 +286,7 @@ function handleApplyCoupon() {
 }
 
 .btn-primary {
-  background: #0B1E9F;
+  background: #000787;
   color: #fff;
   border: none;
   border-radius: 12px;
@@ -330,7 +314,7 @@ function handleApplyCoupon() {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
 }
 
 .cart-content {
@@ -360,9 +344,8 @@ function handleApplyCoupon() {
   padding: 16px 20px;
   background: #f8f8f8;
   border-bottom: 1px solid #e5e5e5;
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #000;
+  font-size: 1rem;  
+  font-weight: 600;
 }
 
 .cart-item {
@@ -462,18 +445,22 @@ function handleApplyCoupon() {
 }
 
 .cart-summary {
-  background: #f8f9fa;
+  background: #f0f0f0;
   border: 1px solid #e5e5e5;
   border-radius: 12px;
   padding: 24px;
   align-self: flex-start;
-  position: sticky;
-  top: 20px;
+  margin: auto;
+}
+
+.title-field {
+  text-align: center;
+  padding: 30px;
 }
 
 .summary-title {
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-size: 1.6rem;
+  font-weight: 600;
   color: #000;
   margin: 0 0 20px 0;
 }
@@ -504,13 +491,13 @@ function handleApplyCoupon() {
 }
 
 .btn-apply {
-  background: #0B1E9F;
+  background: #000787;
   color: #fff;
   border: none;
   border-radius: 8px;
-  padding: 10px 16px;
+  padding: 5px 10px;
   font-size: 0.85rem;
-  font-weight: 700;
+  font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
 }
@@ -531,7 +518,7 @@ function handleApplyCoupon() {
 
 .total-final {
   font-size: 1.05rem;
-  font-weight: 700;
+  font-weight: 600;
   color: #000;
   padding-top: 12px;
   border-top: 1px solid #ddd;
@@ -554,8 +541,8 @@ function handleApplyCoupon() {
 .btn-continue {
   width: 100%;
   background: #fff;
-  color: #0B1E9F;
-  border: 2px solid #0B1E9F;
+  color: #000787;
+  border: 2px solid #000787;
   border-radius: 8px;
   padding: 14px;
   font-size: 1rem;
