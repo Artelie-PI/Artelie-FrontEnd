@@ -6,6 +6,11 @@
   box-sizing: border-box;
   font-family: "Poppins", sans-serif;
 }
+body, html {
+  width: 100%;
+  overflow-x: hidden;
+}
+
 body.dark-theme {
   background-color: #222 !important;
   color: #eee !important;
