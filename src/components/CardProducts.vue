@@ -98,13 +98,13 @@ function addProduct(product) {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  height: 100%; /* ✅ Ocupa toda altura disponível */
+  height: 100%; 
 }
 
 .pc-link {
-  display: flex; /* ✅ Adicionado flex */
-  flex-direction: column; /* ✅ Adicionado flex-direction */
-  flex: 1; /* ✅ Cresce para empurrar o botão */
+  display: flex;
+  flex-direction: column;
+  flex: 1; 
   outline: none;
   text-decoration: none;
   color: inherit;
@@ -145,7 +145,7 @@ function addProduct(product) {
 .pc-image {
   left: 16px;
   right: 16px;
-  width: 100%;
+  width: 80%;
   height: 100%;
   object-fit: contain;
   transition: transform 0.5s ease;

@@ -7,6 +7,8 @@ import { formatCEP } from "@/utils/masks";
 
 import CardProducts from '@/components/CardProducts.vue';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import { fetchFeaturedProducts } from '@/api/products';
+import { formatProduct } from '@/utils/productHelper';
 
 const cartStore = useCartStore();
 const router = useRouter();
@@ -80,7 +82,7 @@ function handleApplyCoupon() {
   }
 }
 
-
+/* Destaques para a seção "Conheça..." */
 const featured = ref([]);
 const loading = ref(true);
 const error = ref(null);
@@ -128,6 +130,19 @@ onMounted(loadProducts);
           Faça <RouterLink to="/login">LOGIN</RouterLink> para finalizar suas compras
         </p>
       </div>
+
+      <!-- Seção de recomendados -->
+      <div class="section-header">
+        <h2 class="section-title">Conheça alguns produtos interessantes</h2>
+      </div>
+
+      <LoadingSpinner v-if="loading" size="large" />
+      <div v-else-if="error" class="error-state">
+        <p>{{ error }}</p>
+        <button @click="loadProducts" class="retry-button">🔄 Tentar Novamente</button>
+      </div>
+      <CardProducts v-else :products="featured.slice(0, 4)" />
+
     </template>
 
     <template v-else>
@@ -161,7 +176,7 @@ onMounted(loadProducts);
                   <button @click="cartStore.addToCart(item, 1)">+</button>
                 </div>
                 <img src="/src/assets/images/Cancel.png" class="remove-btn"
-                  @click="cartStore.removeFromCart(item.id)" />
+                     @click="cartStore.removeFromCart(item.id)" />
               </div>
 
               <div class="item-total">R$ {{ formatPrice(item.price * item.quantity) }}</div>
@@ -171,11 +186,12 @@ onMounted(loadProducts);
 
         <aside class="cart-summary">
           <h2 class="summary-title">RESUMO DA COMPRA</h2>
+
           <div class="summary-field">
             <label for="coupon">Cupom de Desconto</label>
             <div class="field-group">
-              <input id="coupon" type="text" placeholder="Digite o código de desconto" v-model="couponInput"
-                @keyup.enter="handleApplyCoupon" />
+              <input id="coupon" type="text" placeholder="Digite o código de desconto"
+                     v-model="couponInput" @keyup.enter="handleApplyCoupon" />
               <button class="btn-apply" @click="handleApplyCoupon">APLICAR</button>
             </div>
           </div>
@@ -183,8 +199,9 @@ onMounted(loadProducts);
           <div class="summary-field">
             <label for="cep">Frete</label>
             <div class="field-group">
-              <input id="cep" type="text" placeholder="Digite o seu CEP" :value="cepInput" @input="handleCEPInput"
-                @keyup.enter="handleCalculateShipping" maxlength="9" />
+              <input id="cep" type="text" placeholder="Digite o seu CEP"
+                     :value="cepInput" @input="handleCEPInput"
+                     @keyup.enter="handleCalculateShipping" maxlength="9" />
               <button class="btn-apply" @click="handleCalculateShipping" :disabled="isCalculatingShipping">
                 {{ isCalculatingShipping ? "..." : "APLICAR" }}
               </button>
@@ -228,6 +245,11 @@ onMounted(loadProducts);
           </button>
           <button class="btn-continue" @click="goToHome">CONTINUAR COMPRANDO</button>
         </aside>
+      </div>
+
+      <!-- Seção de recomendados -->
+      <div class="section-header">
+        <h2 class="section-title">Conheça alguns produtos interessantes</h2>
       </div>
 
       <LoadingSpinner v-if="loading" size="large" />
@@ -515,7 +537,6 @@ onMounted(loadProducts);
   font-weight: 300;
   color: #000000;
   padding: 10px 12px;
-
 }
 
 .field-group input::placeholder {
@@ -604,6 +625,7 @@ onMounted(loadProducts);
   border-radius: 6px;
   padding: 14px;
   font-size: 1rem;
+  cursor: pointer;
 }
 
 .btn-checkout {
@@ -626,7 +648,6 @@ onMounted(loadProducts);
   font-weight: 600;
 }
 
-
 .section-header {
   max-width: 1320px;
   margin: auto auto 50px;
@@ -636,7 +657,7 @@ onMounted(loadProducts);
 
 .section-title {
   font-weight: 500;
-  font-size: 2rem;
+  font-size: 1.6rem;
 }
 
 /* Responsivo */
