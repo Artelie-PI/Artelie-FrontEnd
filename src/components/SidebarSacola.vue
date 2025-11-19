@@ -124,6 +124,7 @@ function goToCheckout() {
   z-index: 90;
   display: flex;
   justify-content: flex-end;
+  z-index: 9999;
 }
 
 /* Container base */
@@ -134,6 +135,7 @@ function goToCheckout() {
   background: #fff;
   position: relative;
   box-shadow: -6px 0 32px 0 rgba(23, 23, 23, 0.09);
+  z-index: 9999;
 }
 
 /* Botão fechar */
