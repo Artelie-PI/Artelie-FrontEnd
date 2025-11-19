@@ -1,15 +1,29 @@
 <script setup>
-import { RouterLink } from "vue-router";
-import { ref } from 'vue';
+import { RouterLink, useRoute } from "vue-router";
+import { ref, watch } from 'vue';
 import { useSidebarCart } from "/src/stores/useSidebarCart.js";
+
 const showHeader = ref(true);
 const { open } = useSidebarCart();
+
+const menuOpen = ref(false)
+function toggleMenu() { menuOpen.value = !menuOpen.value }
+function closeMenu() { menuOpen.value = false }
+function openCart() { closeMenu(); open() }
+
+const route = useRoute()
+watch(() => route.fullPath, () => { menuOpen.value = false })
 </script>
 
 <template>
   <transition name="slide-down">
     <header v-if="showHeader">
       <div class="header-top">
+        <button class="menu-btn" :class="{ open: menuOpen }" @click="toggleMenu" aria-label="Abrir menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
         <div class="logo slide-item">
           <RouterLink to="/">
             <img class="logoImg" src="@/assets/images/ArtelieLogo.png" alt="Artelie Logo" />
@@ -48,6 +62,36 @@ const { open } = useSidebarCart();
           <span>LIVROS & GIBIS</span>
         </RouterLink>
       </nav>
+
+      <!-- Backdrop + Menu móvel (lateral direita) -->
+      <transition name="menu-fade">
+        <div v-if="menuOpen" class="backdrop" @click="closeMenu" aria-hidden="true"></div>
+      </transition>
+      <transition name="menu-slide">
+        <aside v-if="menuOpen" class="mobile-menu" aria-label="Menu principal">
+          <div class="mm-header">
+            <img class="mm-logo" src="@/assets/images/ArtelieLogo.png" alt="Artelie Logo" />
+          </div>
+          <nav class="mm-section">
+            <RouterLink to="/" @click="closeMenu">Home</RouterLink>
+            <RouterLink to="/contact" @click="closeMenu">Contato</RouterLink>
+            <RouterLink to="/brands" @click="closeMenu">Marcas</RouterLink>
+          </nav>
+          <div class="mm-divider"></div>
+          <nav class="mm-section mm-categories">
+            <h4>Categorias</h4>
+            <RouterLink :to="{ name: 'category', params: { slug: 'papeis' } }" @click="closeMenu">Papéis</RouterLink>
+            <RouterLink :to="{ name: 'category', params: { slug: 'pintura' } }" @click="closeMenu">Pintura</RouterLink>
+            <RouterLink :to="{ name: 'category', params: { slug: 'lapis-e-canetas' } }" @click="closeMenu">Lápis & Canetas</RouterLink>
+            <RouterLink :to="{ name: 'category', params: { slug: 'livros-e-gibis' } }" @click="closeMenu">Livros & Gibis</RouterLink>
+          </nav>
+          <div class="mm-divider"></div>
+          <div class="mm-actions">
+            <RouterLink to="/login" class="mm-btn-enter" @click="closeMenu">Entrar</RouterLink>
+            <button class="mm-btn-enter" @click="openCart">Abrir Sacola</button>
+          </div>
+        </aside>
+      </transition>
     </header>
   </transition>
 </template>
@@ -179,10 +223,71 @@ header {
 }
 .menu-btn span {
   display: block;
-  height: 4px;
-  width: 100%;
-  background: #333;
+  height: 3px;
+  width: 28px;
+  background: #111;
   border-radius: 2px;
-  transition: 0.3s;
+  transition: transform .2s ease, opacity .2s ease;
+}
+.menu-btn.open span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+.menu-btn.open span:nth-child(2) { opacity: 0; }
+.menu-btn.open span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+
+/* Backdrop do menu */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.32);
+  z-index: 1000;
+}
+
+/* Menu móvel (lateral direita, não tela inteira) */
+.mobile-menu {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: 85vw;
+  max-width: 380px;
+  background: #fff;
+  z-index: 1001;
+  padding: 16px 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-left: 1px solid #eee;
+  box-shadow: -4px 0 16px rgba(0,0,0,.08);
+}
+.mm-header { display:flex; align-items:center; justify-content: space-between; }
+.mm-logo { height: 10vh; }
+.mm-section { display:flex; flex-direction: column; gap: 12px; }
+.mm-section a { text-decoration: none; color: #111; font-weight: 600; font-size: 1.5rem; }
+.mm-categories h4 { margin: 0 0 4px; font-size: .9rem; color: #666; font-weight: 600; }
+.mm-divider { height:1px; background:#e5e5e5; margin: 4px 0; }
+.mm-actions { display:flex; flex-direction: column; gap: 10px; }
+.mm-btn { height: 44px; border-radius: 8px; border:1px solid #ddd; background:#fff; font-weight:700; }
+.mm-btn-enter { height: 44px; border-radius: 8px; border:1px solid #000000; background:#000000; font-weight:700; color:#fff; text-decoration: none; text-decoration-line: none; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.mm-btn.primary { background:#000; color:#fff; border-color:#000; }
+
+/* Animações */
+.menu-fade-enter-from, .menu-fade-leave-to { opacity:0 }
+.menu-fade-enter-active, .menu-fade-leave-active { transition: opacity .2s ease }
+
+.menu-slide-enter-from, .menu-slide-leave-to { transform: translateX(100%); opacity: 0 }
+.menu-slide-enter-active, .menu-slide-leave-active { transition: transform .25s ease, opacity .2s ease }
+.menu-slide-enter-to, .menu-slide-leave-from { transform: translateX(0); opacity: 1 }
+
+/* Responsividade */
+@media (max-width: 1024px) {
+  .header-top { justify-content: space-between; gap: 1rem; padding: 0 16px; height: 72px; }
+  .menu-btn { display: flex; margin-left: auto; order: 3; }
+  .logo { height: 40px; }
+  .pages, .perfilShop, .category-icons { display: none; }
+  .logoImg { height: 5vh; }
+}
+
+@media (max-width: 640px) {
+  .mm-logo { height: 6vh; }
+  .mm-btn { height: 42px; }
 }
 </style>
