@@ -16,7 +16,7 @@ const { open } = useSidebarCart();
         <!-- Logo -->
         <div class="logo slide-item">
           <RouterLink to="/">
-            <img class="logoImg" src="@/assets/images/ArtelieLogo.png" alt="Artelie Logo" />
+            <img class="logoImg" src="@/assets/images/logo3.png" alt="Artelie Logo" />
           </RouterLink>
         </div>
 

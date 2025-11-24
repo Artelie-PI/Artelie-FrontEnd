@@ -42,7 +42,6 @@ function addProduct(product) {
       <article v-for="p in list" :key="p.id" class="pc-card">
         <RouterLink :to="{ name: toName, params: { id: p.id } }" class="pc-link" :aria-label="p.title">
           <div class="pc-image-wrap">
-            <div aria-hidden="true" class="pc-image-shadow"></div>
             <div class="pc-image-box">
               <img v-if="p.image" :src="p.image" :alt="p.title" class="pc-image" loading="lazy" />
               <div v-else class="pc-no-image">Sem imagem</div>
@@ -76,21 +75,24 @@ function addProduct(product) {
   color: #666;
 }
 
+/* Grid responsivo: 2 colunas no mobile, 3 no tablet, 4 no desktop */
 .pc-grid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 24px;
+  grid-template-columns: repeat(2, 1fr); /* Mobile: 2 colunas por padrão */
+  gap: 16px;
 }
 
 @media (min-width: 640px) {
   .pc-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr); /* Tablet: 3 colunas */
+    gap: 20px;
   }
 }
 
 @media (min-width: 1024px) {
   .pc-grid {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, 1fr); /* Desktop: 4 colunas */
+    gap: 24px;
   }
 }
 
@@ -98,13 +100,13 @@ function addProduct(product) {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  height: 100%; 
+  height: 100%;
 }
 
 .pc-link {
   display: flex;
   flex-direction: column;
-  flex: 1; 
+  flex: 1;
   outline: none;
   text-decoration: none;
   color: inherit;
@@ -114,37 +116,27 @@ function addProduct(product) {
   box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.7);
 }
 
+/* Área da imagem com sombra do Figma */
 .pc-image-wrap {
   position: relative;
   background-color: #fff;
   border-radius: 2px;
+  box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25);
 }
 
-.pc-image-shadow {
-  position: absolute;
-  left: 16px;
-  right: 16px;
-  bottom: 0;
-  height: 24px;
-  background: rgba(0, 0, 0, 50%);
-  filter: blur(4px);
-  pointer-events: none;
-}
-
+/* Caixa e imagem */
 .pc-image-box {
   position: relative;
   width: 100%;
   background: #fff;
   overflow: hidden;
-  min-height: 250px;
+  min-height: 180px; /* Reduzido de 250px para mobile */
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .pc-image {
-  left: 16px;
-  right: 16px;
   width: 80%;
   height: 100%;
   object-fit: contain;
@@ -163,17 +155,18 @@ function addProduct(product) {
   justify-content: center;
   background: #f5f5f5;
   color: #999;
-  font-size: 14px;
+  font-size: 12px;
 }
 
+/* Texto e preço */
 .pc-title {
-  margin-top: 16px;
+  margin-top: 12px;
   text-align: center;
-  font-size: 14px;
-  line-height: 1.35;
+  font-size: 12px;
+  line-height: 1.3;
   font-weight: 500;
   color: #000;
-  min-height: 58px; /* ✅ Altura mínima fixa para 3 linhas (14px * 1.35 * 3 ≈ 57px) */
+  min-height: 47px; /* Ajustado para mobile (3 linhas com 12px) */
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
@@ -181,37 +174,38 @@ function addProduct(product) {
 }
 
 .pc-price-area {
-  margin-top: 12px;
+  margin-top: 8px;
   text-align: center;
-  margin-bottom: auto; /* ✅ Empurra o conteúdo seguinte (botão) para baixo */
+  margin-bottom: auto;
 }
 
 .pc-price {
   color: #111827;
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 600;
 }
 
 .pc-installments {
-  margin-top: 4px;
+  margin-top: 3px;
   color: #6b7280;
-  font-size: 12px;
-  min-height: 18px; /* ✅ Garante espaço mesmo quando não tem parcela */
+  font-size: 10px;
+  min-height: 15px;
 }
 
+/* Botão */
 .pc-button {
-  margin-top: 12px;
-  height: 2rem;
+  margin-top: 10px;
+  height: 1.8rem;
   width: 100%;
-  border-radius: 5px;
+  border-radius: 4px;
   background: #000;
   color: #fff;
-  padding: 0 16px;
-  font-size: 14px;
+  padding: 0 12px;
+  font-size: 11px;
   font-weight: 600;
   border: none;
   cursor: pointer;
-  flex-shrink: 0; /* ✅ Impede que o botão encolha */
+  flex-shrink: 0;
 }
 
 .pc-button:hover {
@@ -221,5 +215,78 @@ function addProduct(product) {
 .pc-button:focus-visible {
   outline: 2px solid rgba(0, 0, 0, 0.7);
   outline-offset: 2px;
+}
+
+/* ========================================
+   RESPONSIVO: TABLET (640px+)
+======================================== */
+@media (min-width: 640px) {
+  .pc-image-box {
+    min-height: 220px;
+  }
+
+  .pc-title {
+    font-size: 13px;
+    margin-top: 14px;
+    min-height: 52px;
+  }
+
+  .pc-price {
+    font-size: 16px;
+  }
+
+  .pc-installments {
+    font-size: 11px;
+  }
+
+  .pc-button {
+    height: 2rem;
+    font-size: 12px;
+    margin-top: 12px;
+  }
+
+  .pc-no-image {
+    font-size: 13px;
+  }
+}
+
+/* ========================================
+   RESPONSIVO: DESKTOP (1024px+)
+======================================== */
+@media (min-width: 1024px) {
+  .pc-image-box {
+    min-height: 250px;
+  }
+
+  .pc-title {
+    font-size: 14px;
+    margin-top: 16px;
+    min-height: 58px;
+  }
+
+  .pc-price {
+    font-size: 18px;
+  }
+
+  .pc-price-area {
+    margin-top: 12px;
+  }
+
+  .pc-installments {
+    font-size: 12px;
+    margin-top: 4px;
+    min-height: 18px;
+  }
+
+  .pc-button {
+    height: 2rem;
+    font-size: 14px;
+    padding: 0 16px;
+    border-radius: 5px;
+  }
+
+  .pc-no-image {
+    font-size: 14px;
+  }
 }
 </style>
