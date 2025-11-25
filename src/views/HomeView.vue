@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue';
 import CarouselMain from '@/components/CarouselMain.vue';
 import CardProducts from '@/components/CardProducts.vue';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
-import setaImg from '@/assets/images/Seta.png'; // ajuste o path se necessário
+import setaImg from '@/assets/images/Seta.png';
 import { fetchFeaturedProducts } from '@/api/products';
 import { formatProduct } from '@/utils/productHelper';
 
@@ -17,8 +17,6 @@ const brandsLoading = ref(true);
 
 // Carousel
 const carouselRef = ref(null);
-const scrollStep = 5; // Quantidade de logos visíveis por vez
-const currentSlide = ref(0);
 
 async function loadBrands() {
   try {
@@ -96,7 +94,7 @@ onMounted(() => {
     </div>
     <CardProducts v-else :products="featured.slice(0, 8)" />
 
-    <!-- NOVO CARROSSEL DE MARCAS -->
+    <!-- CARROSSEL DE MARCAS -->
     <div class="section-header center-title brands-header">
       <h2 class="section-title">Navegue por Marcas</h2>
 
@@ -129,6 +127,9 @@ onMounted(() => {
 .home-main {
   padding: 2rem 0 2rem;
   text-align: center;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding-inline: 16px;
 }
 
 .visually-hidden {
@@ -144,19 +145,19 @@ onMounted(() => {
 }
 
 .home-subtitle {
-  margin: 60px;
+  margin: 60px 0;
   color: #4b5563;
   font-size: 0.95rem;
 }
 
-/* Centralizado, sublinhado, título */
+/* Títulos */
 .section-header.center-title {
-  max-width: 100%;
-  margin: 0 auto 44px auto;
+  max-width: 1320px;
+  margin: 80px auto 40px auto;
   border: none;
   text-align: center;
   position: relative;
-  padding-bottom: 0;
+  padding-inline: 16px;
 }
 
 .section-header.center-title h2.section-title {
@@ -164,12 +165,9 @@ onMounted(() => {
   display: inline-block;
   font-size: 2rem;
   font-weight: bold;
-  color: #1a2d2d;
-  letter-spacing: 0.01em;
-  line-height: 1.1;
-  /* só o sublinhado, sem border-bottom (remove linha dupla) */
+  color: #000;
   text-decoration: underline;
-  text-underline-offset: 6px;
+  text-underline-offset: 4px;
   text-decoration-thickness: 3px;
 }
 
@@ -182,11 +180,15 @@ onMounted(() => {
   }
 }
 
-/* Setas do carrossel de marcas */
+/* Header das marcas com setas à direita */
+.brands-header {
+  margin-bottom: 18px;
+}
 
 .brands-arrows {
   position: absolute;
-  right: 20%;
+  right: 12%;
+  bottom: -2px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -231,8 +233,7 @@ onMounted(() => {
 
 /* MARCAS: Carrossel horizontal */
 .brands-carousel-wrap {
-  width: 100%;
-  max-width: 1280px;
+  max-width: 1320px;
   margin: 20px auto 68px auto;
   position: relative;
   display: flex;
@@ -244,7 +245,6 @@ onMounted(() => {
   display: flex;
   overflow-x: auto;
   scroll-behavior: smooth;
-  padding: 16px 0;
   width: 100%;
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -268,6 +268,7 @@ onMounted(() => {
   object-fit: contain;
   transition: filter 0.18s;
   filter: grayscale(0.07);
+  cursor: pointer;
 }
 
 .brand-logo:hover {
@@ -275,6 +276,7 @@ onMounted(() => {
   opacity: 1;
 }
 
+/* Breakpoints desktop “normal” */
 @media (max-width: 900px) {
   .brands-arrows {
     right: 6%;
@@ -297,10 +299,6 @@ onMounted(() => {
 }
 
 @media (max-width: 600px) {
-  .brands-header {
-    margin-bottom: 18px;
-  }
-
   .brands-arrows {
     right: 5%;
     bottom: -2px;
@@ -323,6 +321,39 @@ onMounted(() => {
   .carousel-arrow {
     width: 21px;
     height: 21px;
+  }
+}
+
+/* DESKTOPS GRANDES (≥1440px): tudo um pouco menor e mais estreito */
+@media (min-width: 1440px) {
+  .home-subtitle {
+    font-size: 0.9rem;
+    margin: 40px 0;
+  }
+
+  .section-header.center-title h2.section-title {
+    font-size: 1.6rem;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 2px;
+  }
+
+  .brands-carousel-wrap {
+    max-width: 1180px;
+  }
+
+  .brand-logo-block {
+    min-height: 90px;
+  }
+
+  .brand-logo {
+    max-height: 65px;
+    max-width: 130px;
+  }
+}
+
+@media (min-width: 1700px) {
+  .section-header.center-title h2.section-title {
+    font-size: 1.5rem;
   }
 }
 </style>

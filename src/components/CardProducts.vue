@@ -19,7 +19,8 @@ const list = computed(() =>
   }))
 );
 
-const formatPrice = (v) => typeof v === 'number' ? v.toFixed(2).replace('.', ',') : v;
+const formatPrice = (v) =>
+  typeof v === 'number' ? v.toFixed(2).replace('.', ',') : v;
 
 function addProduct(product) {
   cartStore.addToCart({
@@ -40,10 +41,20 @@ function addProduct(product) {
 
     <div v-else class="pc-grid">
       <article v-for="p in list" :key="p.id" class="pc-card">
-        <RouterLink :to="{ name: toName, params: { id: p.id } }" class="pc-link" :aria-label="p.title">
+        <RouterLink
+          :to="{ name: toName, params: { id: p.id } }"
+          class="pc-link"
+          :aria-label="p.title"
+        >
           <div class="pc-image-wrap">
             <div class="pc-image-box">
-              <img v-if="p.image" :src="p.image" :alt="p.title" class="pc-image" loading="lazy" />
+              <img
+                v-if="p.image"
+                :src="p.image"
+                :alt="p.title"
+                class="pc-image"
+                loading="lazy"
+              />
               <div v-else class="pc-no-image">Sem imagem</div>
             </div>
           </div>
@@ -57,7 +68,9 @@ function addProduct(product) {
             </div>
           </div>
         </RouterLink>
-        <button class="pc-button" @click="addProduct(p)">ADICIONAR À SACOLA</button>
+        <button class="pc-button" @click="addProduct(p)">
+          ADICIONAR À SACOLA
+        </button>
       </article>
     </div>
   </section>
@@ -67,6 +80,7 @@ function addProduct(product) {
 .pc-container {
   max-width: 1320px;
   margin: 0 auto;
+  padding-inline: 16px;
 }
 
 .empty-state {
@@ -78,21 +92,26 @@ function addProduct(product) {
 /* Grid responsivo: 2 colunas no mobile, 3 no tablet, 4 no desktop */
 .pc-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* Mobile: 2 colunas por padrão */
+  grid-template-columns: repeat(2, 1fr);
   gap: 16px;
 }
 
 @media (min-width: 640px) {
   .pc-grid {
-    grid-template-columns: repeat(3, 1fr); /* Tablet: 3 colunas */
+    grid-template-columns: repeat(3, 1fr);
     gap: 20px;
   }
 }
 
 @media (min-width: 1024px) {
   .pc-grid {
-    grid-template-columns: repeat(4, 1fr); /* Desktop: 4 colunas */
+    grid-template-columns: repeat(4, minmax(220px, 1fr));
     gap: 24px;
+  }
+
+  .pc-card {
+    max-width: 280px;
+    margin: 0 auto;
   }
 }
 
@@ -116,7 +135,7 @@ function addProduct(product) {
   box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.7);
 }
 
-/* Área da imagem com sombra do Figma */
+/* Área da imagem */
 .pc-image-wrap {
   position: relative;
   background-color: #fff;
@@ -124,13 +143,12 @@ function addProduct(product) {
   box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25);
 }
 
-/* Caixa e imagem */
 .pc-image-box {
   position: relative;
   width: 100%;
   background: #fff;
   overflow: hidden;
-  min-height: 180px; /* Reduzido de 250px para mobile */
+  min-height: 180px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -166,7 +184,7 @@ function addProduct(product) {
   line-height: 1.3;
   font-weight: 500;
   color: #000;
-  min-height: 47px; /* Ajustado para mobile (3 linhas com 12px) */
+  min-height: 47px;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
@@ -217,9 +235,7 @@ function addProduct(product) {
   outline-offset: 2px;
 }
 
-/* ========================================
-   RESPONSIVO: TABLET (640px+)
-======================================== */
+/* Tablet */
 @media (min-width: 640px) {
   .pc-image-box {
     min-height: 220px;
@@ -250,9 +266,7 @@ function addProduct(product) {
   }
 }
 
-/* ========================================
-   RESPONSIVO: DESKTOP (1024px+)
-======================================== */
+/* Desktop */
 @media (min-width: 1024px) {
   .pc-image-box {
     min-height: 250px;
@@ -287,6 +301,39 @@ function addProduct(product) {
 
   .pc-no-image {
     font-size: 14px;
+  }
+}
+
+/* DESKTOPS GRANDES (≥1440px) */
+@media (min-width: 1440px) {
+  .pc-container {
+    max-width: 1180px;
+  }
+
+  .pc-grid {
+    grid-template-columns: repeat(4, minmax(220px, 1fr));
+    gap: 20px;
+  }
+
+  .pc-card {
+    max-width: 250px;
+  }
+
+  .pc-image-box {
+    min-height: 220px;
+  }
+
+  .pc-title {
+    font-size: 13px;
+  }
+
+  .pc-price {
+    font-size: 16px;
+  }
+
+  .pc-button {
+    font-size: 12px;
+    height: 1.9rem;
   }
 }
 </style>

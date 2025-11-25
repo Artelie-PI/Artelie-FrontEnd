@@ -1,30 +1,31 @@
 <script setup>
-import { computed } from 'vue'
-import { Swiper, SwiperSlide } from 'swiper/vue'
-import { Autoplay, Navigation, Pagination } from 'swiper/modules'
+import { computed } from 'vue';
+import { Swiper, SwiperSlide } from 'swiper/vue';
+import { Autoplay, Navigation, Pagination } from 'swiper/modules';
 
-import 'swiper/css/bundle'
+import 'swiper/css/bundle';
 
-import banner1 from '@/assets/images/FaberCastellBanner.jpg'
-import banner2 from '@/assets/images/CaranBanner.jpg'
-import banner3 from '@/assets/images/CansonBanner.jpg'
-import banner4 from '@/assets/images/WinsorBanner.jpg'
+import banner1 from '@/assets/images/FaberCastellBanner.jpg';
+import banner2 from '@/assets/images/CaranBanner.jpg';
+import banner3 from '@/assets/images/CansonBanner.jpg';
+import banner4 from '@/assets/images/WinsorBanner.jpg';
 
 const props = defineProps({
   slides: {
     type: Array,
     default: () => [
       { id: 1, title: 'Faber-Castell', subtitle: 'Descrição do banner 1', image: banner1 },
-      { id: 2, title: 'CaranD\'Ache', subtitle: 'Descrição do banner 2', image: banner2 },
+      { id: 2, title: "CaranD'Ache", subtitle: 'Descrição do banner 2', image: banner2 },
       { id: 3, title: 'Canson', subtitle: 'Descrição do banner 3', image: banner3 },
       { id: 4, title: 'Winsor & Newton', subtitle: 'Descrição do banner 4', image: banner4 }
     ]
   },
   autoplay: { type: Number, default: 4500 }
-})
+});
+
 const duplicatedSlides = computed(() => {
-  return [...props.slides, ...props.slides]
-})
+  return [...props.slides, ...props.slides];
+});
 </script>
 
 <template>
@@ -33,8 +34,8 @@ const duplicatedSlides = computed(() => {
       <Swiper
         :modules="[Autoplay, Navigation, Pagination]"
         :loop="true"
-        :centeredSlides="true"
-        :loopedSlides="4"
+        :centered-slides="true"
+        :looped-slides="4"
         :slides-per-view="1.3"
         :space-between="12"
         :navigation="true"
@@ -60,7 +61,10 @@ const duplicatedSlides = computed(() => {
         }"
         class="swiper-hero"
       >
-        <SwiperSlide v-for="(item, index) in duplicatedSlides" :key="`slide-${item.id}-${index}`">
+        <SwiperSlide
+          v-for="(item, index) in duplicatedSlides"
+          :key="`slide-${item.id}-${index}`"
+        >
           <article class="slide-card">
             <img :src="item.image" :alt="item.title" class="slide-img" />
             <div class="slide-mask"></div>
@@ -79,7 +83,7 @@ const duplicatedSlides = computed(() => {
 .carousel-main {
   max-width: 1320px;
   margin: 10px auto;
-  padding: 0 20px;
+  padding: 0 24px;
   position: relative;
 }
 
@@ -105,14 +109,14 @@ const duplicatedSlides = computed(() => {
   border-radius: 18px;
   overflow: hidden;
   height: clamp(250px, 45vw, 480px);
-  box-shadow: 0 15px 45px rgba(0, 0, 0, .25);
+  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.25);
   background: #0f0f0f;
   transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Slide ativo (centralizado) */
 .swiper-slide-active .slide-card {
-  box-shadow: 0 20px 60px rgba(0, 0, 0, .4);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
   transform: scale(1.12);
   z-index: 5;
 }
@@ -135,11 +139,11 @@ const duplicatedSlides = computed(() => {
   position: absolute;
   inset: 0;
   background: linear-gradient(
-    180deg, 
-    transparent 0%, 
-    rgba(0, 0, 0, .1) 35%, 
-    rgba(0, 0, 0, .45) 65%, 
-    rgba(0, 0, 0, .75) 100%
+    180deg,
+    transparent 0%,
+    rgba(0, 0, 0, 0.1) 35%,
+    rgba(0, 0, 0, 0.45) 65%,
+    rgba(0, 0, 0, 0.75) 100%
   );
 }
 
@@ -151,7 +155,7 @@ const duplicatedSlides = computed(() => {
   color: #fff;
   text-align: center;
   padding: 0 36px;
-  text-shadow: 0 4px 12px rgba(0, 0, 0, .8);
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.8);
 }
 
 .slide-title {
@@ -164,7 +168,7 @@ const duplicatedSlides = computed(() => {
 
 .slide-sub {
   font-size: clamp(14px, 1.7vw, 17px);
-  opacity: .98;
+  opacity: 0.98;
   margin: 0 auto;
   max-width: 75%;
   line-height: 1.55;
@@ -197,11 +201,11 @@ const duplicatedSlides = computed(() => {
     width: 48px;
     height: 48px;
   }
-  
+
   :deep(.swiper-button-prev) {
     left: -16px;
   }
-  
+
   :deep(.swiper-button-next) {
     right: -16px;
   }
@@ -229,8 +233,8 @@ const duplicatedSlides = computed(() => {
 }
 
 :deep(.swiper-pagination-bullet) {
-  background: rgba(255, 255, 255, .85);
-  opacity: .45;
+  background: rgba(255, 255, 255, 0.85);
+  opacity: 0.45;
   width: 10px;
   height: 10px;
   margin: 0 8px !important;
@@ -247,5 +251,25 @@ const duplicatedSlides = computed(() => {
 :deep(.swiper-pagination-bullet:hover) {
   opacity: 0.8;
   transform: scale(1.3);
+}
+
+/* DESKTOPS GRANDES (≥1440px) */
+@media (min-width: 1440px) {
+  .carousel-main {
+    max-width: 1180px;
+    padding: 0 32px;
+  }
+
+  .slide-card {
+    height: clamp(260px, 38vw, 420px);
+  }
+
+  .slide-title {
+    font-size: clamp(22px, 2.4vw, 32px);
+  }
+
+  .slide-sub {
+    font-size: clamp(13px, 1.4vw, 16px);
+  }
 }
 </style>
