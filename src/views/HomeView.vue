@@ -3,12 +3,40 @@ import { ref, onMounted } from 'vue';
 import CarouselMain from '@/components/CarouselMain.vue';
 import CardProducts from '@/components/CardProducts.vue';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import setaImg from '@/assets/images/Seta.png'; // ajuste o path se necessário
 import { fetchFeaturedProducts } from '@/api/products';
 import { formatProduct } from '@/utils/productHelper';
 
 const featured = ref([]);
 const loading = ref(true);
 const error = ref(null);
+
+const brands = ref([]);
+const brandsError = ref(null);
+const brandsLoading = ref(true);
+
+// Carousel
+const carouselRef = ref(null);
+const scrollStep = 5; // Quantidade de logos visíveis por vez
+const currentSlide = ref(0);
+
+async function loadBrands() {
+  try {
+    brandsLoading.value = true;
+    brandsError.value = null;
+    const response = await fetch("https://artelie-backend.onrender.com/brands/");
+    if (!response.ok) throw new Error('Erro ao buscar marcas');
+    const data = await response.json();
+    brands.value = Array.isArray(data.results)
+      ? data.results.filter(b => b && typeof b === 'object' && b.image && b.image.url)
+      : [];
+  } catch (err) {
+    brandsError.value = err.message || "Erro ao carregar marcas";
+    brands.value = [];
+  } finally {
+    brandsLoading.value = false;
+  }
+}
 
 async function loadProducts() {
   try {
@@ -18,7 +46,6 @@ async function loadProducts() {
     const products = Array.isArray(response) ? response : (response?.results || []);
     featured.value = products.map(formatProduct);
   } catch (err) {
-    console.error('Erro ao carregar produtos em destaque:', err);
     if (err.message?.includes('MaxClients') || err.response?.status === 500) {
       error.value = '⚠️ Servidor temporariamente indisponível. Tente novamente em alguns segundos.';
     } else {
@@ -29,7 +56,22 @@ async function loadProducts() {
   }
 }
 
-onMounted(loadProducts);
+// Scrolling brand carousel logic
+function scrollBrands(direction) {
+  const carousel = carouselRef.value;
+  if (!carousel) return;
+  const elementWidth = carousel.offsetWidth;
+  if (direction === 'right') {
+    carousel.scrollBy({ left: elementWidth * 0.7, behavior: 'smooth' });
+  } else {
+    carousel.scrollBy({ left: -elementWidth * 0.7, behavior: 'smooth' });
+  }
+}
+
+onMounted(() => {
+  loadProducts();
+  loadBrands();
+});
 </script>
 
 <template>
@@ -38,21 +80,48 @@ onMounted(loadProducts);
 
     <!-- Carrossel principal -->
     <LoadingSpinner v-if="loading" size="large" />
-    <CarouselMain v-else></CarouselMain>
+    <CarouselMain v-else />
 
-    <p class="home-subtitle">Bem-vindo ao Arteliê - A plataforma onde você encontra os melhores produtos para seus
-      projetos.</p>
+    <p class="home-subtitle">
+      Bem-vindo ao Arteliê - A plataforma onde você encontra os melhores produtos para seus projetos.
+    </p>
 
-    <div class="section-header">
+    <div class="section-header center-title">
       <h2 class="section-title">Produtos em Destaque</h2>
     </div>
-
     <LoadingSpinner v-if="loading" size="large" />
     <div v-else-if="error" class="error-state">
       <p>{{ error }}</p>
       <button @click="loadProducts" class="retry-button">🔄 Tentar Novamente</button>
     </div>
     <CardProducts v-else :products="featured.slice(0, 8)" />
+
+    <!-- NOVO CARROSSEL DE MARCAS -->
+    <div class="section-header center-title brands-header">
+      <h2 class="section-title">Navegue por Marcas</h2>
+
+      <div class="brands-arrows">
+        <button class="carousel-arrow header-arrow left" @click="scrollBrands('left')" aria-label="Voltar marcas">
+          <img :src="setaImg" alt="Seta esquerda" />
+        </button>
+        <button class="carousel-arrow header-arrow right" @click="scrollBrands('right')" aria-label="Avançar marcas">
+          <img :src="setaImg" alt="Seta direita" />
+        </button>
+      </div>
+    </div>
+
+    <LoadingSpinner v-if="brandsLoading" size="large" />
+    <div v-else-if="brandsError" class="error-state">
+      <p>{{ brandsError }}</p>
+      <button @click="loadBrands" class="retry-button">🔄 Tentar Novamente</button>
+    </div>
+    <div v-else class="brands-carousel-wrap">
+      <div class="brands-carousel" ref="carouselRef">
+        <div class="brand-logo-block" v-for="brand in brands" :key="brand.id || brand.name">
+          <img v-if="brand.image && brand.image.url" :src="brand.image.url" :alt="brand.name" class="brand-logo" />
+        </div>
+      </div>
+    </div>
   </main>
 </template>
 
@@ -80,38 +149,180 @@ onMounted(loadProducts);
   font-size: 0.95rem;
 }
 
-.section-header {
-  max-width: 1320px;
-  margin: auto auto 50px;
-  text-align: left;
-  border-bottom: 1px solid black;
-}
-
-.section-title {
-  font-weight: 500;
-  font-size: 2rem;
-}
-
-.error-state {
-  padding: 2rem;
-  text-align: center;
-  color: #dc2626;
-}
-
-.retry-button {
-  margin-top: 1rem;
-  padding: 0.75rem 1.5rem;
-  background: #3498db;
-  color: white;
+/* Centralizado, sublinhado, título */
+.section-header.center-title {
+  max-width: 100%;
+  margin: 0 auto 44px auto;
   border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
+  text-align: center;
+  position: relative;
+  padding-bottom: 0;
 }
 
-.retry-button:hover {
-  background: #2980b9;
+.section-header.center-title h2.section-title {
+  margin: 0 auto;
+  display: inline-block;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #1a2d2d;
+  letter-spacing: 0.01em;
+  line-height: 1.1;
+  /* só o sublinhado, sem border-bottom (remove linha dupla) */
+  text-decoration: underline;
+  text-underline-offset: 6px;
+  text-decoration-thickness: 3px;
+}
+
+@media (max-width: 600px) {
+  .section-header.center-title h2.section-title {
+    font-size: 1.17rem;
+    padding-bottom: 1.5px;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1.5px;
+  }
+}
+
+/* Setas do carrossel de marcas */
+
+.brands-arrows {
+  position: absolute;
+  right: 20%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.carousel-arrow {
+  background: none;
+  border: none;
+  position: relative;
+  z-index: 2;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0.9;
+  transition: opacity 0.18s;
+}
+
+.header-arrow {
+  width: 32px;
+  height: 32px;
+}
+
+.carousel-arrow.left img,
+.header-arrow.left img {
+  transform: rotate(-90deg);
+}
+
+.carousel-arrow.right img,
+.header-arrow.right img {
+  transform: rotate(90deg);
+}
+
+.carousel-arrow:active,
+.carousel-arrow:hover,
+.header-arrow:active,
+.header-arrow:hover {
+  opacity: 1;
+}
+
+/* MARCAS: Carrossel horizontal */
+.brands-carousel-wrap {
+  width: 100%;
+  max-width: 1280px;
+  margin: 20px auto 68px auto;
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+/* 6 por vez em desktop */
+.brands-carousel {
+  display: flex;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding: 16px 0;
+  width: 100%;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.brands-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.brand-logo-block {
+  flex: 0 0 calc(100% / 6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 110px;
+}
+
+.brand-logo {
+  max-height: 80px;
+  max-width: 160px;
+  object-fit: contain;
+  transition: filter 0.18s;
+  filter: grayscale(0.07);
+}
+
+.brand-logo:hover {
+  filter: grayscale(0) brightness(1.08);
+  opacity: 1;
+}
+
+@media (max-width: 900px) {
+  .brands-arrows {
+    right: 6%;
+  }
+
+  .brand-logo-block {
+    flex: 0 0 calc(100% / 4);
+    min-height: 90px;
+  }
+
+  .brand-logo {
+    max-height: 60px;
+    max-width: 120px;
+  }
+
+  .carousel-arrow {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+@media (max-width: 600px) {
+  .brands-header {
+    margin-bottom: 18px;
+  }
+
+  .brands-arrows {
+    right: 5%;
+    bottom: -2px;
+  }
+
+  .brands-carousel-wrap {
+    margin: 24px auto 44px auto;
+  }
+
+  .brand-logo-block {
+    flex: 0 0 calc(100% / 2.5);
+    min-height: 70px;
+  }
+
+  .brand-logo {
+    max-height: 42px;
+    max-width: 90px;
+  }
+
+  .carousel-arrow {
+    width: 21px;
+    height: 21px;
+  }
 }
 </style>

@@ -266,7 +266,7 @@ onMounted(loadProducts);
       <p v-if="errorMsg" class="error">{{ errorMsg }}</p>
 
       <div v-if="isLoading" class="loading-message">
-        <LoadingSpinner size="large" message="Carregando produtos..." />
+        <LoadingSpinner size="large"/>
       </div>
 
       <div v-else-if="filteredProducts.length === 0 && !errorMsg" class="empty-message">

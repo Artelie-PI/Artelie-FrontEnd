@@ -58,7 +58,7 @@ const { open } = useSidebarCart();
           title="Livros & Gibis"
         >
           <img src="@/assets/images/Book.svg" alt="Livros & Gibis" />
-          <span>LIVROS & GIBIS</span>
+          <span>LIVROS</span>
         </RouterLink>
       </nav>
     </header>
