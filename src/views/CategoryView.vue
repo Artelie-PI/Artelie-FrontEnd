@@ -306,20 +306,22 @@ onMounted(loadProducts);
 .category-page {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 16px 24px 32px 24px;
 }
-
 .section-header {
-  max-width: 1320px;
-  margin: 30px auto 20px;
-  text-align: left;
-  border-bottom: 1px solid black;
+  margin: 80px auto 20px auto;
+  border: none;
+  position: relative;
 }
 
 .section-title {
-  font-weight: 600;
+  margin: 0 auto;
+  display: inline-block;
   font-size: 2rem;
-  text-transform: uppercase;
+  font-weight: 600;
+  color: #000;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-thickness: 3px;
 }
 
 .tools-row {

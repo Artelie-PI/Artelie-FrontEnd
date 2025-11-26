@@ -15,7 +15,6 @@ const brands = ref([]);
 const brandsError = ref(null);
 const brandsLoading = ref(true);
 
-// Carousel
 const carouselRef = ref(null);
 
 async function loadBrands() {
@@ -54,16 +53,11 @@ async function loadProducts() {
   }
 }
 
-// Scrolling brand carousel logic
 function scrollBrands(direction) {
   const carousel = carouselRef.value;
   if (!carousel) return;
-  const elementWidth = carousel.offsetWidth;
-  if (direction === 'right') {
-    carousel.scrollBy({ left: elementWidth * 0.7, behavior: 'smooth' });
-  } else {
-    carousel.scrollBy({ left: -elementWidth * 0.7, behavior: 'smooth' });
-  }
+  const scrollAmount = direction === 'right' ? carousel.offsetWidth * 0.7 : -carousel.offsetWidth * 0.7;
+  carousel.scrollBy({ left: scrollAmount, behavior: 'smooth' });
 }
 
 onMounted(() => {
@@ -76,7 +70,6 @@ onMounted(() => {
   <main class="home-main">
     <h1 class="visually-hidden">Página Inicial</h1>
 
-    <!-- Carrossel principal -->
     <LoadingSpinner v-if="loading" size="large" />
     <CarouselMain v-else />
 
@@ -84,7 +77,8 @@ onMounted(() => {
       Bem-vindo ao Arteliê - A plataforma onde você encontra os melhores produtos para seus projetos.
     </p>
 
-    <div class="section-header center-title">
+    <!-- PRODUTOS EM DESTAQUE -->
+    <div class="section-header">
       <h2 class="section-title">Produtos em Destaque</h2>
     </div>
     <LoadingSpinner v-if="loading" size="large" />
@@ -94,16 +88,15 @@ onMounted(() => {
     </div>
     <CardProducts v-else :products="featured.slice(0, 8)" />
 
-    <!-- CARROSSEL DE MARCAS -->
-    <div class="section-header center-title brands-header">
+    <!-- NAVEGUE POR MARCAS -->
+    <div class="section-header brands-header">
       <h2 class="section-title">Navegue por Marcas</h2>
-
       <div class="brands-arrows">
-        <button class="carousel-arrow header-arrow left" @click="scrollBrands('left')" aria-label="Voltar marcas">
-          <img :src="setaImg" alt="Seta esquerda" />
+        <button class="arrow-btn left" @click="scrollBrands('left')" aria-label="Voltar Marcas">
+          <img :src="setaImg" alt="Seta Esquerda" />
         </button>
-        <button class="carousel-arrow header-arrow right" @click="scrollBrands('right')" aria-label="Avançar marcas">
-          <img :src="setaImg" alt="Seta direita" />
+        <button class="arrow-btn right" @click="scrollBrands('right')" aria-label="Avançar Marcas">
+          <img :src="setaImg" alt="Seta Direita" />
         </button>
       </div>
     </div>
@@ -115,8 +108,8 @@ onMounted(() => {
     </div>
     <div v-else class="brands-carousel-wrap">
       <div class="brands-carousel" ref="carouselRef">
-        <div class="brand-logo-block" v-for="brand in brands" :key="brand.id || brand.name">
-          <img v-if="brand.image && brand.image.url" :src="brand.image.url" :alt="brand.name" class="brand-logo" />
+        <div class="brand-item" v-for="brand in brands" :key="brand.id || brand.name">
+          <img :src="brand.image.url" :alt="brand.name" class="brand-logo" />
         </div>
       </div>
     </div>
@@ -125,11 +118,10 @@ onMounted(() => {
 
 <style scoped>
 .home-main {
-  padding: 2rem 0 2rem;
-  text-align: center;
   max-width: 1320px;
   margin: 0 auto;
-  padding-inline: 16px;
+  padding: 2rem 16px;
+  text-align: center;
 }
 
 .visually-hidden {
@@ -150,57 +142,42 @@ onMounted(() => {
   font-size: 0.95rem;
 }
 
-/* Títulos */
-.section-header.center-title {
-  max-width: 1320px;
-  margin: 80px auto 40px auto;
-  border: none;
+/* Títulos das seções */
+.section-header {
+  margin: 80px 0 40px;
   text-align: center;
-  position: relative;
-  padding-inline: 16px;
 }
 
-.section-header.center-title h2.section-title {
-  margin: 0 auto;
+.section-title {
   display: inline-block;
   font-size: 2rem;
-  font-weight: bold;
+  font-weight: 600;
   color: #000;
   text-decoration: underline;
   text-underline-offset: 4px;
   text-decoration-thickness: 3px;
 }
 
-@media (max-width: 600px) {
-  .section-header.center-title h2.section-title {
-    font-size: 1.17rem;
-    padding-bottom: 1.5px;
-    text-underline-offset: 3px;
-    text-decoration-thickness: 1.5px;
-  }
-}
-
-/* Header das marcas com setas à direita */
+/* Header de marcas: título centralizado + setas no canto direito */
 .brands-header {
+  position: relative;
   margin-bottom: 18px;
 }
 
 .brands-arrows {
   position: absolute;
-  right: 12%;
-  bottom: -2px;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
   display: flex;
-  align-items: center;
   gap: 8px;
 }
 
-.carousel-arrow {
+.arrow-btn {
   background: none;
   border: none;
-  position: relative;
-  z-index: 2;
-  width: 38px;
-  height: 38px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -209,43 +186,28 @@ onMounted(() => {
   transition: opacity 0.18s;
 }
 
-.header-arrow {
-  width: 32px;
-  height: 32px;
-}
-
-.carousel-arrow.left img,
-.header-arrow.left img {
-  transform: rotate(-90deg);
-}
-
-.carousel-arrow.right img,
-.header-arrow.right img {
-  transform: rotate(90deg);
-}
-
-.carousel-arrow:active,
-.carousel-arrow:hover,
-.header-arrow:active,
-.header-arrow:hover {
+.arrow-btn:hover {
   opacity: 1;
 }
 
-/* MARCAS: Carrossel horizontal */
-.brands-carousel-wrap {
-  max-width: 1320px;
-  margin: 20px auto 68px auto;
-  position: relative;
-  display: flex;
-  justify-content: center;
+.arrow-btn.left img {
+  transform: rotate(-90deg);
 }
 
-/* 6 por vez em desktop */
+.arrow-btn.right img {
+  transform: rotate(90deg);
+}
+
+/* Carrossel de marcas */
+.brands-carousel-wrap {
+  max-width: 1320px;
+  margin: 20px auto 68px;
+}
+
 .brands-carousel {
   display: flex;
   overflow-x: auto;
   scroll-behavior: smooth;
-  width: 100%;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -254,7 +216,7 @@ onMounted(() => {
   display: none;
 }
 
-.brand-logo-block {
+.brand-item {
   flex: 0 0 calc(100% / 6);
   display: flex;
   align-items: center;
@@ -273,16 +235,34 @@ onMounted(() => {
 
 .brand-logo:hover {
   filter: grayscale(0) brightness(1.08);
-  opacity: 1;
 }
 
-/* Breakpoints desktop “normal” */
-@media (max-width: 900px) {
-  .brands-arrows {
-    right: 6%;
-  }
+.error-state {
+  padding: 2rem;
+  text-align: center;
+  color: #dc2626;
+}
 
-  .brand-logo-block {
+.retry-button {
+  margin-top: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: #3498db;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.retry-button:hover {
+  background: #2980b9;
+}
+
+/* Responsivo: Tablet */
+@media (max-width: 900px) {
+  .brand-item {
     flex: 0 0 calc(100% / 4);
     min-height: 90px;
   }
@@ -292,23 +272,36 @@ onMounted(() => {
     max-width: 120px;
   }
 
-  .carousel-arrow {
+  .arrow-btn {
     width: 28px;
     height: 28px;
   }
 }
 
+/* Responsivo: Mobile */
 @media (max-width: 600px) {
+  .section-title {
+    font-size: 1.17rem;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1.5px;
+  }
+
+  .brands-header {
+    padding-bottom: 40px;
+  }
+
   .brands-arrows {
-    right: 5%;
-    bottom: -2px;
+    position: static;
+    transform: none;
+    justify-content: center;
+    margin-top: 12px;
   }
 
   .brands-carousel-wrap {
-    margin: 24px auto 44px auto;
+    margin: 24px auto 44px;
   }
 
-  .brand-logo-block {
+  .brand-item {
     flex: 0 0 calc(100% / 2.5);
     min-height: 70px;
   }
@@ -318,20 +311,20 @@ onMounted(() => {
     max-width: 90px;
   }
 
-  .carousel-arrow {
-    width: 21px;
-    height: 21px;
+  .arrow-btn {
+    width: 24px;
+    height: 24px;
   }
 }
 
-/* DESKTOPS GRANDES (≥1440px): tudo um pouco menor e mais estreito */
+/* Desktops grandes */
 @media (min-width: 1440px) {
   .home-subtitle {
     font-size: 0.9rem;
     margin: 40px 0;
   }
 
-  .section-header.center-title h2.section-title {
+  .section-title {
     font-size: 1.6rem;
     text-underline-offset: 3px;
     text-decoration-thickness: 2px;
@@ -341,7 +334,7 @@ onMounted(() => {
     max-width: 1180px;
   }
 
-  .brand-logo-block {
+  .brand-item {
     min-height: 90px;
   }
 
@@ -352,7 +345,7 @@ onMounted(() => {
 }
 
 @media (min-width: 1700px) {
-  .section-header.center-title h2.section-title {
+  .section-title {
     font-size: 1.5rem;
   }
 }
