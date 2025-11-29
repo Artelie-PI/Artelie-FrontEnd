@@ -317,29 +317,42 @@ onBeforeUnmount(() => {
  }
 
 
- .header-top {
-   justify-content: space-between;
-   gap: 1rem;
-   padding: 0 16px;
- }
-
+  .header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0 12px;
+    height: 60px;
+    min-height: 60px;
+  }
 
  /* Centraliza logo, mantendo menu à esquerda e ícones à direita */
- .logo {
-   position: absolute;
-   left: 50%;
-   transform: translateX(-50%);
- }
+  .logo {
+    display: flex;
+    flex: 1 1 0;
+    justify-content: center;
+    align-items: center;
+    /* Remova left, transform, margin-left, etc */
+  }
 
 
- .logoImg {
-   height: 50px;
- }
+  .logoImg {
+    height: 40px;
+    max-width: 120px;
+    min-width: 80px;
+    width: 100%;
+    object-fit: contain;
+    margin: 0;
+  }
 
-
- .perfilShop {
-   margin-left: auto;
- }
+  .perfilShop {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex: 1 1 0;
+    margin-left: 0;
+  }
 
 
  .top-banner-row {
