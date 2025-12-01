@@ -191,6 +191,7 @@ onMounted(() => {
  transform: translateY(-50%);
  display: flex;
  gap: 8px;
+ margin-right: 5vw;
 }
 
 

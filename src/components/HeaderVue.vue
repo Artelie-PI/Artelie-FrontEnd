@@ -64,7 +64,7 @@ onBeforeUnmount(() => {
      <section class="top-banner">
        <div class="top-banner-track">
          <div class="top-banner-row">
-           <span>FRETE FIXO R$ 7,90</span>
+           <span>FRETE GRÁTIS PARA JOINVILLE</span>
            <span>•</span>
            <span>PARCELE EM ATÉ 5X SEM JUROS</span>
            <span>•</span>
@@ -73,7 +73,7 @@ onBeforeUnmount(() => {
          </div>
          <!-- Duplicado para efeito contínuo -->
          <div class="top-banner-row">
-           <span>FRETE FIXO R$ 7,90</span>
+           <span>FRETE GRÁTIS PARA JOINVILLE</span>
            <span>•</span>
            <span>PARCELE EM ATÉ 5X SEM JUROS</span>
            <span>•</span>
@@ -81,7 +81,7 @@ onBeforeUnmount(() => {
            <span>•</span>
          </div>
          <div class="top-banner-row">
-           <span>FRETE FIXO R$ 7,90</span>
+           <span>FRETE GRÁTIS PARA JOINVILLE</span>
            <span>•</span>
            <span>PARCELE EM ATÉ 5X SEM JUROS</span>
            <span>•</span>

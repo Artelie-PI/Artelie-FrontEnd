@@ -5,7 +5,7 @@ import DefaultLayout from "@/layouts/DefaultLayout.vue";
 import ProductLayout from "@/layouts/ProductLayout.vue";
 import ProductView from "@/views/ProductView.vue";
 import RelatedProduct from "@/components/RelatedProduct.vue";
-import CartView from "@/views/CartView.vue";
+import CartView from "@/views/SacolaView.vue";
 import CategoryView from "@/views/CategoryView.vue";
 import ContactView from "@/views/ContactView.vue";
 import VerifyEmailView from "@/views/VerifyEmailView.vue";

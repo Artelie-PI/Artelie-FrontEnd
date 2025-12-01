@@ -524,13 +524,12 @@ const formatExpiryTime = computed(() => {
   max-width: 1400px;
   margin: 0 auto;
   padding: 40px 20px;
-  font-family: 'Poppins', sans-serif;
 }
 
 .checkout-content {
   display: grid;
-  grid-template-columns: 1fr 400px;
-  gap: 40px;
+  grid-template-columns: 1fr 420px;
+  gap: 10px;
 }
 
 @media (max-width: 1024px) {
@@ -563,16 +562,16 @@ const formatExpiryTime = computed(() => {
 }
 
 .step-number {
-  width: 32px;
-  height: 32px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   background: #ddd;
-  color: #666;
+  color: rgb(180, 180, 180);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
-  font-size: 0.9rem;
+  font-weight: 600;
+  font-size: 0.8rem;
 }
 
 .step.active .step-number {
@@ -586,9 +585,9 @@ const formatExpiryTime = computed(() => {
 }
 
 .step-label {
-  font-size: 0.85rem;
+  font-size: 1.2rem;
   font-weight: 600;
-  color: #999;
+  color: rgb(180, 180, 180);
 }
 
 .step.active .step-label {
@@ -599,7 +598,6 @@ const formatExpiryTime = computed(() => {
 .checkout-form {
   background: #fff;
   border: 1px solid #e5e5e5;
-  border-radius: 12px;
   padding: 30px;
 }
 
@@ -625,18 +623,22 @@ const formatExpiryTime = computed(() => {
 
 .form-group label {
   display: block;
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 500;
   margin-bottom: 8px;
   color: #000;
+}
+
+.form-group ::placeholder{
+  color: #ccc;
 }
 
 .form-group input,
 .form-group select {
   width: 100%;
   padding: 12px 14px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  border: 2px solid #ddd;
+  border-radius: 12px;
   font-size: 0.95rem;
   transition: border 0.3s;
 }
@@ -874,7 +876,7 @@ const formatExpiryTime = computed(() => {
   font-weight: 700;
   cursor: pointer;
   margin-top: 20px;
-  transition: background 0.3s;
+  transition: 0.3s;
 }
 
 .btn-continue:hover,
@@ -884,9 +886,7 @@ const formatExpiryTime = computed(() => {
 
 /* Order Summary */
 .order-summary {
-  background: #f8f9fa;
-  border: 1px solid #e5e5e5;
-  border-radius: 12px;
+  background: #f9f9f9;
   padding: 24px;
   align-self: flex-start;
   position: sticky;
@@ -894,9 +894,11 @@ const formatExpiryTime = computed(() => {
 }
 
 .summary-title {
-  font-size: 1.1rem;
-  font-weight: 700;
-  margin-bottom: 20px;
+  font-size: 1.6rem;
+  font-weight: 600;
+  text-align: center;
+  color: #000;
+  margin: 20px auto 40px;
 }
 
 .summary-products {
@@ -910,7 +912,6 @@ const formatExpiryTime = computed(() => {
   gap: 12px;
   margin-bottom: 16px;
   padding-bottom: 16px;
-  border-bottom: 1px solid #e5e5e5;
 }
 
 .summary-item img {
@@ -927,13 +928,13 @@ const formatExpiryTime = computed(() => {
 
 .item-name {
   font-size: 0.85rem;
-  font-weight: 600;
-  margin-bottom: 4px;
+  font-weight: 500;
+  margin-bottom: 15px;
 }
 
 .item-price {
   font-size: 0.9rem;
-  color: #666;
+  font-weight: 500;
 }
 
 .summary-totals {
@@ -950,13 +951,13 @@ const formatExpiryTime = computed(() => {
 
 .total-line.final {
   font-size: 1.1rem;
-  font-weight: 700;
+  font-weight: 600;
   padding-top: 12px;
   border-top: 1px solid #ddd;
 }
 
 .installment-text {
-  text-align: center;
+  text-align: right;
   font-size: 0.8rem;
   color: #666;
   margin-top: 6px;
@@ -968,7 +969,7 @@ const formatExpiryTime = computed(() => {
   background: #fff;
   color: #0B1E9F;
   border: 2px solid #0B1E9F;
-  border-radius: 8px;
+  border-radius: 6px;
   font-weight: 700;
   cursor: pointer;
   margin-top: 16px;

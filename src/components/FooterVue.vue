@@ -102,6 +102,7 @@ import { RouterLink } from "vue-router";
  background-color: #000787;
  color: white;
  padding: 40px 20px 5px;
+ margin-top: 40px;
 }
 
 

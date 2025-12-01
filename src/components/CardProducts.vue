@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { RouterLink } from 'vue-router';
 import { useCartStore } from "@/stores/cart";
 import { useSidebarCart } from "@/stores/useSidebarCart";
+import { useRouter } from 'vue-router';
 
 const cartStore = useCartStore();
 const { open } = useSidebarCart();
@@ -21,6 +22,7 @@ const list = computed(() =>
 
 const formatPrice = (v) =>
   typeof v === 'number' ? v.toFixed(2).replace('.', ',') : v;
+const router = useRouter();
 
 function addProduct(product) {
   cartStore.addToCart({
@@ -29,7 +31,11 @@ function addProduct(product) {
     price: product.price,
     image: product.image,
   });
-  open();
+  
+  // Se estiver na página da sacola, não abre sidebar
+  if (router.currentRoute.value.name !== 'cart') {
+    open();
+  }
 }
 </script>
 
