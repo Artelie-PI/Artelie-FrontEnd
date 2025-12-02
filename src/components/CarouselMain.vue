@@ -102,7 +102,6 @@ const duplicatedSlides = computed(() => {
  overflow: hidden;
  height: clamp(250px, 45vw, 480px);
  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.25);
- background: #0f0f0f;
  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -237,7 +236,6 @@ const duplicatedSlides = computed(() => {
 /* Paginação (bolinhas) */
 :deep(.swiper-pagination) {
  bottom: 1px !important;
- background-color: black                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ;                                                                                                                                                                                                                                                                                                                                                                                                                                                     
 }
                                                                                                             
 
