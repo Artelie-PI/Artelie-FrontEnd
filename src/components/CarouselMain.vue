@@ -32,87 +32,69 @@ const duplicatedSlides = computed(() => {
 });
 </script>
 
-
 <template>
- <section class="carousel-main">
-   <div class="carousel-wrapper">
-     <Swiper
-       :modules="[Autoplay, Navigation, Pagination]"
-       :loop="true"
-       :centered-slides="true"
-       :looped-slides="4"
-       :slides-per-view="1.3"
-       :space-between="12"
-       :navigation="true"
-       :pagination="{ clickable: true }"
-       :autoplay="autoplay ? { delay: autoplay, disableOnInteraction: false, pauseOnMouseEnter: true } : false"
-       :breakpoints="{
-         640: {
-           slidesPerView: 1.35,
-           spaceBetween: 12
-         },
-         768: {
-           slidesPerView: 1.3,
-           spaceBetween: 12
-         },
-         1024: {
-           slidesPerView: 1.25,
-           spaceBetween: 12
-         },
-         1280: {
-           slidesPerView: 1.2,
-           spaceBetween: 12
-         }
-       }"
-       class="swiper-hero"
-     >
-       <SwiperSlide
-         v-for="(item, index) in duplicatedSlides"
-         :key="`slide-${item.id}-${index}`"
-       >
-         <article class="slide-card">
-           <img :src="item.image" :alt="item.title" class="slide-img" />
-           <div class="slide-mask"></div>
-           <div class="slide-content">
-             <h3 class="slide-title">{{ item.title }}</h3>
-             <p class="slide-sub">{{ item.subtitle }}</p>
-           </div>
-         </article>
-       </SwiperSlide>
-     </Swiper>
-   </div>
- </section>
+  <section class="carousel-main">
+    <div class="carousel-wrapper">
+      <Swiper
+        :modules="[Autoplay, Navigation, Pagination]"
+        :loop="true"
+        :centered-slides="true"
+        :looped-slides="4"
+        :slides-per-view="1.3"
+        :space-between="12"
+        :navigation="true"
+        :pagination="{ clickable: true }"
+        :autoplay="autoplay ? { delay: autoplay, disableOnInteraction: false, pauseOnMouseEnter: true } : false"
+        :breakpoints="{
+          640: { slidesPerView: 1.35, spaceBetween: 12 },
+          768: { slidesPerView: 1.3, spaceBetween: 12 },
+          1024: { slidesPerView: 1.25, spaceBetween: 12 },
+          1280: { slidesPerView: 1.2, spaceBetween: 12 }
+        }"
+        class="swiper-hero"
+      >
+        <SwiperSlide
+          v-for="(item, index) in duplicatedSlides"
+          :key="`slide-${item.id}-${index}`"
+        >
+          <article class="slide-card">
+            <img :src="item.image" :alt="item.title" class="slide-img" />
+            <div class="slide-mask"></div>
+            <div class="slide-content">
+              <h3 class="slide-title">{{ item.title }}</h3>
+              <p class="slide-sub">{{ item.subtitle }}</p>
+            </div>
+          </article>
+        </SwiperSlide>
+      </Swiper>
+    </div>
+  </section>
 </template>
 
 
 <style scoped>
 .carousel-main {
- max-width: 1320px;
- margin: 30px auto;
- padding: 0 24px;
- position: relative;
+  max-width: 1320px;
+  margin: 30px auto;
+  padding: 0 24px;
+  position: relative;
 }
 
-
-/* Wrapper para permitir setas fora do container */
 .carousel-wrapper {
- position: relative;
- padding: 0 75px;
+  position: relative;
+  padding: 0 75px;
 }
-
 
 @media (max-width: 768px) {
- .carousel-wrapper {
-   padding: 0 35px;
- }
+  .carousel-wrapper {
+    padding: 0 35px;
+  }
 }
-
 
 .swiper-hero {
- padding: 35px 0 60px 0;
- overflow: visible;
+  padding: 35px 25px 60px 25px;
+  overflow: visible;
 }
-
 
 .slide-card {
  position: relative;
@@ -124,14 +106,12 @@ const duplicatedSlides = computed(() => {
  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-
 /* Slide ativo (centralizado) */
 .swiper-slide-active .slide-card {
  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
  transform: scale(1.12);
  z-index: 5;
 }
-
 
 /* Slides laterais */
 .swiper-slide:not(.swiper-slide-active) .slide-card {
@@ -257,8 +237,9 @@ const duplicatedSlides = computed(() => {
 /* Paginação (bolinhas) */
 :deep(.swiper-pagination) {
  bottom: 1px !important;
+ background-color: black                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ;                                                                                                                                                                                                                                                                                                                                                                                                                                                     
 }
-
+                                                                                                            
 
 :deep(.swiper-pagination-bullet) {
  background: rgba(255, 255, 255, 0.85);
