@@ -11,15 +11,15 @@ function goToHome() {
 <template>
   <header class="checkout-header">
     <div class="header-container">
-      <img 
-        src="@/assets/images/ArtelieLogo.png" 
-        alt="Artelié Online" 
+      <img
+        src="@/assets/images/ArtelieLogo.png"
+        alt="Artelié Online"
         class="logo"
         @click="goToHome"
       />
-      
+
       <div class="secure-badge">
-        <span class="lock-icon">🔒</span>
+        <span class="lock-icon"></span>
         <span class="secure-text">Compra Segura</span>
       </div>
     </div>
@@ -80,11 +80,11 @@ function goToHome() {
   .header-container {
     padding: 12px 16px;
   }
-  
+
   .logo {
     height: 38px;
   }
-  
+
   .secure-text {
     display: none;
   }
