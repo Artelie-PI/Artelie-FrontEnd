@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const apiClient = axios.create({
-  baseURL: 'https://artelie-backend.onrender.com',
+  baseURL: 'http://127.0.0.1:19003/api/',
   headers: {
     'Content-Type': 'application/json',
   },
