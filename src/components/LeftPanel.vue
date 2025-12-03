@@ -14,6 +14,13 @@ const cls = computed(() => ({
     <p class="Title">{{ props.mode === 'login' ? 'Bem Vindo de Volta!' : 'Bem Vindo!' }}</p>
     <p class="instruction" v-if="props.mode === 'login'">Faça login para continuar</p>
     <p class="instruction" v-else>Faça seu Cadastro para comprar os produtos em nosso site.</p>
+
+    <RouterLink to="/home" class="back-button">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false" style="width:1rem;height:1rem;margin-right:0.1rem;vertical-align:middle;">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+      Voltar para tela inicial
+    </RouterLink>
   </div>
 </template>
 
@@ -61,6 +68,24 @@ const cls = computed(() => ({
   font-size: 16px;
   font-weight: 400;
   opacity: 0.95;
+}
+
+/* Estilo do botão de voltar */
+.back-button {
+  display: inline-block;
+  margin-top: 2rem;
+  padding: 0.6rem 1rem;
+  border-radius: 3rem;
+  background: transparent;
+
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s, transform 0.12s;
+}
+.back-button:hover {
+  background: rgba(255,255,255,0.16);
 }
 
 @keyframes gradientBG {

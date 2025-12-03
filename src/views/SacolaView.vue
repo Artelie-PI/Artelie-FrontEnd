@@ -5,10 +5,10 @@ import { ref, computed, onMounted } from "vue";
 import { fetchAddressByCep, calculateShipping } from "@/utils/shipping";
 import { formatCEP } from "@/utils/masks";
 
-import CardProducts from '@/components/CardProducts.vue';
-import LoadingSpinner from '@/components/LoadingSpinner.vue';
-import { fetchFeaturedProducts } from '@/api/products';
-import { formatProduct } from '@/utils/productHelper';
+import CardProducts from "@/components/CardProducts.vue";
+import LoadingSpinner from "@/components/LoadingSpinner.vue";
+import { fetchFeaturedProducts } from "@/api/products";
+import { formatProduct } from "@/utils/productHelper";
 
 const cartStore = useCartStore();
 const router = useRouter();
@@ -19,7 +19,7 @@ const shippingError = ref("");
 const isCalculatingShipping = ref(false);
 
 const couponInput = ref("");
-const discount = ref(0);
+const manualDiscount = ref(0); // desconto por cupom manual
 
 function goToHome() {
   router.push({ name: "home" });
@@ -36,32 +36,54 @@ function goToCheckout() {
 
 const formatPrice = (v) => v.toFixed(2).replace(".", ",");
 
+// Subtotal dos produtos
 const subtotal = computed(() =>
   cartStore.items.reduce((sum, item) => sum + item.price * item.quantity, 0)
 );
 
-const total = computed(() => subtotal.value - discount.value + (shipping.value?.value || 0));
+// Total de itens considerando quantidade de cada produto
+const totalItems = computed(() =>
+  cartStore.items.reduce((sum, item) => sum + item.quantity, 0)
+);
+
+// Desconto automático de 10% se subtotal > 500
+const autoDiscount = computed(() => {
+  return subtotal.value > 500 ? subtotal.value * 0.1 : 0;
+});
+
+// Desconto total: automático + cupom manual
+const totalDiscount = computed(() => autoDiscount.value + manualDiscount.value);
+
+// Total final
+const total = computed(() => subtotal.value - totalDiscount.value + (shipping.value?.value || 0));
 
 function handleCEPInput(e) {
   cepInput.value = formatCEP(e.target.value);
 }
-
 async function handleCalculateShipping() {
   shippingError.value = "";
   if (!cepInput.value) {
     shippingError.value = "Digite um CEP";
     return;
   }
+
   isCalculatingShipping.value = true;
+
   try {
     const address = await fetchAddressByCep(cepInput.value);
-    const shippingData = calculateShipping(cepInput.value, subtotal.value);
+
+    // Verifica se é Joinville
+    const isJoinville = address.city.toLowerCase().includes('joinville');
+
     shipping.value = {
-      ...shippingData,
       cep: address.cep,
       city: address.city,
       state: address.state,
+      isFree: isJoinville,
+      value: isJoinville ? 0 : 9.99,// valor fixo para outras cidades
+      estimatedDays: isJoinville ? '1-2' : '8-10',
     };
+
   } catch (err) {
     shippingError.value = err.message || "Erro ao calcular frete";
     shipping.value = null;
@@ -70,15 +92,17 @@ async function handleCalculateShipping() {
   }
 }
 
+
 function handleApplyCoupon() {
   const valid = { DESCONTO10: 0.1, PRIMEIRACOMPRA: 0.15, ARTELIE20: 0.2 };
   const code = couponInput.value.toUpperCase().trim();
+
   if (valid[code]) {
-    discount.value = subtotal.value * valid[code];
+    manualDiscount.value = subtotal.value * valid[code];
     alert(`Cupom aplicado! Desconto de ${(valid[code] * 100).toFixed(0)}%`);
   } else {
     alert("Cupom inválido");
-    discount.value = 0;
+    manualDiscount.value = 0;
   }
 }
 
@@ -92,14 +116,14 @@ async function loadProducts() {
     loading.value = true;
     error.value = null;
     const response = await fetchFeaturedProducts();
-    const products = Array.isArray(response) ? response : (response?.results || []);
+    const products = Array.isArray(response) ? response : response?.results || [];
     featured.value = products.map(formatProduct);
   } catch (err) {
-    console.error('Erro ao carregar produtos em destaque:', err);
-    if (err.message?.includes('MaxClients') || err.response?.status === 500) {
-      error.value = '⚠️ Servidor temporariamente indisponível. Tente novamente em alguns segundos.';
+    console.error("Erro ao carregar produtos em destaque:", err);
+    if (err.message?.includes("MaxClients") || err.response?.status === 500) {
+      error.value = "⚠️ Servidor temporariamente indisponível. Tente novamente em alguns segundos.";
     } else {
-      error.value = 'Erro ao carregar produtos. Verifique sua conexão.';
+      error.value = "Erro ao carregar produtos. Verifique sua conexão.";
     }
   } finally {
     loading.value = false;
@@ -142,7 +166,6 @@ onMounted(loadProducts);
         <button @click="loadProducts" class="retry-button">🔄 Tentar Novamente</button>
       </div>
       <CardProducts v-else :products="featured.slice(0, 4)" />
-
     </template>
 
     <template v-else>
@@ -171,12 +194,14 @@ onMounted(loadProducts);
 
               <div class="item-quantity">
                 <div class="quantity-controls">
-                  <button @click="cartStore.addToCart(item, -1)" :disabled="item.quantity === 1">-</button>
+                  <button @click="cartStore.addToCart(item, -1)" :disabled="item.quantity === 1">
+                    -
+                  </button>
                   <span>{{ item.quantity }}</span>
                   <button @click="cartStore.addToCart(item, 1)">+</button>
                 </div>
                 <img src="/src/assets/images/Cancel.png" class="remove-btn"
-                     @click="cartStore.removeFromCart(item.id)" />
+                  @click="cartStore.removeFromCart(item.id)" />
               </div>
 
               <div class="item-total">R$ {{ formatPrice(item.price * item.quantity) }}</div>
@@ -190,8 +215,8 @@ onMounted(loadProducts);
           <div class="summary-field">
             <label for="coupon">Cupom de Desconto</label>
             <div class="field-group">
-              <input id="coupon" type="text" placeholder="Digite o código de desconto"
-                     v-model="couponInput" @keyup.enter="handleApplyCoupon" />
+              <input id="coupon" type="text" placeholder="Digite o código de desconto" v-model="couponInput"
+                @keyup.enter="handleApplyCoupon" />
               <button class="btn-apply" @click="handleApplyCoupon">APLICAR</button>
             </div>
           </div>
@@ -199,42 +224,51 @@ onMounted(loadProducts);
           <div class="summary-field">
             <label for="cep">Frete</label>
             <div class="field-group">
-              <input id="cep" type="text" placeholder="Digite o seu CEP"
-                     :value="cepInput" @input="handleCEPInput"
-                     @keyup.enter="handleCalculateShipping" maxlength="9" />
+              <input id="cep" type="text" placeholder="Digite o seu CEP" :value="cepInput" @input="handleCEPInput"
+                @keyup.enter="handleCalculateShipping" maxlength="9" />
               <button class="btn-apply" @click="handleCalculateShipping" :disabled="isCalculatingShipping">
                 {{ isCalculatingShipping ? "..." : "APLICAR" }}
               </button>
             </div>
-            <p v-if="shippingError" class="error-text">{{ shippingError }}</p>
             <p v-if="shipping" class="shipping-info">
-              {{ shipping.city }}/{{ shipping.state }} -
-              <span v-if="shipping.isFree" class="free-shipping">FRETE GRÁTIS!</span>
-              <span v-else>{{ shipping.estimatedDays }} dias úteis</span>
+              {{ shipping.city }}/{{ shipping.state }} • {{ shipping.estimatedDays }} dias úteis
+              <span v-if="shipping.isFree" class="free-shipping"> • FRETE GRÁTIS!</span>
+              <span v-else class="shipping-value"> • R$ {{ formatPrice(shipping.value) }}</span>
             </p>
           </div>
 
           <div class="summary-totals">
             <div class="total-line">
-              <span>Subtotal - {{ cartStore.items.length }} itens</span>
+              <span>Subtotal - {{ totalItems }} produtos</span>
               <span>R$ {{ formatPrice(subtotal) }}</span>
             </div>
-            <div class="total-line" v-if="discount > 0">
-              <span>Desconto Cupom</span>
-              <span class="discount-value">R$ {{ formatPrice(discount) }}</span>
+
+            <!-- Desconto automático por compra acima de R$ 500 -->
+            <div class="total-line" v-if="autoDiscount > 0">
+              <span>Desconto • 10% acima de R$ 500</span>
+              <span class="discount-value">- R$ {{ formatPrice(autoDiscount) }}</span>
             </div>
+
+            <!-- Desconto por cupom -->
+            <div class="total-line" v-if="manualDiscount > 0">
+              <span>Desconto Cupom</span>
+              <span class="discount-value">- R$ {{ formatPrice(manualDiscount) }}</span>
+            </div>
+
             <div class="total-line">
               <span>Frete</span>
               <span v-if="shipping">
                 <span v-if="shipping.isFree" class="free-shipping">GRÁTIS</span>
-                <span v-else>R$ {{ formatPrice(shipping.value) }}</span>
+                <span v-else class="shipping-value">R$ {{ formatPrice(shipping.value) }}</span>
               </span>
               <span v-else class="shipping-pending">Calcular</span>
             </div>
+
             <div class="total-line total-final">
               <span>TOTAL</span>
               <span>R$ {{ formatPrice(total) }}</span>
             </div>
+
             <p v-if="total >= 140" class="installment-info">
               ou 10x de R$ {{ formatPrice(total / 10) }} sem juros
             </p>
@@ -479,7 +513,7 @@ onMounted(loadProducts);
   margin-left: 2px;
   cursor: pointer;
   filter: grayscale(100%);
-  opacity: .75;
+  opacity: 0.75;
 }
 
 .remove-btn:hover {
@@ -567,15 +601,21 @@ onMounted(loadProducts);
 }
 
 .shipping-info {
-  font-size: 0.8rem;
-  color: #555;
+  font-size: 0.85rem;
+  color: #444;
   margin-top: 6px;
 }
 
 .free-shipping {
   color: #27ae60;
-  font-weight: 700;
+  font-weight: 600;
 }
+
+.shipping-value {
+  color: #333;
+  font-weight: 600;
+}
+
 
 .shipping-pending {
   color: #999;
@@ -608,14 +648,14 @@ onMounted(loadProducts);
 }
 
 .discount-value {
-  color: #27ae60;
+  color: #ff1414;
   font-weight: 600;
 }
 
 .installment-info {
   font-size: 0.8rem;
-  color: #666;
-  text-align: center;
+  color: #555;
+  text-align: right;
   margin-top: 8px;
 }
 
@@ -649,15 +689,18 @@ onMounted(loadProducts);
 }
 
 .section-header {
-  max-width: 1320px;
-  margin: auto auto 50px;
-  text-align: left;
-  border-bottom: 1px solid black;
+  margin: 80px 0 40px;
+  text-align: center;
 }
 
 .section-title {
-  font-weight: 500;
-  font-size: 1.6rem;
+  display: inline-block;
+  font-size: 1.7rem;
+  font-weight: 600;
+  color: #000;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-thickness: 3px;
 }
 
 /* Responsivo */

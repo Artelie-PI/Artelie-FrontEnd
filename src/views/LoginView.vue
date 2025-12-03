@@ -181,7 +181,7 @@ main {
 .login-container {
   position: relative;
   z-index: 1;
-  background-color: #fff;
+  background-color: #ffffff;
   padding: 2rem;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);

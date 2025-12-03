@@ -132,7 +132,7 @@ function onRegister() { emit('do-register') }
 
 <style scoped>
 .form-block {
-  width: 100%;
+  width: 55vh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -141,7 +141,8 @@ function onRegister() { emit('do-register') }
 
 .input-group {
   margin-bottom: 1rem;
-  width: 75%;
+  width: 100%;
+
 }
 
 .input-group label {
@@ -149,13 +150,16 @@ function onRegister() { emit('do-register') }
   margin-bottom: 0.5rem;
   font-weight: 500;
   color: #333;
+
 }
 
 .inputWrapper {
   display: flex;
   align-items: center;
   border-bottom: 1px solid #ccc;
-  padding-bottom: 0.5rem;
+  padding: 0.2rem;
+  background: #f9f9f9;
+  width: 100%;
 }
 
 .inputWrapper input {
