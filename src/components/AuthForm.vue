@@ -12,7 +12,6 @@ function onRegister() { emit('do-register') }
 </script>
 
 <template>
-  <!-- Login Form -->
   <form
     v-if="props.mode === 'login'"
     class="form-inner"
@@ -53,7 +52,6 @@ function onRegister() { emit('do-register') }
     </div>
   </form>
 
-  <!-- Register Form -->
   <form
     v-if="props.mode === 'register'"
     class="form-inner"
@@ -131,8 +129,15 @@ function onRegister() { emit('do-register') }
 </template>
 
 <style scoped>
+.form-inner {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
 .form-block {
-  width: 55vh;
+  width: 100%;
+  max-width: 420px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -142,33 +147,33 @@ function onRegister() { emit('do-register') }
 .input-group {
   margin-bottom: 1rem;
   width: 100%;
-
 }
 
 .input-group label {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 500;
-  color: #333;
-
+  color: #111827;
+  font-size: 0.95rem;
 }
 
 .inputWrapper {
   display: flex;
   align-items: center;
-  border-bottom: 1px solid #ccc;
-  padding: 0.2rem;
-  background: #f9f9f9;
+  border-bottom: 1px solid #d1d5db;
+  padding: 0.25rem 0.1rem;
+  background: #f9fafb;
   width: 100%;
+  border-radius: 0.25rem;
 }
 
 .inputWrapper input {
   flex: 1;
-  height: 5vh;
-  padding: 0.5rem 1rem;
+  height: 42px;
+  padding: 0.5rem 0.9rem;
   border: none;
   background: transparent;
-  font-size: 1rem;
+  font-size: 0.95rem;
 }
 
 .inputWrapper input:focus {
@@ -176,32 +181,38 @@ function onRegister() { emit('do-register') }
 }
 
 .userIcon {
-  height: 2.2rem;
+  height: 2rem;
   margin-right: 0.5rem;
 }
 
 button {
-  margin-top: 1vh;
-  width: 50%;
+  margin-top: 1.2rem;
+  width: 100%;
+  max-width: 260px;
   padding: 0.75rem;
   background-color: #192EB1;
   color: #fff;
   border: none;
-  border-radius: 2rem;
+  border-radius: 999px;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.3s;
-  font-size: 1rem;
+  transition: background-color 0.2s ease, transform 0.08s ease;
+  font-size: 0.98rem;
 }
 
 button:hover {
-  background-color: #3a8dde;
+  background-color: #1d3ad5;
+}
+
+button:active {
+  transform: scale(0.98);
 }
 
 .register {
   margin-top: 1rem;
-  font-size: 1rem;
-  color: #666;
+  font-size: 0.9rem;
+  color: #6b7280;
+  text-align: center;
 }
 
 .register a {
@@ -213,5 +224,39 @@ button:hover {
 
 .register a:hover {
   text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .form-block {
+    max-width: 100%;
+    gap: 1rem;
+  }
+
+  .inputWrapper input {
+    height: 40px;
+    font-size: 0.92rem;
+  }
+
+  button {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .form-block {
+    max-width: 100%;
+  }
+
+  .input-group label {
+    font-size: 0.9rem;
+  }
+
+  .inputWrapper input {
+    font-size: 0.9rem;
+  }
+
+  .register {
+    font-size: 0.85rem;
+  }
 }
 </style>

@@ -35,21 +35,25 @@ export default defineConfig({
         orientation: 'any',
         launch_handler: { client_mode: ['navigate-existing', 'auto'] }
       },
+      
       devOptions: {
-        enabled: true
+        enabled: false
       }
     })
   ],
+
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
   },
+
   preview: {
     port: 4173,
     strictPort: false,
     open: false
   },
+
   server: {
     port: 5173,
     host: true
