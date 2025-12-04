@@ -237,7 +237,6 @@ main.register-mode .login-container {
 
 @media (max-width: 1024px) {
   .login-container {
-
     margin-left: 30vw;
     width: calc(100vw - 30vw);
     padding: 2rem 2.4rem;
@@ -281,7 +280,6 @@ main.register-mode .login-container {
 
 @media (max-width: 480px) {
   .login-container {
-
     justify-content: flex-start;
     padding: 5rem 1.2rem 2rem;
   }
