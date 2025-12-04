@@ -3,6 +3,8 @@ import { RouterLink, useRouter, useRoute } from "vue-router";
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import { useSidebarCart } from "/src/stores/useSidebarCart.js";
 import MenuHeader from "@/components/MenuHeader.vue";
+import { storeToRefs } from 'pinia'
+import { useUserStore } from '@/stores/user'
 
 
 const showHeader = ref(true);
@@ -11,6 +13,8 @@ const { open } = useSidebarCart();
 
 const router = useRouter();
 const route = useRoute();
+const userStore = useUserStore()
+const { isAuthenticated, displayName } = storeToRefs(userStore)
 
 
 // controla se a barra de categorias aparece
@@ -34,6 +38,11 @@ function goToMarcas() {
  router.push({ path: "/", hash: "#marcas" }).then(() => {
    setTimeout(scrollToMarcas, 200);
  });
+}
+
+function doLogout() {
+  userStore.logout()
+  router.push('/')
 }
 
 
@@ -118,9 +127,15 @@ onBeforeUnmount(() => {
 
          <!-- Perfil / Login + Carrinho (desktop) -->
          <div class="perfilShop slide-item" style="transition-delay: 0.2s">
-           <RouterLink to="/login">
-             <img src="@/assets/images/Login.png" alt="LoginIcon" />
-           </RouterLink>
+           <template v-if="isAuthenticated">
+             <span class="user-name">Olá, {{ displayName }}!</span>
+             <button class="logout-btn" @click="doLogout">Sair</button>
+           </template>
+           <template v-else>
+             <RouterLink to="/login">
+               <img src="@/assets/images/Login.png" alt="LoginIcon" />
+             </RouterLink>
+           </template>
            <img src="@/assets/images/Cart.png" @click="open" alt="SacolaIcon" />
          </div>
        </div>
@@ -271,6 +286,21 @@ onBeforeUnmount(() => {
  width: 30px;
  height: 30px;
  cursor: pointer;
+}
+.user-name {
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.logout-btn {
+  border: 1px solid #d8d8d8;
+  background: white;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  padding: 6px 10px;
+  cursor: pointer;
 }
 
 

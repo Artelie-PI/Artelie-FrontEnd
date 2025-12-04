@@ -26,7 +26,7 @@ apiClient.interceptors.response.use(
       if (refresh) {
         try {
           originalRequest._retry = true
-          const { data } = await apiClient.post('/token/refresh/', { refresh })
+          const { data } = await apiClient.post('/api/token/refresh/', { refresh })
 
           localStorage.setItem('access_token', data.access)
           originalRequest.headers.Authorization = `Bearer ${data.access}`
@@ -35,6 +35,7 @@ apiClient.interceptors.response.use(
         } catch (refreshError) {
           localStorage.removeItem('access_token')
           localStorage.removeItem('refresh_token')
+          localStorage.removeItem('user')
           window.location.href = '/login'
           return Promise.reject(refreshError)
         }

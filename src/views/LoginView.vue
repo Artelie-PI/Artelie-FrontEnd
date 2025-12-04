@@ -3,7 +3,8 @@ import { ref, reactive, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import LeftPanel from '@/components/LeftPanel.vue'
 import AuthForm from '@/components/AuthForm.vue'
-import { login, register } from '@/api/auth'
+import { register } from '@/api/auth'
+import { useUserStore } from '@/stores/user'
 
 const ANIM_MS = 320
 const mode = ref('login')
@@ -11,6 +12,7 @@ const isAnimating = ref(false)
 const errorMsg = ref('')
 const successMsg = ref('')
 const router = useRouter()
+const userStore = useUserStore()
 
 const form = reactive({
   loginEmail: '',
@@ -52,7 +54,7 @@ async function handleLogin() {
   }
 
   try {
-    await login(form.loginEmail, form.loginPassword)
+    await userStore.login(form.loginEmail, form.loginPassword)
     successMsg.value = 'Login realizado com sucesso!'
     setTimeout(() => {
       router.push('/')
