@@ -74,14 +74,20 @@ export const useCartStore = defineStore('cart', {
     },
 
     saveToStorage() {
-      localStorage.setItem('cart', JSON.stringify({
+      const rawUser = localStorage.getItem('user')
+      const parsed = rawUser ? (() => { try { return JSON.parse(rawUser) } catch { return null } })() : null
+      const key = parsed?.id ? `cart:${parsed.id}` : parsed?.email ? `cart:${parsed.email}` : 'cart'
+      localStorage.setItem(key, JSON.stringify({
         items: this.items,
         shipping: this.shipping
       }))
     },
 
     loadFromStorage() {
-      const stored = localStorage.getItem('cart')
+      const rawUser = localStorage.getItem('user')
+      const parsed = rawUser ? (() => { try { return JSON.parse(rawUser) } catch { return null } })() : null
+      const key = parsed?.id ? `cart:${parsed.id}` : parsed?.email ? `cart:${parsed.email}` : 'cart'
+      const stored = localStorage.getItem(key)
       if (stored) {
         try {
           const data = JSON.parse(stored)

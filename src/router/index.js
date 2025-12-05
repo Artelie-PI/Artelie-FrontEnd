@@ -5,7 +5,7 @@ import DefaultLayout from "@/layouts/DefaultLayout.vue";
 import ProductLayout from "@/layouts/ProductLayout.vue";
 import ProductView from "@/views/ProductView.vue";
 import RelatedProduct from "@/components/RelatedProduct.vue";
-import CartView from "@/views/CartView.vue";
+import SacolaView from "@/views/SacolaView.vue";
 import CategoryView from "@/views/CategoryView.vue";
 import ContactView from "@/views/ContactView.vue";
 import VerifyEmailView from "@/views/VerifyEmailView.vue";
@@ -19,9 +19,10 @@ const router = createRouter({
       component: DefaultLayout,
       children: [
         { path: "", name: "home", component: HomeView },
-  { path: "category/:slug", name: "category", component: CategoryView },
+        { path: "category/:slug", name: "category", component: CategoryView },
         { path: "contact", name: "contact", component: ContactView },
-        { path: "cart", name: "cart", component: CartView },
+        { path: "cart", name: "cart", component: SacolaView }, // Mudou de /shop para /cart
+        // Redirect antigo /shop para /cart
         { path: "shop", redirect: "/cart" },
       ],
     },
@@ -35,6 +36,7 @@ const router = createRouter({
     },
     { path: "/login", name: "login", component: LoginView },
     { path: "/verify-email/:token", name: "verify-email", component: VerifyEmailView },
+    // Redirect para home se rota não encontrada
     { path: "/:pathMatch(.*)*", redirect: "/" },
     { path: "/checkout", name: "checkout", component: () => import("@/views/CheckoutView.vue"), meta: { requiresCart: true } },
   ],

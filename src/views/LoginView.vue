@@ -3,7 +3,8 @@ import { ref, reactive, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import LeftPanel from '@/components/LeftPanel.vue'
 import AuthForm from '@/components/AuthForm.vue'
-import { login, register } from '@/api/auth'
+import { register } from '@/api/auth'
+import { useUserStore } from '@/stores/user'
 
 const ANIM_MS = 320
 const mode = ref('login')
@@ -11,13 +12,11 @@ const isAnimating = ref(false)
 const errorMsg = ref('')
 const successMsg = ref('')
 const router = useRouter()
-
+const userStore = useUserStore()
 
 const form = reactive({
-  // login
   loginEmail: '',
   loginPassword: '',
-  // register
   username: '',
   email: '',
   password: '',
@@ -55,7 +54,7 @@ async function handleLogin() {
   }
 
   try {
-    await login(form.loginEmail, form.loginPassword)
+    await userStore.login(form.loginEmail, form.loginPassword)
     successMsg.value = 'Login realizado com sucesso!'
     setTimeout(() => {
       router.push('/')
@@ -162,8 +161,14 @@ async function handleRegister() {
       <p v-if="errorMsg" class="error">{{ errorMsg }}</p>
       <p v-if="successMsg" class="success">{{ successMsg }}</p>
 
-      <AuthForm :form="form" :mode="mode" @request-register="animateToRegister" @request-login="animateToLogin"
-        @do-login="handleLogin" @do-register="handleRegister" />
+      <AuthForm
+        :form="form"
+        :mode="mode"
+        @request-register="animateToRegister"
+        @request-login="animateToLogin"
+        @do-login="handleLogin"
+        @do-register="handleRegister"
+      />
     </div>
   </main>
 </template>
@@ -173,21 +178,24 @@ async function handleRegister() {
 
 main {
   position: relative;
-  height: 100vh;
+  min-height: 100vh;
   font-family: 'Poppins', sans-serif;
   overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  background: #f5f5f7;
 }
 
 .login-container {
   position: relative;
   z-index: 1;
-  background-color: #fff;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-  margin-left: 30vw;
-  width: calc(100vw - 30vw);
-  height: 100vh;
+  background-color: #ffffff;
+  padding: 2.5rem 3rem;
+  border-radius: 0;
+  box-shadow: none;
+  margin-left: 32vw;
+  width: calc(100vw - 32vw);
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -203,27 +211,83 @@ main {
 
 main.register-mode .login-container {
   margin-left: 0;
-  margin-right: 30vw;
-  width: calc(100vw - 30vw);
-  border-radius: 0;
+  margin-right: 32vw;
+  width: calc(100vw - 32vw);
   transform: translateX(-2vw) scale(1.01);
 }
 
 .titleLogin {
-  font-size: 3rem;
+  font-size: 2.4rem;
   font-weight: 600;
-  margin-bottom: 1rem;
+  margin-bottom: 1.2rem;
+  text-align: center;
 }
 
 .error {
-  color: red;
-  font-size: 1rem;
+  color: #e11d48;
+  font-size: 0.95rem;
   margin-bottom: 1rem;
+  text-align: center;
 }
 
 .success {
-  color: green;
-  font-size: 1rem;
+  color: #16a34a;
+  font-size: 0.95rem;
   margin-bottom: 1rem;
+  text-align: center;
+}
+
+@media (max-width: 1024px) {
+  .login-container {
+    margin-left: 30vw;
+    width: calc(100vw - 30vw);
+    padding: 2rem 2.4rem;
+  }
+
+  main.register-mode .login-container {
+    margin-right: 30vw;
+    width: calc(100vw - 30vw);
+    transform: translateX(-1.2vw) scale(1.01);
+  }
+
+  .titleLogin {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  main {
+    flex-direction: column;
+  }
+
+  .login-container {
+    margin: 0;
+    width: 100%;
+    min-height: 10vh;
+    padding: 1.8rem 1.5rem 2.5rem;
+    box-shadow: 0 -6px 25px rgba(15, 23, 42, 0.18);
+    transform: translateX(0) scale(1);
+  }
+
+  main.register-mode .login-container {
+    margin: 0;
+    width: 100%;
+    transform: translateX(0) scale(1);
+  }
+
+  .titleLogin {
+    font-size: 1.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-container {
+    justify-content: flex-start;
+    padding: 5rem 1.2rem 2rem;
+  }
+
+  .titleLogin {
+    font-size: 1.6rem;
+  }
 }
 </style>
