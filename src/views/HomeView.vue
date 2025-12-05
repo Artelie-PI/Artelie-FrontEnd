@@ -6,6 +6,7 @@ import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import setaImg from '@/assets/images/Seta.png';
 import { fetchFeaturedProducts } from '@/api/products';
 import { formatProduct } from '@/utils/productHelper';
+import { fetchBrands } from '@/api/brands';
 
 
 const featured = ref([]);
@@ -22,21 +23,18 @@ const carouselRef = ref(null);
 
 
 async function loadBrands() {
- try {
-   brandsLoading.value = true;
-   brandsError.value = null;
-   const response = await fetch("https://artelie-backend.onrender.com/brands/");
-   if (!response.ok) throw new Error('Erro ao buscar marcas');
-   const data = await response.json();
-   brands.value = Array.isArray(data.results)
-     ? data.results.filter(b => b && typeof b === 'object' && b.image && b.image.url)
-     : [];
- } catch (err) {
-   brandsError.value = err.message || "Erro ao carregar marcas";
-   brands.value = [];
- } finally {
-   brandsLoading.value = false;
- }
+  try {
+    brandsLoading.value = true;
+    brandsError.value = null;
+    const data = await fetchBrands();
+    const list = Array.isArray(data) ? data : (data?.results || []);
+    brands.value = list.filter(b => b && typeof b === 'object' && b.image && (b.image.url || b.image));
+  } catch (err) {
+    brandsError.value = err.message || "Erro ao carregar marcas";
+    brands.value = [];
+  } finally {
+    brandsLoading.value = false;
+  }
 }
 
 
