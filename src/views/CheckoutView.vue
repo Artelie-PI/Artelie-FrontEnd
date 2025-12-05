@@ -84,14 +84,14 @@ const formatPrice = (value) => {
 const installmentOptions = computed(() => {
   const options = [];
   const maxInstallments = total.value >= 140 ? 10 : 1;
-  
+
   for (let i = 1; i <= maxInstallments; i++) {
     options.push({
       value: i,
       label: `${i}x R$ ${formatPrice(total.value / i)} ${i === 1 ? '' : 'sem juros'}`
     });
   }
-  
+
   return options;
 });
 
@@ -136,18 +136,18 @@ function handleContinueStep1() {
     alert('Preencha todos os campos obrigatórios');
     return;
   }
-  
+
   goToStep(2);
 }
 
 async function handleSearchCep() {
   if (!newAddress.value.cep) return;
-  
+
   isLoadingCep.value = true;
-  
+
   try {
     const address = await fetchAddressByCep(newAddress.value.cep);
-    
+
     newAddress.value.street = address.street;
     newAddress.value.neighborhood = address.neighborhood;
     newAddress.value.city = address.city;
@@ -168,7 +168,7 @@ function handleSaveAddress() {
     alert('Preencha todos os campos do endereço');
     return;
   }
-  
+
   const addressId = savedAddresses.value.length + 1;
   savedAddresses.value.push({
     id: addressId,
@@ -176,10 +176,10 @@ function handleSaveAddress() {
     cep: newAddress.value.cep,
     neighborhood: `${newAddress.value.neighborhood} - ${newAddress.value.city} - ${newAddress.value.state}`
   });
-  
+
   selectedAddressId.value = addressId;
   isAddingNewAddress.value = false;
-  
+
   newAddress.value = {
     cep: '',
     street: '',
@@ -196,7 +196,7 @@ function handleContinueStep2() {
     alert('Selecione um endereço de entrega');
     return;
   }
-  
+
   goToStep(3);
 }
 
@@ -210,15 +210,15 @@ async function handleFinalizeOrder() {
       alert('Preencha todos os dados do cartão');
       return;
     }
-    
+
     alert('Processando pagamento...');
-    
+
     setTimeout(() => {
       alert('Pedido realizado com sucesso! 🎉');
       cartStore.clearCart();
       router.push({ name: 'home' });
     }, 2000);
-    
+
   } else if (paymentMethod.value === 'pix') {
     await generatePixPayment();
   }
@@ -230,12 +230,12 @@ async function generatePixPayment() {
     pixKey: `${Math.random().toString(36).substr(2, 9)}${Math.random().toString(36).substr(2, 9)}`.toUpperCase(),
     expiresIn: 600
   };
-  
+
   alert('QR Code PIX gerado! Escaneie para pagar.');
-  
+
   const countdown = setInterval(() => {
     pixData.value.expiresIn--;
-    
+
     if (pixData.value.expiresIn <= 0) {
       clearInterval(countdown);
       alert('Tempo expirado! Gere um novo código.');
@@ -260,28 +260,19 @@ const formatExpiryTime = computed(() => {
     <div class="checkout-content">
       <div class="checkout-form">
         <div class="steps-header">
-          <div 
-            class="step" 
-            :class="{ active: currentStep === 1, completed: currentStep > 1 }"
-            @click="currentStep > 1 && goToStep(1)"
-          >
+          <div class="step" :class="{ active: currentStep === 1, completed: currentStep > 1 }"
+            @click="currentStep > 1 && goToStep(1)">
             <span class="step-number">1</span>
             <span class="step-label">SEUS DADOS</span>
           </div>
-          
-          <div 
-            class="step" 
-            :class="{ active: currentStep === 2, completed: currentStep > 2 }"
-            @click="currentStep > 2 && goToStep(2)"
-          >
+
+          <div class="step" :class="{ active: currentStep === 2, completed: currentStep > 2 }"
+            @click="currentStep > 2 && goToStep(2)">
             <span class="step-number">2</span>
             <span class="step-label">ENTREGA</span>
           </div>
-          
-          <div 
-            class="step" 
-            :class="{ active: currentStep === 3 }"
-          >
+
+          <div class="step" :class="{ active: currentStep === 3 }">
             <span class="step-number">3</span>
             <span class="step-label">PAGAMENTO</span>
           </div>
@@ -300,35 +291,20 @@ const formatExpiryTime = computed(() => {
 
           <div class="form-group">
             <label>Data de Nascimento</label>
-            <input 
-              type="text" 
-              :value="customerData.birthdate" 
-              @input="handleDateInput"
-              placeholder="dd/mm/aaaa" 
-              maxlength="10"
-            />
+            <input type="text" :value="customerData.birthdate" @input="handleDateInput" placeholder="dd/mm/aaaa"
+              maxlength="10" />
           </div>
 
           <div class="form-group">
             <label>CPF</label>
-            <input 
-              type="text" 
-              :value="customerData.cpf" 
-              @input="handleCPFInput"
-              placeholder="000.000.000-00" 
-              maxlength="14"
-            />
+            <input type="text" :value="customerData.cpf" @input="handleCPFInput" placeholder="000.000.000-00"
+              maxlength="14" />
           </div>
 
           <div class="form-group">
             <label>Telefone</label>
-            <input 
-              type="text" 
-              :value="customerData.phone" 
-              @input="handlePhoneInput"
-              placeholder="(00) 00000-0000" 
-              maxlength="15"
-            />
+            <input type="text" :value="customerData.phone" @input="handlePhoneInput" placeholder="(00) 00000-0000"
+              maxlength="15" />
           </div>
 
           <div class="form-group">
@@ -342,13 +318,8 @@ const formatExpiryTime = computed(() => {
         <div v-if="currentStep === 2" class="step-content">
           <h3 class="section-title">SEUS ENDEREÇOS CADASTRADOS</h3>
 
-          <div 
-            v-for="addr in savedAddresses" 
-            :key="addr.id" 
-            class="address-card"
-            :class="{ selected: selectedAddressId === addr.id }"
-            @click="selectedAddressId = addr.id"
-          >
+          <div v-for="addr in savedAddresses" :key="addr.id" class="address-card"
+            :class="{ selected: selectedAddressId === addr.id }" @click="selectedAddressId = addr.id">
             <input type="radio" :checked="selectedAddressId === addr.id" />
             <div class="address-info">
               <p class="address-name">{{ addr.name }}</p>
@@ -369,13 +340,8 @@ const formatExpiryTime = computed(() => {
               <div class="form-group">
                 <label>CEP</label>
                 <div class="input-with-button">
-                  <input 
-                    type="text" 
-                    :value="newAddress.cep" 
-                    @input="handleCEPInput"
-                    placeholder="00000-000" 
-                    maxlength="9" 
-                  />
+                  <input type="text" :value="newAddress.cep" @input="handleCEPInput" placeholder="00000-000"
+                    maxlength="9" />
                   <button @click="handleSearchCep" :disabled="isLoadingCep">
                     {{ isLoadingCep ? '...' : 'Buscar' }}
                   </button>
@@ -420,20 +386,13 @@ const formatExpiryTime = computed(() => {
 
         <div v-if="currentStep === 3" class="step-content">
           <div class="payment-methods">
-            <div 
-              class="payment-option" 
-              :class="{ active: paymentMethod === 'pix' }"
-              @click="paymentMethod = 'pix'"
-            >
+            <div class="payment-option" :class="{ active: paymentMethod === 'pix' }" @click="paymentMethod = 'pix'">
               <input type="radio" :checked="paymentMethod === 'pix'" />
               <span>PIX</span>
             </div>
 
-            <div 
-              class="payment-option" 
-              :class="{ active: paymentMethod === 'credit_card' }"
-              @click="paymentMethod = 'credit_card'"
-            >
+            <div class="payment-option" :class="{ active: paymentMethod === 'credit_card' }"
+              @click="paymentMethod = 'credit_card'">
               <input type="radio" :checked="paymentMethod === 'credit_card'" />
               <span>Cartão de Crédito</span>
             </div>
@@ -452,7 +411,7 @@ const formatExpiryTime = computed(() => {
             <div v-else class="pix-qrcode">
               <h3>PIX GERADO! Pague agora para confirmar seu pedido.</h3>
               <p class="pix-timer">Tempo restante para pagar: <strong>{{ formatExpiryTime }}</strong></p>
-              
+
               <div class="qrcode-container">
                 <div class="qrcode-placeholder">
                   <p>QR CODE</p>
@@ -469,7 +428,8 @@ const formatExpiryTime = computed(() => {
                 <h4>Como Fazer o pagamento do pedido?</h4>
                 <ol>
                   <li>Aponte a câmera do seu celular no QR Code acima e faça o pagamento.</li>
-                  <li>Acesse seu <strong>Banco Digital</strong>. Acesse a área do <strong>PIX</strong>. Escolha a opção <strong>Pix Copia e Cola;</strong> Cole o código e efetue o pagamento.</li>
+                  <li>Acesse seu <strong>Banco Digital</strong>. Acesse a área do <strong>PIX</strong>. Escolha a opção
+                    <strong>Pix Copia e Cola;</strong> Cole o código e efetue o pagamento.</li>
                 </ol>
               </div>
             </div>
@@ -478,13 +438,8 @@ const formatExpiryTime = computed(() => {
           <div v-if="paymentMethod === 'credit_card'" class="card-payment">
             <div class="form-group">
               <label>Número do cartão</label>
-              <input 
-                type="text" 
-                :value="cardData.number" 
-                @input="handleCardNumberInput"
-                placeholder="0000 0000 0000 0000" 
-                maxlength="19" 
-              />
+              <input type="text" :value="cardData.number" @input="handleCardNumberInput"
+                placeholder="0000 0000 0000 0000" maxlength="19" />
             </div>
 
             <div class="form-group">
@@ -495,36 +450,20 @@ const formatExpiryTime = computed(() => {
             <div class="form-row">
               <div class="form-group">
                 <label>CVV</label>
-                <input 
-                  type="text" 
-                  :value="cardData.cvv" 
-                  @input="handleCardCVVInput"
-                  placeholder="000" 
-                  maxlength="3" 
-                />
+                <input type="text" :value="cardData.cvv" @input="handleCardCVVInput" placeholder="000" maxlength="3" />
               </div>
 
               <div class="form-group">
                 <label>Validade</label>
-                <input 
-                  type="text" 
-                  :value="cardData.expiry" 
-                  @input="handleCardExpiryInput"
-                  placeholder="MM/AA" 
-                  maxlength="5" 
-                />
+                <input type="text" :value="cardData.expiry" @input="handleCardExpiryInput" placeholder="MM/AA"
+                  maxlength="5" />
               </div>
             </div>
 
             <div class="form-group">
               <label>CPF do titular do cartão</label>
-              <input 
-                type="text" 
-                :value="cardData.cpf" 
-                @input="handleCardCPFInput"
-                placeholder="000.000.000-00" 
-                maxlength="14" 
-              />
+              <input type="text" :value="cardData.cpf" @input="handleCardCPFInput" placeholder="000.000.000-00"
+                maxlength="14" />
             </div>
 
             <div class="form-group">
@@ -577,7 +516,7 @@ const formatExpiryTime = computed(() => {
       </aside>
     </div>
   </main>
-    <FooterVue />
+  <FooterVue />
 </template>
 
 <style scoped>
@@ -585,13 +524,12 @@ const formatExpiryTime = computed(() => {
   max-width: 1400px;
   margin: 0 auto;
   padding: 40px 20px;
-  font-family: 'Poppins', sans-serif;
 }
 
 .checkout-content {
   display: grid;
-  grid-template-columns: 1fr 400px;
-  gap: 40px;
+  grid-template-columns: 1fr 420px;
+  gap: 10px;
 }
 
 @media (max-width: 1024px) {
@@ -624,16 +562,16 @@ const formatExpiryTime = computed(() => {
 }
 
 .step-number {
-  width: 32px;
-  height: 32px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   background: #ddd;
-  color: #666;
+  color: rgb(180, 180, 180);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
-  font-size: 0.9rem;
+  font-weight: 600;
+  font-size: 0.8rem;
 }
 
 .step.active .step-number {
@@ -647,9 +585,9 @@ const formatExpiryTime = computed(() => {
 }
 
 .step-label {
-  font-size: 0.85rem;
+  font-size: 1.2rem;
   font-weight: 600;
-  color: #999;
+  color: rgb(180, 180, 180);
 }
 
 .step.active .step-label {
@@ -660,7 +598,6 @@ const formatExpiryTime = computed(() => {
 .checkout-form {
   background: #fff;
   border: 1px solid #e5e5e5;
-  border-radius: 12px;
   padding: 30px;
 }
 
@@ -669,8 +606,15 @@ const formatExpiryTime = computed(() => {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .form-group {
@@ -679,18 +623,22 @@ const formatExpiryTime = computed(() => {
 
 .form-group label {
   display: block;
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 500;
   margin-bottom: 8px;
   color: #000;
+}
+
+.form-group ::placeholder{
+  color: #ccc;
 }
 
 .form-group input,
 .form-group select {
   width: 100%;
   padding: 12px 14px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  border: 2px solid #ddd;
+  border-radius: 12px;
   font-size: 0.95rem;
   transition: border 0.3s;
 }
@@ -928,7 +876,7 @@ const formatExpiryTime = computed(() => {
   font-weight: 700;
   cursor: pointer;
   margin-top: 20px;
-  transition: background 0.3s;
+  transition: 0.3s;
 }
 
 .btn-continue:hover,
@@ -938,9 +886,7 @@ const formatExpiryTime = computed(() => {
 
 /* Order Summary */
 .order-summary {
-  background: #f8f9fa;
-  border: 1px solid #e5e5e5;
-  border-radius: 12px;
+  background: #f9f9f9;
   padding: 24px;
   align-self: flex-start;
   position: sticky;
@@ -948,9 +894,11 @@ const formatExpiryTime = computed(() => {
 }
 
 .summary-title {
-  font-size: 1.1rem;
-  font-weight: 700;
-  margin-bottom: 20px;
+  font-size: 1.6rem;
+  font-weight: 600;
+  text-align: center;
+  color: #000;
+  margin: 20px auto 40px;
 }
 
 .summary-products {
@@ -964,7 +912,6 @@ const formatExpiryTime = computed(() => {
   gap: 12px;
   margin-bottom: 16px;
   padding-bottom: 16px;
-  border-bottom: 1px solid #e5e5e5;
 }
 
 .summary-item img {
@@ -981,13 +928,13 @@ const formatExpiryTime = computed(() => {
 
 .item-name {
   font-size: 0.85rem;
-  font-weight: 600;
-  margin-bottom: 4px;
+  font-weight: 500;
+  margin-bottom: 15px;
 }
 
 .item-price {
   font-size: 0.9rem;
-  color: #666;
+  font-weight: 500;
 }
 
 .summary-totals {
@@ -1004,13 +951,13 @@ const formatExpiryTime = computed(() => {
 
 .total-line.final {
   font-size: 1.1rem;
-  font-weight: 700;
+  font-weight: 600;
   padding-top: 12px;
   border-top: 1px solid #ddd;
 }
 
 .installment-text {
-  text-align: center;
+  text-align: right;
   font-size: 0.8rem;
   color: #666;
   margin-top: 6px;
@@ -1022,7 +969,7 @@ const formatExpiryTime = computed(() => {
   background: #fff;
   color: #0B1E9F;
   border: 2px solid #0B1E9F;
-  border-radius: 8px;
+  border-radius: 6px;
   font-weight: 700;
   cursor: pointer;
   margin-top: 16px;

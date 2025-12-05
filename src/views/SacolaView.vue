@@ -1,0 +1,712 @@
+<script setup>
+import { useCartStore } from "@/stores/cart.js";
+import { useRouter } from "vue-router";
+import { ref, computed, onMounted } from "vue";
+import { fetchAddressByCep, calculateShipping } from "@/utils/shipping";
+import { formatCEP } from "@/utils/masks";
+
+import CardProducts from "@/components/CardProducts.vue";
+import LoadingSpinner from "@/components/LoadingSpinner.vue";
+import { fetchFeaturedProducts } from "@/api/products";
+import { formatProduct } from "@/utils/productHelper";
+
+const cartStore = useCartStore();
+const router = useRouter();
+
+const cepInput = ref("");
+const shipping = ref(null);
+const shippingError = ref("");
+const isCalculatingShipping = ref(false);
+
+const couponInput = ref("");
+const manualDiscount = ref(0); // desconto por cupom manual
+
+function goToHome() {
+  router.push({ name: "home" });
+}
+
+function goToCheckout() {
+  if (!shipping.value) {
+    alert("Por favor, calcule o frete antes de finalizar a compra");
+    return;
+  }
+  cartStore.setShipping(shipping.value);
+  router.push({ name: "checkout" });
+}
+
+const formatPrice = (v) => v.toFixed(2).replace(".", ",");
+
+// Subtotal dos produtos
+const subtotal = computed(() =>
+  cartStore.items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+);
+
+// Total de itens considerando quantidade de cada produto
+const totalItems = computed(() =>
+  cartStore.items.reduce((sum, item) => sum + item.quantity, 0)
+);
+
+// Desconto automático de 10% se subtotal > 500
+const autoDiscount = computed(() => {
+  return subtotal.value > 500 ? subtotal.value * 0.1 : 0;
+});
+
+// Desconto total: automático + cupom manual
+const totalDiscount = computed(() => autoDiscount.value + manualDiscount.value);
+
+// Total final
+const total = computed(() => subtotal.value - totalDiscount.value + (shipping.value?.value || 0));
+
+function handleCEPInput(e) {
+  cepInput.value = formatCEP(e.target.value);
+}
+async function handleCalculateShipping() {
+  shippingError.value = "";
+  if (!cepInput.value) {
+    shippingError.value = "Digite um CEP";
+    return;
+  }
+
+  isCalculatingShipping.value = true;
+
+  try {
+    const address = await fetchAddressByCep(cepInput.value);
+
+    // Verifica se é Joinville
+    const isJoinville = address.city.toLowerCase().includes('joinville');
+
+    shipping.value = {
+      cep: address.cep,
+      city: address.city,
+      state: address.state,
+      isFree: isJoinville,
+      value: isJoinville ? 0 : 9.99,// valor fixo para outras cidades
+      estimatedDays: isJoinville ? '1-2' : '8-10',
+    };
+
+  } catch (err) {
+    shippingError.value = err.message || "Erro ao calcular frete";
+    shipping.value = null;
+  } finally {
+    isCalculatingShipping.value = false;
+  }
+}
+
+
+function handleApplyCoupon() {
+  const valid = { DESCONTO10: 0.1, PRIMEIRACOMPRA: 0.15, ARTELIE20: 0.2 };
+  const code = couponInput.value.toUpperCase().trim();
+
+  if (valid[code]) {
+    manualDiscount.value = subtotal.value * valid[code];
+    alert(`Cupom aplicado! Desconto de ${(valid[code] * 100).toFixed(0)}%`);
+  } else {
+    alert("Cupom inválido");
+    manualDiscount.value = 0;
+  }
+}
+
+/* Destaques para a seção "Conheça..." */
+const featured = ref([]);
+const loading = ref(true);
+const error = ref(null);
+
+async function loadProducts() {
+  try {
+    loading.value = true;
+    error.value = null;
+    const response = await fetchFeaturedProducts();
+    const products = Array.isArray(response) ? response : response?.results || [];
+    featured.value = products.map(formatProduct);
+  } catch (err) {
+    console.error("Erro ao carregar produtos em destaque:", err);
+    if (err.message?.includes("MaxClients") || err.response?.status === 500) {
+      error.value = "⚠️ Servidor temporariamente indisponível. Tente novamente em alguns segundos.";
+    } else {
+      error.value = "Erro ao carregar produtos. Verifique sua conexão.";
+    }
+  } finally {
+    loading.value = false;
+  }
+}
+
+onMounted(loadProducts);
+</script>
+
+<template>
+  <main class="cart-container">
+    <template v-if="cartStore.items.length === 0">
+      <div class="empty-cart">
+        <div class="empty-header">
+          <h1 class="page-title">BEM-VINDO À SACOLA</h1>
+          <img src="/src/assets/images/Shopping bag.png" alt="" class="title-bag" />
+        </div>
+        <p class="empty-message">A Sacola está vazia!</p>
+        <div class="empty-icon">
+          <img src="/src/assets/images/Empty set.png" alt="Sacola vazia" />
+        </div>
+        <p class="empty-subtitle">
+          Que tal retornar à nossa página principal e<br />procurar pelos melhores produtos
+        </p>
+        <button class="btn-primary" @click="goToHome">VOLTAR À LOJA</button>
+        <p class="login-text">Tem uma conta?</p>
+        <p class="login-link">
+          Faça <RouterLink to="/login">LOGIN</RouterLink> para finalizar suas compras
+        </p>
+      </div>
+
+      <!-- Seção de recomendados -->
+      <div class="section-header">
+        <h2 class="section-title">Conheça alguns produtos interessantes</h2>
+      </div>
+
+      <LoadingSpinner v-if="loading" size="large" />
+      <div v-else-if="error" class="error-state">
+        <p>{{ error }}</p>
+        <button @click="loadProducts" class="retry-button">🔄 Tentar Novamente</button>
+      </div>
+      <CardProducts v-else :products="featured.slice(0, 4)" />
+    </template>
+
+    <template v-else>
+      <div class="cart-layout">
+        <section class="cart-left">
+          <header class="cart-left-header">
+            <h1 class="page-title">BEM-VINDO À SACOLA</h1>
+            <img src="/src/assets/images/Shopping bag.png" alt="iconSacola" class="title-bag" />
+          </header>
+
+          <div class="cart-table">
+            <div class="table-header">
+              <span>PRODUTO</span>
+              <span>QUANTIDADE</span>
+              <span>TOTAL</span>
+            </div>
+
+            <div class="cart-item" v-for="item in cartStore.items" :key="item.id">
+              <div class="item-product">
+                <img :src="item.image" :alt="item.title" class="item-image" />
+                <div class="item-info">
+                  <p class="item-title">{{ item.title }}</p>
+                  <p class="item-price">R$ {{ formatPrice(item.price) }}</p>
+                </div>
+              </div>
+
+              <div class="item-quantity">
+                <div class="quantity-controls">
+                  <button @click="cartStore.addToCart(item, -1)" :disabled="item.quantity === 1">
+                    -
+                  </button>
+                  <span>{{ item.quantity }}</span>
+                  <button @click="cartStore.addToCart(item, 1)">+</button>
+                </div>
+                <img src="/src/assets/images/Cancel.png" class="remove-btn"
+                  @click="cartStore.removeFromCart(item.id)" />
+              </div>
+
+              <div class="item-total">R$ {{ formatPrice(item.price * item.quantity) }}</div>
+            </div>
+          </div>
+        </section>
+
+        <aside class="cart-summary">
+          <h2 class="summary-title">RESUMO DA COMPRA</h2>
+
+          <div class="summary-field">
+            <label for="coupon">Cupom de Desconto</label>
+            <div class="field-group">
+              <input id="coupon" type="text" placeholder="Digite o código de desconto" v-model="couponInput"
+                @keyup.enter="handleApplyCoupon" />
+              <button class="btn-apply" @click="handleApplyCoupon">APLICAR</button>
+            </div>
+          </div>
+
+          <div class="summary-field">
+            <label for="cep">Frete</label>
+            <div class="field-group">
+              <input id="cep" type="text" placeholder="Digite o seu CEP" :value="cepInput" @input="handleCEPInput"
+                @keyup.enter="handleCalculateShipping" maxlength="9" />
+              <button class="btn-apply" @click="handleCalculateShipping" :disabled="isCalculatingShipping">
+                {{ isCalculatingShipping ? "..." : "APLICAR" }}
+              </button>
+            </div>
+            <p v-if="shipping" class="shipping-info">
+              {{ shipping.city }}/{{ shipping.state }} • {{ shipping.estimatedDays }} dias úteis
+              <span v-if="shipping.isFree" class="free-shipping"> • FRETE GRÁTIS!</span>
+              <span v-else class="shipping-value"> • R$ {{ formatPrice(shipping.value) }}</span>
+            </p>
+          </div>
+
+          <div class="summary-totals">
+            <div class="total-line">
+              <span>Subtotal - {{ totalItems }} produtos</span>
+              <span>R$ {{ formatPrice(subtotal) }}</span>
+            </div>
+
+            <!-- Desconto automático por compra acima de R$ 500 -->
+            <div class="total-line" v-if="autoDiscount > 0">
+              <span>Desconto • 10% acima de R$ 500</span>
+              <span class="discount-value">- R$ {{ formatPrice(autoDiscount) }}</span>
+            </div>
+
+            <!-- Desconto por cupom -->
+            <div class="total-line" v-if="manualDiscount > 0">
+              <span>Desconto Cupom</span>
+              <span class="discount-value">- R$ {{ formatPrice(manualDiscount) }}</span>
+            </div>
+
+            <div class="total-line">
+              <span>Frete</span>
+              <span v-if="shipping">
+                <span v-if="shipping.isFree" class="free-shipping">GRÁTIS</span>
+                <span v-else class="shipping-value">R$ {{ formatPrice(shipping.value) }}</span>
+              </span>
+              <span v-else class="shipping-pending">Calcular</span>
+            </div>
+
+            <div class="total-line total-final">
+              <span>TOTAL</span>
+              <span>R$ {{ formatPrice(total) }}</span>
+            </div>
+
+            <p v-if="total >= 140" class="installment-info">
+              ou 10x de R$ {{ formatPrice(total / 10) }} sem juros
+            </p>
+          </div>
+
+          <button class="btn-checkout" @click="goToCheckout" :disabled="!shipping">
+            FINALIZAR COMPRA
+          </button>
+          <button class="btn-continue" @click="goToHome">CONTINUAR COMPRANDO</button>
+        </aside>
+      </div>
+
+      <!-- Seção de recomendados -->
+      <div class="section-header">
+        <h2 class="section-title">Conheça alguns produtos interessantes</h2>
+      </div>
+
+      <LoadingSpinner v-if="loading" size="large" />
+      <div v-else-if="error" class="error-state">
+        <p>{{ error }}</p>
+        <button @click="loadProducts" class="retry-button">🔄 Tentar Novamente</button>
+      </div>
+      <CardProducts v-else :products="featured.slice(0, 4)" />
+    </template>
+  </main>
+</template>
+
+<style scoped>
+/* Container geral */
+.cart-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+/* Layout: duas colunas, aside não rola, apenas gruda (sticky) */
+.cart-layout {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 10px;
+  align-items: start;
+}
+
+@media (max-width: 1024px) {
+  .cart-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===== ESTADO: SACOLA VAZIA ===== */
+.empty-cart {
+  text-align: center;
+  padding: 40px 20px;
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+.empty-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.page-title {
+  font-size: 2.2rem;
+  text-shadow: 0 3px 2px rgba(0, 0, 0, 0.3);
+  font-weight: 600;
+  color: #000;
+}
+
+.title-bag {
+  width: 38px;
+  height: 38px;
+  margin-bottom: 6px;
+}
+
+.empty-message {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #000;
+  margin: 30px 0 18px;
+}
+
+.empty-icon {
+  margin: 18px 0 10px;
+}
+
+.empty-icon img {
+  width: 120px;
+  opacity: 0.7;
+}
+
+.empty-subtitle {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #000000;
+  margin: 18px 0 22px;
+}
+
+.btn-primary {
+  background: #000787;
+  color: #fff;
+  border: none;
+  border-radius: 15px;
+  padding: 6px 100px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-primary:hover {
+  background: #000565;
+}
+
+.login-text {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #000000;
+  margin-top: 30px;
+}
+
+.login-link {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #000;
+}
+
+.login-link a {
+  color: #000;
+  text-decoration: underline;
+}
+
+/* ===== ESTADO: ITENS NA SACOLA ===== */
+.cart-left-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.cart-table {
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  overflow: hidden;
+}
+
+.table-header {
+  display: grid;
+  grid-template-columns: 1fr 250px 80px;
+  gap: 20px;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e5e5e5;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.cart-item {
+  display: grid;
+  grid-template-columns: 1fr 170px 140px;
+  gap: 20px;
+  padding: 40px;
+  border-bottom: 1px solid #f0f0f0;
+  align-items: center;
+}
+
+.cart-item:last-child {
+  border-bottom: none;
+}
+
+.item-product {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.item-image {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  background: #fff;
+}
+
+.item-info {
+  flex: 1;
+  max-width: 300px;
+}
+
+.item-title {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #000;
+  margin: 0 0 8px 0;
+}
+
+.item-price {
+  font-size: 0.85rem;
+  color: #000000;
+  margin: 0;
+}
+
+.item-quantity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.quantity-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #000000;
+  border-radius: 10px;
+  padding: 2px 8px;
+}
+
+.quantity-controls button {
+  width: 35px;
+  height: 30px;
+  background: none;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  color: #000;
+}
+
+.quantity-controls button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.quantity-controls span {
+  text-align: center;
+  font-weight: 500;
+}
+
+.remove-btn {
+  width: 12px;
+  height: 12px;
+  margin-left: 2px;
+  cursor: pointer;
+  filter: grayscale(100%);
+  opacity: 0.75;
+}
+
+.remove-btn:hover {
+  opacity: 1;
+}
+
+.item-total {
+  text-align: right;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #000;
+}
+
+/* Aside: sem overflow/scroll, sticky simples */
+.cart-summary {
+  position: sticky;
+  top: 24px;
+  background: #f9f9f9;
+  padding: 24px;
+}
+
+.summary-title {
+  font-size: 1.6rem;
+  font-weight: 600;
+  text-align: center;
+  color: #000;
+  margin: 20px auto 40px;
+}
+
+/* Labels acima, botões sempre visíveis */
+.summary-field {
+  margin-bottom: 16px;
+}
+
+.summary-field label {
+  display: block;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #000;
+  margin-bottom: 8px;
+}
+
+.field-group {
+  display: flex;
+  gap: 8px;
+}
+
+.field-group input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: none;
+  border-bottom: 1px solid #000;
+  font-size: 0.8rem;
+  font-weight: 300;
+  color: #000000;
+  padding: 10px 12px;
+}
+
+.field-group input::placeholder {
+  color: #181818;
+}
+
+.btn-apply {
+  background: #000787;
+  color: #fff;
+  border: none;
+  border-radius: 15px;
+  padding: 10px 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-apply:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error-text {
+  color: #eb3b28;
+  font-size: 0.75rem;
+  margin-top: 4px;
+}
+
+.shipping-info {
+  font-size: 0.85rem;
+  color: #444;
+  margin-top: 6px;
+}
+
+.free-shipping {
+  color: #27ae60;
+  font-weight: 600;
+}
+
+.shipping-value {
+  color: #333;
+  font-weight: 600;
+}
+
+
+.shipping-pending {
+  color: #999;
+  font-size: 0.85rem;
+}
+
+/* Totais e ações */
+.summary-totals {
+  margin: 20px 0;
+  padding: 16px 0;
+  border-top: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+}
+
+.total-line {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.total-final {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #000;
+  padding-top: 12px;
+  border-top: 1px solid #ddd;
+  margin-top: 12px;
+}
+
+.discount-value {
+  color: #ff1414;
+  font-weight: 600;
+}
+
+.installment-info {
+  font-size: 0.8rem;
+  color: #555;
+  text-align: right;
+  margin-top: 8px;
+}
+
+.btn-checkout,
+.btn-continue {
+  width: 100%;
+  border-radius: 6px;
+  padding: 14px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.btn-checkout {
+  background: #000;
+  color: #fff;
+  border: none;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.btn-checkout:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-continue {
+  background: #fff;
+  color: #000787;
+  border: 2px solid #000787;
+  font-weight: 600;
+}
+
+.section-header {
+  margin: 80px 0 40px;
+  text-align: center;
+}
+
+.section-title {
+  display: inline-block;
+  font-size: 1.7rem;
+  font-weight: 600;
+  color: #000;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-thickness: 3px;
+}
+
+/* Responsivo */
+@media (max-width: 1024px) {
+  .cart-summary {
+    position: static;
+  }
+}
+</style>

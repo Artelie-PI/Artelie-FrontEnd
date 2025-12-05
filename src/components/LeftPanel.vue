@@ -1,7 +1,8 @@
 <script setup>
 import { computed } from 'vue'
 const props = defineProps({
-  mode: { type: String, default: 'login' }
+  mode: { type: String, default: 'login' },
+  moving: { type: Boolean, default: false }
 })
 const cls = computed(() => ({
   container: true,
@@ -14,6 +15,13 @@ const cls = computed(() => ({
     <p class="Title">{{ props.mode === 'login' ? 'Bem Vindo de Volta!' : 'Bem Vindo!' }}</p>
     <p class="instruction" v-if="props.mode === 'login'">Faça login para continuar</p>
     <p class="instruction" v-else>Faça seu Cadastro para comprar os produtos em nosso site.</p>
+
+    <RouterLink to="/home" class="back-button">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false" style="width:1rem;height:1rem;margin-right:0.1rem;vertical-align:middle;">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+      Voltar para tela inicial
+    </RouterLink>
   </div>
 </template>
 
@@ -23,7 +31,7 @@ const cls = computed(() => ({
   left: 0;
   top: 0;
   height: 100vh;
-  width: 31.98vw;
+  width: 32vw;
   min-width: 280px;
   padding: 2.2rem;
   display: flex;
@@ -35,7 +43,6 @@ const cls = computed(() => ({
   transform: translateX(var(--tx));
   transition: transform 0.32s cubic-bezier(.2,.9,.3,1), opacity 0.32s;
   z-index: 3;
-
   background: linear-gradient(270deg, #192EB1, #214b9b, #192EB1);
   background-size: 400% 400%;
   color: #fff;
@@ -51,21 +58,86 @@ const cls = computed(() => ({
 
 .Title {
   margin: 0 0 0.4rem 0;
-  font-size: 18px;
+  font-size: 1.4rem;
   font-weight: 600;
-  line-height: 1.2;
+  line-height: 1.25;
 }
 
 .instruction {
   margin: 0;
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 400;
   opacity: 0.95;
+}
+
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 2rem;
+  padding: 0.6rem 1.1rem;
+  border-radius: 999px;
+  background: transparent;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s, transform 0.12s;
+  font-size: 0.9rem;
+}
+
+.back-button:hover {
+  background: rgba(255,255,255,0.16);
 }
 
 @keyframes gradientBG {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
+}
+
+@media (max-width: 768px) {
+  .container {
+    position: relative;
+    width: 100%;
+    height: auto;
+    min-height: 220px;
+    padding: 2rem 1.6rem 1.8rem;
+    --tx: 0;
+    box-shadow: 0 4px 15px rgba(15,23,42,0.25);
+  }
+
+  .container.to-right {
+    --tx: 0;
+  }
+
+  .Title {
+    font-size: 1.35rem;
+  }
+
+  .instruction {
+    font-size: 0.95rem;
+  }
+
+  .back-button {
+    margin-top: 1.6rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 1.6rem 1.2rem 1.6rem;
+  }
+
+  .Title {
+    font-size: 1.25rem;
+  }
+
+  .instruction {
+    font-size: 0.9rem;
+  }
+
+  .back-button {
+    font-size: 0.85rem;
+  }
 }
 </style>
