@@ -39,6 +39,7 @@ const facets = reactive({
 });
 
 const chips = computed(() => {
+<<<<<<< HEAD
  const list = [];
  if (filters.sort) {
    const map = { az: "A-Z", za: "Z-A", new: "Novidades", price_desc: "Maior Preço", price_asc: "Menor Preço" };
@@ -51,6 +52,21 @@ const chips = computed(() => {
  return list;
 });
 
+=======
+  const list = [];
+  if (filters.sort) {
+    const map = { az: "A-Z", za: "Z-A", new: "Novidades", price_desc: "Maior Preço", price_asc: "Menor Preço" };
+    list.push({ key: "sort", label: map[filters.sort] || filters.sort, group: "sort" });
+  }
+  filters.materials.forEach((m) => list.push({ key: `mat:${m}`, label: m, group: "materials", value: m }));
+  filters.brands.forEach((b) => list.push({ key: `br:${b}`, label: b, group: "brands", value: b }));
+  if (filters.priceMin != null) list.push({ key: "pmin", label: `De R$ ${Number(filters.priceMin).toFixed(2)}`, group: "priceMin" });
+  if (filters.priceMax != null) list.push({ key: "pmax", label: `Até R$ ${Number(filters.priceMax).toFixed(2)}`, group: "priceMax" });
+  return list;
+});
+
+// Nome da categoria
+>>>>>>> origin/dev
 const categoryTitle = computed(() => currentCategory.value?.name || "Categoria");
 
 function findCategoryBySlug(slug) {
@@ -74,6 +90,17 @@ function findCategoryBySlug(slug) {
  });
 }
 
+<<<<<<< HEAD
+=======
+// Resolve um parâmetro de rota que pode ser `id` (numérico) ou `slug`.
+// Prioriza buscar por ID via API; se não encontrar, tenta casar por slug
+// entre as `categories` já carregadas.
+async function resolveCategoryParam(param) {
+  if (param == null) return null
+  return findCategoryBySlug(param)
+}
+
+>>>>>>> origin/dev
 async function loadProducts() {
  isLoading.value = true;
  titleSkeleton.value = true;
@@ -92,9 +119,16 @@ async function loadProducts() {
    currentCategory.value = category;
    titleSkeleton.value = false;
 
+<<<<<<< HEAD
    const brandMap = await getBrandMap();
    const rawProducts = await fetchProductsByCategoryAll(category.id);
    products.value = rawProducts.map(p => formatProduct(p, brandMap));
+=======
+  try {
+    if (categories.value.length === 0) {
+      categories.value = await fetchCategories();
+    }
+>>>>>>> origin/dev
 
    products.value = products.value.map(p => {
      if (!p.image) {
@@ -105,6 +139,7 @@ async function loadProducts() {
      return p;
    });
 
+<<<<<<< HEAD
    const setBrands = new Set();
    const setMaterials = new Set();
    for (const p of products.value) {
@@ -120,9 +155,47 @@ async function loadProducts() {
  } finally {
    isLoading.value = false;
  }
+=======
+    const category = await resolveCategoryParam(param);
+
+    if (!category) {
+      console.error('❌ Categoria não encontrada para param:', param);
+      errorMsg.value = "Categoria não encontrada.";
+      products.value = [];
+      return;
+    }
+
+    console.log('✅ Categoria encontrada:', category);
+    currentCategory.value = category;
+
+    // Busca categoria completa (inclui array de produtos via serializer)
+    const fullCategory = await findCategoryById(category.id)
+    const rawProducts = Array.isArray(fullCategory?.products) ? fullCategory.products : []
+    console.log('📦 Produtos recebidos (embedded):', rawProducts.length)
+    products.value = rawProducts.map(formatProduct)
+    console.log('✅ Produtos formatados:', products.value.length)
+
+    // Gera facetas
+    const setBrands = new Set();
+    const setMaterials = new Set();
+    for (const p of products.value) {
+      if (p.brand) setBrands.add(String(p.brand));
+      if (p.material) setMaterials.add(String(p.material));
+    }
+    facets.brands = Array.from(setBrands).sort();
+    facets.materials = Array.from(setMaterials).sort();
+
+  } catch (e) {
+    console.error('Erro ao carregar produtos:', e);
+    errorMsg.value = "Erro ao carregar produtos da categoria.";
+  } finally {
+    isLoading.value = false;
+  }
+>>>>>>> origin/dev
 }
 
 function onApplyFilters(payload) {
+<<<<<<< HEAD
  filters.sort = payload.sort || null;
  filters.materials = Array.isArray(payload.materials) ? payload.materials.map(String) : [];
  filters.brands = Array.isArray(payload.brands) ? payload.brands.map(String) : [];
@@ -130,6 +203,14 @@ function onApplyFilters(payload) {
  filters.priceMax = payload.priceMax != null && payload.priceMax !== "" ? Number(payload.priceMax) : null;
  isFilterOpen.value = false;
  currentPage.value = 1;
+=======
+  filters.sort = payload.sort || null;
+  filters.materials = Array.isArray(payload.materials) ? payload.materials.map(String) : [];
+  filters.brands = Array.isArray(payload.brands) ? payload.brands.map(String) : [];
+  filters.priceMin = payload.priceMin != null && payload.priceMin !== "" ? Number(payload.priceMin) : null;
+  filters.priceMax = payload.priceMax != null && payload.priceMax !== "" ? Number(payload.priceMax) : null;
+  isFilterOpen.value = false;
+>>>>>>> origin/dev
 }
 
 function onClearFilters() {
@@ -142,18 +223,27 @@ function onClearFilters() {
 }
 
 function removeChip(chip) {
+<<<<<<< HEAD
  if (chip.group === "sort") filters.sort = null;
  if (chip.group === "materials") filters.materials = filters.materials.filter((m) => m !== chip.value);
  if (chip.group === "brands") filters.brands = filters.brands.filter((b) => b !== chip.value);
  if (chip.group === "priceMin") filters.priceMin = null;
  if (chip.group === "priceMax") filters.priceMax = null;
  currentPage.value = 1;
+=======
+  if (chip.group === "sort") filters.sort = null;
+  if (chip.group === "materials") filters.materials = filters.materials.filter((m) => m !== chip.value);
+  if (chip.group === "brands") filters.brands = filters.brands.filter((b) => b !== chip.value);
+  if (chip.group === "priceMin") filters.priceMin = null;
+  if (chip.group === "priceMax") filters.priceMax = null;
+>>>>>>> origin/dev
 }
 
 const filteredProducts = computed(() => {
  const q = search.value.trim().toLowerCase();
  let list = [...products.value];
 
+<<<<<<< HEAD
  if (q) list = list.filter((p) => p.title?.toLowerCase().includes(q));
  if (filters.brands.length) list = list.filter((p) => p.brand && filters.brands.includes(String(p.brand)));
  if (filters.materials.length) list = list.filter((p) => p.material && filters.materials.includes(String(p.material)));
@@ -167,6 +257,21 @@ const filteredProducts = computed(() => {
    case "price_asc": list.sort((a, b) => a.price - b.price); break;
  }
  return list;
+=======
+  if (q) list = list.filter((p) => p.title?.toLowerCase().includes(q));
+  if (filters.brands.length) list = list.filter((p) => p.brand && filters.brands.includes(String(p.brand)));
+  if (filters.materials.length) list = list.filter((p) => p.material && filters.materials.includes(String(p.material)));
+  if (filters.priceMin != null) list = list.filter((p) => p.price >= Number(filters.priceMin));
+  if (filters.priceMax != null) list = list.filter((p) => p.price <= Number(filters.priceMax));
+
+  switch (filters.sort) {
+    case "az": list.sort((a, b) => a.title.localeCompare(b.title)); break;
+    case "za": list.sort((a, b) => b.title.localeCompare(a.title)); break;
+    case "price_desc": list.sort((a, b) => b.price - a.price); break;
+    case "price_asc": list.sort((a, b) => a.price - b.price); break;
+  }
+  return list;
+>>>>>>> origin/dev
 });
 
 const paginatedProducts = computed(() => {
@@ -209,10 +314,15 @@ function goToPage(page) {
 }
 
 watch(search, () => {
+<<<<<<< HEAD
  if (searchDebounce) clearTimeout(searchDebounce);
  searchDebounce = setTimeout(() => {
    currentPage.value = 1;
  }, 250);
+=======
+  if (searchDebounce) clearTimeout(searchDebounce);
+  searchDebounce = setTimeout(() => { }, 250);
+>>>>>>> origin/dev
 });
 
 watch(
@@ -243,6 +353,7 @@ onMounted(loadProducts);
        <img src="/src/assets/images/ConfigIcon.png" class="filter-icon">
      </button>
 
+<<<<<<< HEAD
      <div class="search-box" @click="searchInput?.focus()">
        <img src="/src/assets/images/lupa.png" class="search-icon">
        <input ref="searchInput" type="text" class="search-input" placeholder="Pesquisar Produto" v-model="search"
@@ -257,6 +368,21 @@ onMounted(loadProducts);
      </button>
      <button class="chip-clear" @click="onClearFilters">Limpar filtros</button>
    </div>
+=======
+      <div class="search-box">
+        <span class="search-icon">🔎</span>
+        <input type="text" class="search-input" placeholder="Pesquisar Produto" v-model="search" aria-label="Pesquisar Produto" />
+      </div>
+    </div>
+
+    <div v-if="chips.length" class="chips-row">
+      <button v-for="c in chips" :key="c.key" class="chip" @click="removeChip(c)" :title="`Remover filtro ${c.label}`">
+        {{ c.label }}
+        <span class="chip-x">×</span>
+      </button>
+      <button class="chip-clear" @click="onClearFilters">Limpar filtros</button>
+    </div>
+>>>>>>> origin/dev
 
    <section class="products-section">
      <p v-if="errorMsg" class="error">{{ errorMsg }}</p>
@@ -272,6 +398,7 @@ onMounted(loadProducts);
      <template v-else>
        <CardProducts :products="paginatedProducts" />
 
+<<<<<<< HEAD
        <nav v-if="totalPages > 1" class="pagination" aria-label="Navegação de páginas">
          <button class="pagination-btn pagination-arrow" @click="goToPage(currentPage - 1)"
            :disabled="currentPage === 1" aria-label="Página anterior">
@@ -295,6 +422,17 @@ onMounted(loadProducts);
    <SidebarFilter :open="isFilterOpen" :facets="facets" :selected="filters" @close="isFilterOpen = false"
      @apply="onApplyFilters" @clear="onClearFilters" />
  </main>
+=======
+    <SidebarFilter
+      :open="isFilterOpen"
+      :facets="facets"
+      :selected="filters"
+      @close="isFilterOpen = false"
+      @apply="onApplyFilters"
+      @clear="onClearFilters"
+    />
+  </main>
+>>>>>>> origin/dev
 </template>
 
 <style scoped>
@@ -379,6 +517,7 @@ onMounted(loadProducts);
  cursor: pointer;
 }
 
+<<<<<<< HEAD
 .filter-btn:hover {
  background: #333;
  transition: 0.3s;
@@ -387,6 +526,26 @@ onMounted(loadProducts);
 .filter-icon {
  width: 20px;
 }
+=======
+  .filter-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #111;
+    color: #fff;
+    border: 0;
+    border-radius: 6px;
+    height: 40px;
+    padding: 0 14px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .filter-btn:hover {
+    background: #333;
+  }
+>>>>>>> origin/dev
 
 .search-box {
  min-width: 50%;
@@ -447,6 +606,7 @@ onMounted(loadProducts);
  font-size: 0.85rem;
 }
 
+<<<<<<< HEAD
 .chip:hover {
  color: #000be0;
  border-color: #000be0;
@@ -455,6 +615,26 @@ onMounted(loadProducts);
 .chip .chip-x {
  width: 8px;
 }
+=======
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #f1f1f1;
+    color: #111;
+    border: 1px solid #e5e5e5;
+    border-radius: 999px;
+    height: 30px;
+    padding: 0 10px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+
+  .chip:hover {
+    background: #e5e5e5;
+  }
+>>>>>>> origin/dev
 
 .chip-clear {
  display: inline-flex;
@@ -472,10 +652,23 @@ onMounted(loadProducts);
  font-size: 0.85rem;
 }
 
+<<<<<<< HEAD
 .chip-clear:hover {
  color: #000be0;
  border-color: #000be0;
 }
+=======
+  .chip-clear {
+    height: 30px;
+    padding: 0 12px;
+    border-radius: 999px;
+    border: 0;
+    background: #eee;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+>>>>>>> origin/dev
 
 .products-section {
  margin-top: 50px;
